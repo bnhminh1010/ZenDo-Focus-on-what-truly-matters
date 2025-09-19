@@ -37,36 +37,11 @@ ZenDo không chỉ là một ứng dụng quản lý công việc (Todo List), m
 
 ---
 
-## 📦 Cài đặt & Chạy thử  
-
-### Yêu cầu  
-- Flutter SDK ≥ 3.0  
-- Python ≥ 3.10 (cho AI microservice)  
-- Supabase account  
-
-### Cách chạy  
-```bash
-# Clone repo
-git clone https://github.com/<your-username>/zendo.git
-cd zendo
-
-# Chạy Flutter app
-cd frontend
-flutter pub get
-flutter run
-
-# Chạy AI microservice
-cd ai_service
-pip install -r requirements.txt
-uvicorn main:app --reload
-```
-
----
 
 ## 👥 Nhóm phát triển  
 - **Nguyễn Hoàng Anh Khoa** – Project Manager  
 - **Lai Vũ Hoàng Minh** – Mobile & Backend Developer  
-- **[Tên thành viên 3]** – AI & Database Developer  
+- **Nguyễn Bình Minh** – AI & Database Developer  
 
 ---
 
