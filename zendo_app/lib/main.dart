@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'app.dart';
 import 'config/supabase_config.dart';
 
@@ -9,6 +10,9 @@ import 'config/supabase_config.dart';
 /// Cấu hình system UI, khởi tạo Supabase và khởi chạy ứng dụng
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Load environment variables
+  await dotenv.load(fileName: ".env");
   
   // Khởi tạo Supabase client với timeout configuration
   await Supabase.initialize(

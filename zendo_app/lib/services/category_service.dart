@@ -1,338 +1,263 @@
-import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../models/category.dart';
 
-/// Model cho Category
-class Category {
-  final String id;
-  final String name;
-  final String icon;
-  final String color;
-  final String userId;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-
-  Category({
-    required this.id,
-    required this.name,
-    required this.icon,
-    required this.color,
-    required this.userId,
-    required this.createdAt,
-    required this.updatedAt,
-  });
-
-  factory Category.fromMap(Map<String, dynamic> map) {
-    return Category(
-      id: map['id'] as String,
-      name: map['name'] as String,
-      icon: map['icon'] as String,
-      color: map['color'] as String,
-      userId: map['user_id'] as String,
-      createdAt: DateTime.parse(map['created_at'] as String),
-      updatedAt: DateTime.parse(map['updated_at'] as String),
-    );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'name': name,
-      'icon': icon,
-      'color': color,
-      'user_id': userId,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
-    };
-  }
-
-  Category copyWith({
-    String? id,
-    String? name,
-    String? icon,
-    String? color,
-    String? userId,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  }) {
-    return Category(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      icon: icon ?? this.icon,
-      color: color ?? this.color,
-      userId: userId ?? this.userId,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-    );
-  }
-}
-
-/// Service chuyên xử lý các operations liên quan đến categories
-/// Bao gồm CRUD operations và realtime updates
-class CategoryService extends ChangeNotifier {
+/// Service quản lý Categories với Supabase
+class CategoryService {
   final SupabaseClient _supabase = Supabase.instance.client;
-  
-  List<Category> _categories = [];
-  List<Category> get categories => _categories;
-  
-  bool _isLoading = false;
-  bool get isLoading => _isLoading;
-  
-  String? _error;
-  String? get error => _error;
 
-  // Getter để lấy user ID hiện tại
-  String? get _currentUserId => _supabase.auth.currentUser?.id;
-
-  /// Kiểm tra user đã đăng nhập chưa
-  bool get isUserAuthenticated => _currentUserId != null;
-
-  /// Khởi tạo service và load categories
-  Future<void> initialize() async {
-    if (!isUserAuthenticated) {
-      debugPrint('CategoryService: User not authenticated');
-      return;
-    }
-    
-    await loadCategories();
-    _setupRealtimeSubscription();
-  }
-
-  /// Load tất cả categories của user
-  Future<void> loadCategories() async {
-    if (!isUserAuthenticated) {
-      _error = 'User not authenticated';
-      notifyListeners();
-      return;
-    }
-
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
+  /// Lấy tất cả categories của user hiện tại
+  Future<List<Category>> getUserCategories() async {
     try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
       final response = await _supabase
           .from('categories')
-          .select('*')
-          .eq('user_id', _currentUserId!)
-          .order('created_at', ascending: true);
+          .select()
+          .eq('user_id', user.id)
+          .eq('is_archived', false)
+          .order('sort_order', ascending: true);
 
-      _categories = (response as List)
-          .map((categoryData) => Category.fromMap(categoryData))
+      return (response as List)
+          .map((json) => Category.fromJson(json))
           .toList();
-      
-      debugPrint('CategoryService: Loaded ${_categories.length} categories');
     } catch (e) {
-      _error = 'Error loading categories: $e';
-      debugPrint('CategoryService: $_error');
-    } finally {
-      _isLoading = false;
-      notifyListeners();
+      throw Exception('Failed to fetch categories: $e');
     }
   }
 
   /// Tạo category mới
-  Future<bool> createCategory({
+  Future<Category> createCategory({
     required String name,
+    String? description,
     required String icon,
     required String color,
+    bool isDefault = false,
+    int? sortOrder,
   }) async {
-    if (!isUserAuthenticated) {
-      _error = 'User not authenticated';
-      notifyListeners();
-      return false;
-    }
-
     try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Tính sort_order nếu không được cung cấp
+      if (sortOrder == null) {
+        final maxOrderResponse = await _supabase
+            .from('categories')
+            .select('sort_order')
+            .eq('user_id', user.id)
+            .order('sort_order', ascending: false)
+            .limit(1);
+
+        sortOrder = maxOrderResponse.isNotEmpty 
+            ? (maxOrderResponse.first['sort_order'] as int) + 1 
+            : 1;
+      }
+
+      final categoryData = {
+        'user_id': user.id,
+        'name': name,
+        'description': description,
+        'icon': icon,
+        'color': color,
+        'is_default': isDefault,
+        'sort_order': sortOrder,
+        'is_archived': false,
+      };
+
       final response = await _supabase
           .from('categories')
-          .insert({
-            'name': name,
-            'icon': icon,
-            'color': color,
-            'user_id': _currentUserId!,
-            'created_at': DateTime.now().toIso8601String(),
-            'updated_at': DateTime.now().toIso8601String(),
-          })
+          .insert(categoryData)
           .select()
           .single();
 
-      final newCategory = Category.fromMap(response);
-      _categories.add(newCategory);
-      
-      debugPrint('CategoryService: Category created successfully - $name');
-      notifyListeners();
-      return true;
+      return Category.fromJson(response);
     } catch (e) {
-      _error = 'Error creating category: $e';
-      debugPrint('CategoryService: $_error');
-      notifyListeners();
-      return false;
+      throw Exception('Failed to create category: $e');
     }
   }
 
   /// Cập nhật category
-  Future<bool> updateCategory(Category category) async {
-    if (!isUserAuthenticated) {
-      _error = 'User not authenticated';
-      notifyListeners();
-      return false;
-    }
-
+  Future<Category> updateCategory(String categoryId, {
+    String? name,
+    String? description,
+    String? icon,
+    String? color,
+    bool? isDefault,
+    int? sortOrder,
+    bool? isArchived,
+  }) async {
     try {
-      await _supabase
-          .from('categories')
-          .update({
-            'name': category.name,
-            'icon': category.icon,
-            'color': category.color,
-            'updated_at': DateTime.now().toIso8601String(),
-          })
-          .eq('id', category.id)
-          .eq('user_id', _currentUserId!);
-
-      // Cập nhật trong local list
-      final index = _categories.indexWhere((c) => c.id == category.id);
-      if (index != -1) {
-        _categories[index] = category.copyWith(updatedAt: DateTime.now());
-        notifyListeners();
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
       }
 
-      debugPrint('CategoryService: Category updated successfully - ${category.name}');
-      return true;
+      final updateData = <String, dynamic>{
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+
+      if (name != null) updateData['name'] = name;
+      if (description != null) updateData['description'] = description;
+      if (icon != null) updateData['icon'] = icon;
+      if (color != null) updateData['color'] = color;
+      if (isDefault != null) updateData['is_default'] = isDefault;
+      if (sortOrder != null) updateData['sort_order'] = sortOrder;
+      if (isArchived != null) updateData['is_archived'] = isArchived;
+
+      final response = await _supabase
+          .from('categories')
+          .update(updateData)
+          .eq('id', categoryId)
+          .eq('user_id', user.id)
+          .select()
+          .single();
+
+      return Category.fromJson(response);
     } catch (e) {
-      _error = 'Error updating category: $e';
-      debugPrint('CategoryService: $_error');
-      notifyListeners();
-      return false;
+      throw Exception('Failed to update category: $e');
     }
   }
 
-  /// Xóa category
-  Future<bool> deleteCategory(String categoryId) async {
-    if (!isUserAuthenticated) {
-      _error = 'User not authenticated';
-      notifyListeners();
-      return false;
-    }
-
+  /// Xóa category (soft delete - archive)
+  Future<void> deleteCategory(String categoryId) async {
     try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Kiểm tra xem category có tasks không
+      final tasksCount = await _supabase
+          .from('tasks')
+          .select('id')
+          .eq('category_id', categoryId)
+          .eq('user_id', user.id)
+          .count();
+
+      if (tasksCount.count > 0) {
+        throw Exception('Cannot delete category with existing tasks. Please move or delete tasks first.');
+      }
+
+      // Soft delete - archive category
       await _supabase
           .from('categories')
-          .delete()
+          .update({
+            'is_archived': true,
+            'updated_at': DateTime.now().toIso8601String(),
+          })
           .eq('id', categoryId)
-          .eq('user_id', _currentUserId!);
-
-      // Xóa khỏi local list
-      _categories.removeWhere((category) => category.id == categoryId);
-      
-      debugPrint('CategoryService: Category deleted successfully');
-      notifyListeners();
-      return true;
+          .eq('user_id', user.id);
     } catch (e) {
-      _error = 'Error deleting category: $e';
-      debugPrint('CategoryService: $_error');
-      notifyListeners();
-      return false;
+      throw Exception('Failed to delete category: $e');
+    }
+  }
+
+  /// Tạo default categories cho user mới
+  Future<List<Category>> createDefaultCategories() async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Kiểm tra xem user đã có categories chưa
+      final existingCategories = await _supabase
+          .from('categories')
+          .select('id')
+          .eq('user_id', user.id)
+          .limit(1);
+
+      if (existingCategories.isNotEmpty) {
+        return getUserCategories(); // Trả về categories hiện có
+      }
+
+      // Tạo default categories
+      final categoriesData = DefaultCategories.defaults.map((category) => {
+        ...category,
+        'user_id': user.id,
+      }).toList();
+
+      final response = await _supabase
+          .from('categories')
+          .insert(categoriesData)
+          .select();
+
+      return (response as List)
+          .map((json) => Category.fromJson(json))
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to create default categories: $e');
     }
   }
 
   /// Lấy category theo ID
-  Category? getCategoryById(String categoryId) {
+  Future<Category?> getCategoryById(String categoryId) async {
     try {
-      return _categories.firstWhere((category) => category.id == categoryId);
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final response = await _supabase
+          .from('categories')
+          .select()
+          .eq('id', categoryId)
+          .eq('user_id', user.id)
+          .single();
+
+      return Category.fromJson(response);
     } catch (e) {
-      return null;
+      return null; // Category not found
     }
   }
 
-  /// Tìm kiếm categories
-  List<Category> searchCategories(String query) {
-    if (query.isEmpty) return _categories;
-    
-    final lowercaseQuery = query.toLowerCase();
-    return _categories.where((category) {
-      return category.name.toLowerCase().contains(lowercaseQuery);
-    }).toList();
-  }
+  /// Cập nhật thứ tự categories
+  Future<void> reorderCategories(List<String> categoryIds) async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
 
-  /// Lấy categories mặc định để tạo khi user đăng ký
-  static List<Map<String, String>> getDefaultCategories() {
-    return [
-      {
-        'name': 'Công việc',
-        'icon': 'work',
-        'color': '#2196F3',
-      },
-      {
-        'name': 'Cá nhân',
-        'icon': 'person',
-        'color': '#4CAF50',
-      },
-      {
-        'name': 'Học tập',
-        'icon': 'school',
-        'color': '#FF9800',
-      },
-      {
-        'name': 'Sức khỏe',
-        'icon': 'fitness_center',
-        'color': '#E91E63',
-      },
-      {
-        'name': 'Gia đình',
-        'icon': 'family_restroom',
-        'color': '#9C27B0',
-      },
-    ];
-  }
-
-  /// Tạo categories mặc định cho user mới
-  Future<void> createDefaultCategories() async {
-    if (!isUserAuthenticated) return;
-
-    final defaultCategories = getDefaultCategories();
-    
-    for (final categoryData in defaultCategories) {
-      await createCategory(
-        name: categoryData['name']!,
-        icon: categoryData['icon']!,
-        color: categoryData['color']!,
-      );
+      // Cập nhật sort_order cho từng category
+      for (int i = 0; i < categoryIds.length; i++) {
+        await _supabase
+            .from('categories')
+            .update({
+              'sort_order': i + 1,
+              'updated_at': DateTime.now().toIso8601String(),
+            })
+            .eq('id', categoryIds[i])
+            .eq('user_id', user.id);
+      }
+    } catch (e) {
+      throw Exception('Failed to reorder categories: $e');
     }
   }
 
-  /// Setup realtime subscription để sync categories
-  void _setupRealtimeSubscription() {
-    if (!isUserAuthenticated) return;
+  /// Lấy số lượng tasks trong category
+  Future<int> getTaskCountInCategory(String categoryId) async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
 
-    _supabase
-        .channel('categories_channel')
-        .onPostgresChanges(
-          event: PostgresChangeEvent.all,
-          schema: 'public',
-          table: 'categories',
-          filter: PostgresChangeFilter(
-            type: PostgresChangeFilterType.eq,
-            column: 'user_id',
-            value: _currentUserId!,
-          ),
-          callback: (payload) {
-            debugPrint('CategoryService: Realtime update received');
-            loadCategories(); // Reload categories khi có thay đổi
-          },
-        )
-        .subscribe();
-  }
+      final response = await _supabase
+          .from('tasks')
+          .select('id')
+          .eq('category_id', categoryId)
+          .eq('user_id', user.id)
+          .eq('is_archived', false)
+          .count();
 
-  /// Clear error message
-  void clearError() {
-    _error = null;
-    notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    _supabase.removeAllChannels();
-    super.dispose();
+      return response.count;
+    } catch (e) {
+      return 0;
+    }
   }
 }

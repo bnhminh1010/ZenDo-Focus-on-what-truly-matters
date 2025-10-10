@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../models/task.dart';
 import '../../providers/task_model.dart';
 import '../../theme.dart';
@@ -43,9 +45,7 @@ class CategoryDetailPage extends StatelessWidget {
       body: Consumer<TaskModel>(
         builder: (context, taskModel, child) {
           // Lọc tasks theo category
-          final categoryTasks = taskModel.tasks
-              .where((task) => task.category.displayName.toLowerCase() == categoryName.toLowerCase())
-              .toList();
+          final categoryTasks = taskModel.getTasksByCategory(category);
 
           return Column(
             children: [
@@ -54,10 +54,10 @@ class CategoryDetailPage extends StatelessWidget {
                 margin: const EdgeInsets.all(16),
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: categoryColor.withOpacity(0.1),
+                  color: categoryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: categoryColor.withOpacity(0.3),
+                    color: categoryColor.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
@@ -66,14 +66,10 @@ class CategoryDetailPage extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: categoryColor.withOpacity(0.2),
+                        color: categoryColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(
-                        categoryIcon,
-                        color: categoryColor,
-                        size: 24,
-                      ),
+                      child: Icon(categoryIcon, color: categoryColor, size: 24),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -82,16 +78,14 @@ class CategoryDetailPage extends StatelessWidget {
                         children: [
                           Text(
                             categoryName,
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             '${categoryTasks.length} công việc',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.grey[600],
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: Colors.grey[600]),
                           ),
                         ],
                       ),
@@ -118,9 +112,15 @@ class CategoryDetailPage extends StatelessWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddTaskDialog(context),
-        backgroundColor: categoryColor,
-        child: const Icon(Icons.add, color: Colors.white),
+        onPressed: () => _openAIChat(context),
+        backgroundColor: Colors.blue.shade600,
+        child: SvgPicture.asset(
+          'assets/icons/dolphin.svg',
+          width: 28,
+          height: 28,
+          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+        ),
+        tooltip: 'BilyBily AI Assistant',
       ),
     );
   }
@@ -131,32 +131,33 @@ class CategoryDetailPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            categoryIcon,
-            size: 64,
-            color: Colors.grey[400],
-          ),
+          Icon(categoryIcon, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
             'Chưa có công việc nào',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Colors.grey[600],
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(color: Colors.grey[600]),
           ),
           const SizedBox(height: 8),
           Text(
             'Thêm công việc đầu tiên cho $categoryName',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[500],
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
-            onPressed: () => _showAddTaskDialog(context),
-            icon: const Icon(Icons.add),
-            label: const Text('Thêm công việc'),
+            onPressed: () => _openAIChat(context),
+            icon: SvgPicture.asset(
+              'assets/icons/dolphin.svg',
+              width: 20,
+              height: 20,
+              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+            ),
+            label: const Text('Tạo với AI'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: categoryColor,
+              backgroundColor: Colors.blue.shade600,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
@@ -167,7 +168,11 @@ class CategoryDetailPage extends StatelessWidget {
   }
 
   /// Widget hiển thị từng task item
-  Widget _buildTaskItem(BuildContext context, dynamic task, TaskModel taskModel) {
+  Widget _buildTaskItem(
+    BuildContext context,
+    dynamic task,
+    TaskModel taskModel,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -175,7 +180,7 @@ class CategoryDetailPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -183,28 +188,29 @@ class CategoryDetailPage extends StatelessWidget {
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.all(16),
+        onTap: () {
+          // Navigate to task detail page
+          context.pushNamed(
+            'taskDetail',
+            pathParameters: {'taskId': task.id},
+            extra: task,
+          );
+        },
         leading: GestureDetector(
           onTap: () {
-            // TODO: Toggle task completion
-            // taskModel.toggleTaskCompletion(task.id);
+            // Toggle task completion
+            taskModel.toggleTaskCompletion(task.id);
           },
           child: Container(
             width: 24,
             height: 24,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(
-                color: categoryColor,
-                width: 2,
-              ),
+              border: Border.all(color: categoryColor, width: 2),
               color: task.isCompleted ? categoryColor : Colors.transparent,
             ),
             child: task.isCompleted
-                ? const Icon(
-                    Icons.check,
-                    size: 16,
-                    color: Colors.white,
-                  )
+                ? const Icon(Icons.check, size: 16, color: Colors.white)
                 : null,
           ),
         ),
@@ -219,10 +225,7 @@ class CategoryDetailPage extends StatelessWidget {
         subtitle: task.description?.isNotEmpty == true
             ? Text(
                 task.description!,
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: Colors.grey[600], fontSize: 14),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               )
@@ -234,7 +237,7 @@ class CategoryDetailPage extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: _getPriorityColor(task.priority).withOpacity(0.1),
+                  color: _getPriorityColor(task.priority).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -273,10 +276,14 @@ class CategoryDetailPage extends StatelessWidget {
               ],
               onSelected: (value) {
                 if (value == 'edit') {
-                  // TODO: Mở dialog chỉnh sửa task
+                  // Navigate to task detail for editing
+                  context.pushNamed(
+                    'taskDetail',
+                    pathParameters: {'taskId': task.id},
+                  );
                 } else if (value == 'delete') {
-                  // TODO: Xóa task
-                  // taskModel.deleteTask(task.id);
+                  // Delete task
+                  taskModel.deleteTask(task.id);
                 }
               },
             ),
@@ -326,9 +333,18 @@ class CategoryDetailPage extends StatelessWidget {
                     border: OutlineInputBorder(),
                   ),
                   items: const [
-                    DropdownMenuItem(value: TaskPriority.low, child: Text('Thấp')),
-                    DropdownMenuItem(value: TaskPriority.medium, child: Text('Trung bình')),
-                    DropdownMenuItem(value: TaskPriority.high, child: Text('Cao')),
+                    DropdownMenuItem(
+                      value: TaskPriority.low,
+                      child: Text('Thấp'),
+                    ),
+                    DropdownMenuItem(
+                      value: TaskPriority.medium,
+                      child: Text('Trung bình'),
+                    ),
+                    DropdownMenuItem(
+                      value: TaskPriority.high,
+                      child: Text('Cao'),
+                    ),
                   ],
                   onChanged: (value) {
                     setState(() {
@@ -339,9 +355,11 @@ class CategoryDetailPage extends StatelessWidget {
                 const SizedBox(height: 16),
                 ListTile(
                   title: const Text('Ngày hết hạn'),
-                  subtitle: Text(selectedDate != null 
-                      ? '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}'
-                      : 'Chưa chọn'),
+                  subtitle: Text(
+                    selectedDate != null
+                        ? '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}'
+                        : 'Chưa chọn',
+                  ),
                   trailing: const Icon(Icons.calendar_today),
                   onTap: () async {
                     final date = await showDatePicker(
@@ -368,21 +386,24 @@ class CategoryDetailPage extends StatelessWidget {
             ElevatedButton(
               onPressed: () async {
                 if (titleController.text.trim().isNotEmpty) {
-                  final taskModel = Provider.of<TaskModel>(context, listen: false);
-                  
+                  final taskModel = Provider.of<TaskModel>(
+                    context,
+                    listen: false,
+                  );
+
                   // Tạo task mới với category tương ứng
                   final task = taskModel.createTask(
                     title: titleController.text.trim(),
-                    description: descriptionController.text.trim().isEmpty 
-                        ? null 
+                    description: descriptionController.text.trim().isEmpty
+                        ? null
                         : descriptionController.text.trim(),
                     category: category,
                     priority: selectedPriority,
                     dueDate: selectedDate,
                   );
-                  
+
                   Navigator.pop(context);
-                  
+
                   // Thêm task và hiển thị kết quả
                   try {
                     await taskModel.addTask(task);
@@ -419,30 +440,49 @@ class CategoryDetailPage extends StatelessWidget {
   }
 
   /// Lấy màu theo độ ưu tiên
-  Color _getPriorityColor(String? priority) {
-    switch (priority?.toLowerCase()) {
-      case 'high':
+  Color _getPriorityColor(TaskPriority? priority) {
+    if (priority == null) return Colors.grey;
+    switch (priority) {
+      case TaskPriority.high:
         return Colors.red;
-      case 'medium':
+      case TaskPriority.medium:
         return Colors.orange;
-      case 'low':
+      case TaskPriority.low:
         return Colors.green;
-      default:
-        return Colors.grey;
+      case TaskPriority.urgent:
+        return Colors.purple;
     }
   }
 
   /// Lấy text theo độ ưu tiên
-  String _getPriorityText(String? priority) {
-    switch (priority?.toLowerCase()) {
-      case 'high':
-        return 'Cao';
-      case 'medium':
-        return 'TB';
-      case 'low':
-        return 'Thấp';
-      default:
-        return '';
-    }
+  String _getPriorityText(TaskPriority? priority) {
+    if (priority == null) return '';
+    return priority.displayName;
+  }
+
+  /// Mở AI Chat với context của category
+  void _openAIChat(BuildContext context) {
+    final initialMessage = '''Tôi muốn tạo task mới cho category "$categoryName". 
+Hãy hỏi tôi các thông tin cần thiết để tạo một task hoàn chỉnh:
+- Tiêu đề task
+- Mô tả chi tiết
+- Độ ưu tiên (thấp, trung bình, cao, khẩn cấp)
+- Thời gian ước tính hoàn thành
+- Ngày hạn (nếu có)
+- Ghi chú bổ sung (nếu có)
+
+Category hiện tại: $categoryName
+Icon: ${categoryIcon.codePoint}
+Màu sắc: ${categoryColor.value}''';
+
+    context.push('/ai-chat', extra: {
+      'categoryContext': {
+        'name': categoryName,
+        'icon': categoryIcon,
+        'color': categoryColor,
+        'category': category,
+      },
+      'initialMessage': initialMessage,
+    });
   }
 }

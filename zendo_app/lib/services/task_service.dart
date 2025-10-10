@@ -33,7 +33,7 @@ class TaskService extends ChangeNotifier {
     _setupRealtimeSubscription();
   }
 
-  /// Load tất cả tasks của user
+  /// Load tất cả tasks của user (bao gồm cả subtasks)
   Future<void> loadTasks() async {
     if (!isUserAuthenticated) {
       _error = 'User not authenticated';
@@ -56,6 +56,9 @@ class TaskService extends ChangeNotifier {
           .map((taskData) => Task.fromSupabaseMap(taskData))
           .toList();
 
+      // Load subtask IDs cho mỗi task
+      await _loadSubtaskIds();
+
       debugPrint('TaskService: Loaded ${_tasks.length} tasks');
     } catch (e) {
       _error = 'Error loading tasks: $e';
@@ -63,6 +66,37 @@ class TaskService extends ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  /// Load subtask IDs cho tất cả tasks
+  Future<void> _loadSubtaskIds() async {
+    try {
+      final subtasksResponse = await _supabase
+          .from('subtasks')
+          .select('task_id, id')
+          .eq('user_id', _currentUserId!);
+
+      // Group subtask IDs theo task_id
+      final Map<String, List<String>> taskSubtasks = {};
+      for (final subtask in subtasksResponse) {
+        final taskId = subtask['task_id'] as String;
+        final subtaskId = subtask['id'] as String;
+        
+        if (!taskSubtasks.containsKey(taskId)) {
+          taskSubtasks[taskId] = [];
+        }
+        taskSubtasks[taskId]!.add(subtaskId);
+      }
+
+      // Cập nhật subtaskIds cho mỗi task
+      for (int i = 0; i < _tasks.length; i++) {
+        final task = _tasks[i];
+        final subtaskIds = taskSubtasks[task.id] ?? [];
+        _tasks[i] = task.copyWith(subtaskIds: subtaskIds);
+      }
+    } catch (e) {
+      debugPrint('TaskService: Error loading subtask IDs: $e');
     }
   }
 

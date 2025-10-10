@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../models/task.dart';
 import '../providers/task_model.dart';
 import 'task_card.dart';
@@ -48,7 +49,7 @@ class _TaskListViewState extends State<TaskListView> {
                   final task = tasks[index];
                   return TaskCard(
                     task: task,
-                    onTap: () => _showTaskDetails(context, task),
+                    onTap: () => _navigateToTaskDetail(context, task),
                   );
                 },
               ),
@@ -84,8 +85,12 @@ class _TaskListViewState extends State<TaskListView> {
       }).toList();
     }
 
-    // Sort tasks
-    tasks.sort((a, b) {
+    // Tách task hoàn thành và chưa hoàn thành
+    List<Task> incompleteTasks = tasks.where((task) => !task.isCompleted).toList();
+    List<Task> completedTasks = tasks.where((task) => task.isCompleted).toList();
+
+    // Sort incomplete tasks
+    incompleteTasks.sort((a, b) {
       int comparison = 0;
 
       switch (_sortBy) {
@@ -119,7 +124,43 @@ class _TaskListViewState extends State<TaskListView> {
       return _sortAscending ? comparison : -comparison;
     });
 
-    return tasks;
+    // Sort completed tasks
+    completedTasks.sort((a, b) {
+      int comparison = 0;
+
+      switch (_sortBy) {
+        case TaskSortBy.title:
+          comparison = a.title.compareTo(b.title);
+          break;
+        case TaskSortBy.dueDate:
+          if (a.dueDate == null && b.dueDate == null) {
+            comparison = 0;
+          } else if (a.dueDate == null) {
+            comparison = 1; // Tasks without due date go to the end
+          } else if (b.dueDate == null) {
+            comparison = -1;
+          } else {
+            comparison = a.dueDate!.compareTo(b.dueDate!);
+          }
+          break;
+        case TaskSortBy.priority:
+          comparison = b.priority.index.compareTo(
+            a.priority.index,
+          ); // High priority first
+          break;
+        case TaskSortBy.category:
+          comparison = a.category.name.compareTo(b.category.name);
+          break;
+        case TaskSortBy.createdAt:
+          comparison = a.createdAt.compareTo(b.createdAt);
+          break;
+      }
+
+      return _sortAscending ? comparison : -comparison;
+    });
+
+    // Kết hợp: task chưa hoàn thành trước, task hoàn thành sau
+    return [...incompleteTasks, ...completedTasks];
   }
 
   Widget _buildSortControls() {
@@ -175,7 +216,7 @@ class _TaskListViewState extends State<TaskListView> {
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
                   color: Theme.of(
                     context,
-                  ).colorScheme.onSurface.withOpacity(0.6),
+                  ).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               );
             },
@@ -193,13 +234,13 @@ class _TaskListViewState extends State<TaskListView> {
           Icon(
             Icons.task_alt,
             size: 64,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
           ),
           const SizedBox(height: 16),
           Text(
             'No tasks found',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
           const SizedBox(height: 8),
@@ -208,7 +249,7 @@ class _TaskListViewState extends State<TaskListView> {
                 ? 'Try adjusting your search terms'
                 : 'Create your first task to get started',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
             ),
             textAlign: TextAlign.center,
           ),
@@ -232,77 +273,11 @@ class _TaskListViewState extends State<TaskListView> {
     }
   }
 
-  void _showTaskDetails(BuildContext context, Task task) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(task.title),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (task.description != null && task.description!.isNotEmpty) ...[
-                Text(
-                  'Description:',
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(task.description!),
-                const SizedBox(height: 16),
-              ],
-
-              Text(
-                'Category: ${task.category.name}',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 8),
-
-              Text(
-                'Priority: ${task.priority.name}',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 8),
-
-              if (task.dueDate != null) ...[
-                Text(
-                  'Due Date: ${task.dueDate!.day}/${task.dueDate!.month}/${task.dueDate!.year}',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 8),
-              ],
-
-              if (task.estimatedMinutes != null &&
-                  task.estimatedMinutes! > 0) ...[
-                Text(
-                  'Estimated Time: ${task.estimatedMinutes} minutes',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 8),
-              ],
-
-              if (task.notes != null && task.notes!.isNotEmpty) ...[
-                Text(
-                  'Notes:',
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(task.notes!),
-              ],
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
+  void _navigateToTaskDetail(BuildContext context, Task task) {
+    context.pushNamed(
+      'taskDetail',
+      pathParameters: {'taskId': task.id},
+      extra: task,
     );
   }
 }

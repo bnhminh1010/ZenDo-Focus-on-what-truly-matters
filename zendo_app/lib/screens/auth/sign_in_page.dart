@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_model.dart';
+import '../../providers/google_signin_provider.dart';
+import '../../providers/github_signin_provider.dart';
+import '../../widgets/google_signin_button.dart';
+import '../../widgets/github_signin_button.dart';
 import '../../theme.dart';
 
 /// Trang đăng nhập của ứng dụng ZenDo
@@ -121,6 +125,21 @@ class _SignInPageState extends State<SignInPage> {
                 // Sign in button
                 _buildSignInButton(),
                 
+                const SizedBox(height: 24),
+                
+                // Divider with "hoặc"
+                _buildDivider(),
+                
+                const SizedBox(height: 24),
+                
+                // Google Sign-In button
+                _buildGoogleSignInButton(),
+                
+                const SizedBox(height: 16),
+                
+                // GitHub Sign-In button
+                _buildGitHubSignInButton(),
+                
                 const SizedBox(height: 16),
                 
                 // Forgot password
@@ -156,7 +175,7 @@ class _SignInPageState extends State<SignInPage> {
         Text(
           'Chào mừng bạn trở lại! Vui lòng nhập thông tin đăng nhập.',
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
             fontSize: 16,
           ),
         ),
@@ -173,7 +192,7 @@ class _SignInPageState extends State<SignInPage> {
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.3)),
+            border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3)),
           ),
           child: TextFormField(
             controller: _emailController,
@@ -184,15 +203,15 @@ class _SignInPageState extends State<SignInPage> {
             decoration: InputDecoration(
               labelText: 'Email',
               labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
               hintText: 'Nhập email của bạn',
               hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
               ),
               prefixIcon: Icon(
                 Icons.email_outlined, 
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
               ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.all(16),
@@ -207,7 +226,7 @@ class _SignInPageState extends State<SignInPage> {
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.3)),
+            border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3)),
           ),
           child: TextFormField(
             controller: _passwordController,
@@ -219,20 +238,20 @@ class _SignInPageState extends State<SignInPage> {
             decoration: InputDecoration(
               labelText: 'Mật khẩu',
               labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
               hintText: 'Nhập mật khẩu của bạn',
               hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
               ),
               prefixIcon: Icon(
                 Icons.lock_outlined, 
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
               ),
               suffixIcon: IconButton(
                 icon: Icon(
                   _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
                 onPressed: () {
                   setState(() {
@@ -342,7 +361,7 @@ class _SignInPageState extends State<SignInPage> {
         Text(
           'Chưa có tài khoản? ',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
           ),
         ),
         TextButton(
@@ -356,6 +375,60 @@ class _SignInPageState extends State<SignInPage> {
           ),
         ),
       ],
+    );
+  }
+
+  /// Widget divider với text "hoặc"
+  Widget _buildDivider() {
+    return Row(
+      children: [
+        Expanded(
+          child: Divider(
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+            thickness: 1,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            'hoặc',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+          ),
+        ),
+        Expanded(
+          child: Divider(
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+            thickness: 1,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Widget Google Sign-In button
+  Widget _buildGoogleSignInButton() {
+    return GoogleSignInButton(
+      onSignInSuccess: () {
+        // Chuyển đến trang home sau khi đăng nhập thành công
+        context.go('/home');
+      },
+    );
+  }
+
+  /// Widget GitHub Sign-In button
+  Widget _buildGitHubSignInButton() {
+    return GitHubSignInButton(
+      onPressed: () async {
+        final provider = context.read<GitHubSignInProvider>();
+        final success = await provider.signIn();
+        
+        if (success && mounted) {
+          // Chuyển đến trang home sau khi đăng nhập thành công
+          context.go('/home');
+        }
+      },
     );
   }
 }

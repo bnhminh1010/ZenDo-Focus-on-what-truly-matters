@@ -98,7 +98,7 @@ class _CircularTimePickerState extends State<CircularTimePicker> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: widget.size,
       height: widget.size,
       child: Stack(
@@ -110,9 +110,9 @@ class _CircularTimePickerState extends State<CircularTimePicker> {
             height: widget.size,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: widget.backgroundColor.withOpacity(0.1),
+              color: widget.backgroundColor.withValues(alpha: 0.1),
               border: Border.all(
-                color: widget.backgroundColor.withOpacity(0.3),
+                color: widget.backgroundColor.withValues(alpha: 0.3),
                 width: 2,
               ),
             ),
@@ -153,7 +153,7 @@ class _CircularTimePickerState extends State<CircularTimePicker> {
                   color: widget.primaryColor,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha: 0.2),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -176,7 +176,7 @@ class _CircularTimePickerState extends State<CircularTimePicker> {
               shape: BoxShape.circle,
               color: Theme.of(context).scaffoldBackgroundColor,
               border: Border.all(
-                color: widget.primaryColor.withOpacity(0.3),
+                color: widget.primaryColor.withValues(alpha: 0.3),
                 width: 2,
               ),
             ),
@@ -236,7 +236,7 @@ class TimeMarkersPainter extends CustomPainter {
     final radius = size.width / 2 - 20;
     
     final paint = Paint()
-      ..color = backgroundColor.withOpacity(0.5)
+      ..color = backgroundColor.withValues(alpha: 0.5)
       ..strokeWidth = 1;
 
     // Vẽ các vạch thời gian (mỗi 15 phút)

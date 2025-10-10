@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 /// Enum định nghĩa các loại task category
 enum TaskCategory {
   work('Công việc'),
@@ -36,6 +38,20 @@ enum TaskPriority {
     }
   }
 
+  /// Màu sắc tương ứng với mức độ ưu tiên
+  Color get color {
+    switch (this) {
+      case TaskPriority.low:
+        return Colors.green;
+      case TaskPriority.medium:
+        return Colors.orange;
+      case TaskPriority.high:
+        return Colors.red;
+      case TaskPriority.urgent:
+        return Colors.deepPurple;
+    }
+  }
+
   /// So sánh priority để sort
   int compareTo(TaskPriority other) {
     return priorityOrder.compareTo(other.priorityOrder);
@@ -57,6 +73,9 @@ class Task {
   final String? notes;
   final int estimatedMinutes;
   final int actualMinutes;
+  final String? imageUrl; // Thêm trường hình ảnh
+  final String? parentTaskId; // ID của task cha (cho subtask)
+  final List<String> subtaskIds; // Danh sách ID của các subtask
 
   const Task({
     required this.id,
@@ -72,6 +91,9 @@ class Task {
     this.notes,
     this.estimatedMinutes = 0,
     this.actualMinutes = 0,
+    this.imageUrl, // Thêm vào constructor
+    this.parentTaskId, // Thêm parent task ID
+    this.subtaskIds = const [], // Danh sách subtask IDs
   });
 
   /// Tạo bản copy của Task với các thay đổi
@@ -89,6 +111,9 @@ class Task {
     String? notes,
     int? estimatedMinutes,
     int? actualMinutes,
+    String? imageUrl, // Thêm imageUrl vào copyWith
+    String? parentTaskId, // Thêm parentTaskId
+    List<String>? subtaskIds, // Thêm subtaskIds
   }) {
     return Task(
       id: id ?? this.id,
@@ -104,6 +129,9 @@ class Task {
       notes: notes ?? this.notes,
       estimatedMinutes: estimatedMinutes ?? this.estimatedMinutes,
       actualMinutes: actualMinutes ?? this.actualMinutes,
+      imageUrl: imageUrl ?? this.imageUrl, // Thêm vào return
+      parentTaskId: parentTaskId ?? this.parentTaskId, // Thêm vào return
+      subtaskIds: subtaskIds ?? this.subtaskIds, // Thêm vào return
     );
   }
 
@@ -123,6 +151,9 @@ class Task {
       'notes': notes,
       'estimatedMinutes': estimatedMinutes,
       'actualMinutes': actualMinutes,
+      'imageUrl': imageUrl, // Thêm imageUrl vào toMap
+      'parentTaskId': parentTaskId, // Thêm parentTaskId
+      'subtaskIds': subtaskIds, // Thêm subtaskIds
     };
   }
 
@@ -152,6 +183,9 @@ class Task {
       notes: map['notes'],
       estimatedMinutes: map['estimatedMinutes'] ?? 0,
       actualMinutes: map['actualMinutes'] ?? 0,
+      imageUrl: map['imageUrl'], // Thêm imageUrl vào fromMap
+      parentTaskId: map['parentTaskId'], // Thêm parentTaskId
+      subtaskIds: List<String>.from(map['subtaskIds'] ?? []), // Thêm subtaskIds
     );
   }
 
@@ -171,6 +205,9 @@ class Task {
       'notes': notes,
       'estimated_minutes': estimatedMinutes,
       'actual_minutes': actualMinutes,
+      'image_url': imageUrl, // Thêm imageUrl vào toSupabaseMap
+      'parent_task_id': parentTaskId, // Thêm parent_task_id
+      // subtaskIds sẽ được quản lý riêng trong bảng subtasks
       // user_id và category_id sẽ được thêm trong service
     };
   }
@@ -201,6 +238,9 @@ class Task {
       notes: map['notes'],
       estimatedMinutes: map['estimated_minutes'] ?? 0,
       actualMinutes: map['actual_minutes'] ?? 0,
+      imageUrl: map['image_url'], // Thêm imageUrl vào fromSupabaseMap
+      parentTaskId: map['parent_task_id'], // Thêm parent_task_id
+      // subtaskIds sẽ được load riêng từ service
     );
   }
 
@@ -272,6 +312,19 @@ class Task {
 
   /// Getter để tương thích với categoryId (sử dụng category name)
   String? get categoryId => category.name;
+
+  /// Kiểm tra xem task này có phải là subtask không
+  bool get isSubtask => parentTaskId != null;
+
+  /// Kiểm tra xem task này có subtasks không
+  bool get hasSubtasks => subtaskIds.isNotEmpty;
+
+  /// Tính phần trăm hoàn thành của subtasks (nếu có)
+  double getSubtaskProgress(List<String> completedSubtaskIds) {
+    if (subtaskIds.isEmpty) return 0.0;
+    final completedCount = subtaskIds.where((id) => completedSubtaskIds.contains(id)).length;
+    return completedCount / subtaskIds.length;
+  }
 
   @override
   String toString() {

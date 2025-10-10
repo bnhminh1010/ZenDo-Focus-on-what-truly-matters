@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zendo_app/models/focus_session.dart';
-import 'package:zendo_app/services/supabase_database_service.dart';
 
 /// Test case để verify việc lưu focus session
 void main() {

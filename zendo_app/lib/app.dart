@@ -6,16 +6,25 @@ import 'theme.dart';
 import 'models/task.dart';
 import 'providers/auth_model.dart';
 import 'providers/task_model.dart';
+import 'providers/category_model.dart';
+import 'providers/focus_session_model.dart';
 import 'providers/settings_model.dart';
 import 'providers/theme_provider.dart';
+import 'providers/google_signin_provider.dart';
+import 'providers/github_signin_provider.dart';
 import 'screens/auth/sign_in_page.dart';
 import 'screens/auth/sign_up_page.dart';
 import 'screens/home/home_page.dart';
 import 'screens/account/account_page.dart';
 import 'screens/focus/focus_page.dart';
 import 'screens/calendar/calendar_page.dart';
+import 'screens/ai/ai_chat_page.dart';
 
+import 'screens/tasks/task_list_page.dart';
+import 'screens/tasks/task_detail_page.dart';
 import 'screens/tasks/category_detail_page.dart';
+import 'screens/categories/categories_list_page.dart';
+import 'screens/categories/category_management_page.dart';
 import 'screens/splash/splash_page.dart';
 
 /// ZenDo App - Main Application Widget
@@ -28,12 +37,28 @@ class ZendoApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthModel()),
+        ChangeNotifierProvider(create: (_) => GoogleSignInProvider()),
+        ChangeNotifierProvider(create: (_) => GitHubSignInProvider()),
         ChangeNotifierProvider(
           create: (_) {
             final taskModel = TaskModel();
             // Initialize với Supabase thay vì load demo data
             taskModel.initialize();
             return taskModel;
+          },
+        ),
+        ChangeNotifierProvider(
+          create: (_) {
+            final categoryModel = CategoryModel();
+            categoryModel.loadCategories();
+            return categoryModel;
+          },
+        ),
+        ChangeNotifierProvider(
+          create: (_) {
+            final focusSessionModel = FocusSessionModel();
+            focusSessionModel.loadFocusSessions();
+            return focusSessionModel;
           },
         ),
         ChangeNotifierProvider(create: (_) => SettingsModel()),
@@ -133,13 +158,42 @@ class ZendoApp extends StatelessWidget {
           ],
         ),
 
-        // Task Detail Routes (sẽ thêm sau)
+        // Task List Route
+        GoRoute(
+          path: '/tasks',
+          name: 'tasks',
+          builder: (context, state) => const TaskListPage(),
+        ),
+
+        // Categories List Route
+        GoRoute(
+          path: '/categories',
+          name: 'categories',
+          builder: (context, state) => const CategoriesListPage(),
+        ),
+
+        // Task Detail Routes
         GoRoute(
           path: '/task/:taskId',
           name: 'taskDetail',
           builder: (context, state) {
             final taskId = state.pathParameters['taskId']!;
-            return TaskDetailPage(taskId: taskId);
+            final extra = state.extra as Task?;
+            
+            if (extra != null) {
+              return TaskDetailPage(task: extra as Task);
+            }
+            
+            // Fallback: tìm task từ TaskModel nếu không có extra
+            return Consumer<TaskModel>(
+              builder: (context, taskModel, child) {
+                final task = taskModel.tasks.firstWhere(
+                  (t) => t.id == taskId,
+                  orElse: () => throw Exception('Task not found'),
+                );
+                return TaskDetailPage(task: task);
+              },
+            );
           },
         ),
 
@@ -157,6 +211,23 @@ class ZendoApp extends StatelessWidget {
               categoryColor: extra?['color'] ?? Colors.blue,
               category: extra?['category'] ?? TaskCategory.other,
             );
+          },
+        ),
+
+        // Category Management Route
+        GoRoute(
+          path: '/category-management',
+          name: 'categoryManagement',
+          builder: (context, state) => const CategoryManagementPage(),
+        ),
+
+        // AI Chat Route
+        GoRoute(
+          path: '/ai-chat',
+          name: 'aiChat',
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>?;
+            return AIChatPage(extra: extra);
           },
         ),
       ],
@@ -228,21 +299,6 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
           ),
         ],
       ),
-    );
-  }
-}
-
-/// Task Detail Page (placeholder - sẽ implement sau)
-class TaskDetailPage extends StatelessWidget {
-  final String taskId;
-
-  const TaskDetailPage({super.key, required this.taskId});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Chi tiết Task')),
-      body: Center(child: Text('Task ID: $taskId')),
     );
   }
 }

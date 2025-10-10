@@ -137,7 +137,7 @@ class _LanguagePageState extends State<LanguagePage> {
                   margin: const EdgeInsets.only(bottom: 8),
                   decoration: BoxDecoration(
                     color: isSelected 
-                        ? colorScheme.primaryContainer.withOpacity(0.3)
+                        ? colorScheme.primaryContainer.withValues(alpha: 0.3)
                         : colorScheme.surfaceContainer,
                     borderRadius: BorderRadius.circular(12),
                     border: isSelected
@@ -177,7 +177,7 @@ class _LanguagePageState extends State<LanguagePage> {
                       language['nativeName'],
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: isSelected 
-                            ? colorScheme.primary.withOpacity(0.7)
+                            ? colorScheme.primary.withValues(alpha: 0.7)
                             : colorScheme.onSurfaceVariant,
                       ),
                     ),

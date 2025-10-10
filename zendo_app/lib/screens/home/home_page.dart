@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../providers/task_model.dart';
 import '../../providers/auth_model.dart';
 import '../../models/task.dart';
 import '../../theme.dart';
 import '../../widgets/add_task_dialog.dart';
+import '../../widgets/task_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -50,23 +52,39 @@ class _HomePageState extends State<HomePage> {
             children: [
               // Search bar
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
+                  border: Border.all(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.outline.withValues(alpha: 0.2),
+                  ),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.search, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), size: 20),
+                    Icon(
+                      Icons.search,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.6),
+                      size: 20,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: TextField(
                         decoration: InputDecoration(
                           hintText: 'Tìm kiếm nhiệm vụ...',
-                          hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                          ),
+                          hintStyle: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withValues(alpha: 0.5),
+                              ),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.zero,
                         ),
@@ -76,22 +94,34 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 32),
-              
+
               // Create buttons section (moved to top for better UX)
               _buildCreateButtons(),
               const SizedBox(height: 32),
-              
+
               // Categories Grid
-              Text(
-                'Danh mục nhiệm vụ',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Danh mục nhiệm vụ',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      // Navigate to all categories page
+                      context.push('/categories');
+                    },
+                    child: const Text('Xem tất cả'),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               _buildCategoriesGrid(),
               const SizedBox(height: 32),
-              
+
               // Recent Tasks Section
               _buildRecentTasksSection(),
             ],
@@ -109,25 +139,35 @@ class _HomePageState extends State<HomePage> {
             'name': 'Work',
             'icon': Icons.work_outline,
             'color': AppTheme.workColor,
+            'category': TaskCategory.work,
             'taskCount': taskModel.getTasksByCategory(TaskCategory.work).length,
           },
           {
             'name': 'Family',
             'icon': Icons.family_restroom,
             'color': AppTheme.familyColor,
-            'taskCount': taskModel.getTasksByCategory(TaskCategory.learning).length,
+            'category': TaskCategory.learning,
+            'taskCount': taskModel
+                .getTasksByCategory(TaskCategory.learning)
+                .length,
           },
           {
             'name': 'Healthy',
             'icon': Icons.favorite_outline,
             'color': AppTheme.healthColor,
-            'taskCount': taskModel.getTasksByCategory(TaskCategory.health).length,
+            'category': TaskCategory.health,
+            'taskCount': taskModel
+                .getTasksByCategory(TaskCategory.health)
+                .length,
           },
           {
             'name': 'Personal',
             'icon': Icons.person_outline,
             'color': AppTheme.personalColor,
-            'taskCount': taskModel.getTasksByCategory(TaskCategory.personal).length,
+            'category': TaskCategory.personal,
+            'taskCount': taskModel
+                .getTasksByCategory(TaskCategory.personal)
+                .length,
           },
         ];
 
@@ -148,6 +188,7 @@ class _HomePageState extends State<HomePage> {
                   extra: {
                     'icon': category['icon'] as IconData,
                     'color': category['color'] as Color,
+                    'category': category['category'] as TaskCategory,
                   },
                 );
               },
@@ -157,7 +198,7 @@ class _HomePageState extends State<HomePage> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 2),
                     ),
@@ -171,7 +212,7 @@ class _HomePageState extends State<HomePage> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: (category['color'] as Color).withOpacity(0.1),
+                          color: (category['color'] as Color).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
@@ -183,9 +224,8 @@ class _HomePageState extends State<HomePage> {
                       const Spacer(),
                       Text(
                         category['name'] as String,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -208,8 +248,23 @@ class _HomePageState extends State<HomePage> {
   Widget _buildRecentTasksSection() {
     return Consumer<TaskModel>(
       builder: (context, taskModel, child) {
-        final recentTasks = taskModel.tasks.take(5).toList(); // Lấy 5 task gần đây nhất
+        // Tách task hoàn thành và chưa hoàn thành
+        final incompleteTasks = taskModel.tasks
+            .where((task) => !task.isCompleted)
+            .toList();
+        final completedTasks = taskModel.tasks
+            .where((task) => task.isCompleted)
+            .toList();
         
+        // Sắp xếp theo thời gian tạo (mới nhất trước)
+        incompleteTasks.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        completedTasks.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        
+        // Kết hợp: task chưa hoàn thành trước, task hoàn thành sau
+        final recentTasks = [...incompleteTasks, ...completedTasks]
+            .take(3)
+            .toList(); // Lấy 3 task gần đây nhất
+
         if (recentTasks.isEmpty) {
           return Container(
             padding: const EdgeInsets.all(24),
@@ -222,20 +277,26 @@ class _HomePageState extends State<HomePage> {
                 Icon(
                   Icons.task_alt,
                   size: 48,
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
                 const SizedBox(height: 16),
                 Text(
                   'Chưa có nhiệm vụ nào',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Tạo nhiệm vụ đầu tiên của bạn!',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.5),
                   ),
                 ),
               ],
@@ -251,13 +312,13 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Text(
                   'Nhiệm vụ gần đây',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 TextButton(
                   onPressed: () {
-                    // TODO: Navigate to all tasks page
+                    context.push('/tasks');
                   },
                   child: const Text('Xem tất cả'),
                 ),
@@ -271,7 +332,16 @@ class _HomePageState extends State<HomePage> {
               separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final task = recentTasks[index];
-                return _buildTaskCard(task);
+                return TaskCard(
+                  task: task,
+                  onTap: () {
+                    context.pushNamed(
+                      'taskDetail',
+                      pathParameters: {'taskId': task.id},
+                      extra: task,
+                    );
+                  },
+                );
               },
             ),
           ],
@@ -307,13 +377,18 @@ class _HomePageState extends State<HomePage> {
         // Ask AI Button
         ElevatedButton.icon(
           onPressed: () {
-            // TODO: Implement AI chat functionality
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Tính năng AI đang được phát triển')),
-            );
+            context.push('/ai-chat');
           },
-          icon: const Icon(Icons.psychology),
-          label: const Text('Hỏi AI'),
+          icon: SvgPicture.asset(
+            'assets/icons/dolphin.svg',
+            width: 18,
+            height: 18,
+            colorFilter: ColorFilter.mode(
+              Theme.of(context).colorScheme.onSecondary,
+              BlendMode.srcIn,
+            ),
+          ),
+          label: const Text('BilyBily'),
           style: ElevatedButton.styleFrom(
             backgroundColor: Theme.of(context).colorScheme.secondary,
             foregroundColor: Theme.of(context).colorScheme.onSecondary,
@@ -375,7 +450,7 @@ class _HomePageState extends State<HomePage> {
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
         ),
       ),
       child: Column(
@@ -397,7 +472,9 @@ class _HomePageState extends State<HomePage> {
                   task.title,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
-                    decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                    decoration: task.isCompleted
+                        ? TextDecoration.lineThrough
+                        : null,
                   ),
                 ),
               ),
@@ -414,7 +491,7 @@ class _HomePageState extends State<HomePage> {
             Text(
               task.description!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -426,7 +503,7 @@ class _HomePageState extends State<HomePage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: categoryColor.withOpacity(0.1),
+                  color: categoryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -442,7 +519,9 @@ class _HomePageState extends State<HomePage> {
                 Text(
                   DateFormat('dd/MM/yyyy').format(task.dueDate!),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
             ],

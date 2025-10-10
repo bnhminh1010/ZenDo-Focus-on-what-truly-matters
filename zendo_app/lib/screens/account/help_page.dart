@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import '../../config/app_info.dart';
 
 class HelpPage extends StatelessWidget {
   const HelpPage({super.key});
@@ -71,7 +73,7 @@ class HelpPage extends StatelessWidget {
             _buildHelpTile(
               context,
               title: 'Email hỗ trợ',
-              subtitle: 'support@zendo.app',
+              subtitle: AppInfo.supportEmail,
               icon: Icons.email_outlined,
               onTap: () => _launchEmail(),
             ),
@@ -244,13 +246,13 @@ class HelpPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'ZenDo',
+                      AppInfo.appName,
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
-                      'Focus on what truly matters',
+                      AppInfo.tagline,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),
@@ -261,10 +263,22 @@ class HelpPage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          _buildInfoRow(context, 'Phiên bản', '1.0.0'),
-          _buildInfoRow(context, 'Bản dựng', '100'),
-          _buildInfoRow(context, 'Ngày phát hành', '2024-01-15'),
-          _buildInfoRow(context, 'Nhà phát triển', 'ZenDo Team'),
+          FutureBuilder<PackageInfo>(
+            future: PackageInfo.fromPlatform(),
+            builder: (context, snapshot) {
+              final version = snapshot.data?.version ?? '-';
+              final build = snapshot.data?.buildNumber ?? '-';
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoRow(context, 'Phiên bản', version),
+                  _buildInfoRow(context, 'Bản dựng', build),
+                  _buildInfoRow(context, 'Ngày phát hành', AppInfo.releaseDate),
+                  _buildInfoRow(context, 'Nhà phát triển', AppInfo.developer),
+                ],
+              );
+            },
+          ),
         ],
       ),
     );
@@ -485,7 +499,7 @@ class HelpPage extends StatelessWidget {
   Future<void> _launchEmail() async {
     final Uri emailUri = Uri(
       scheme: 'mailto',
-      path: 'support@zendo.app',
+      path: AppInfo.supportEmail,
       query: 'subject=ZenDo Support Request',
     );
 
@@ -495,7 +509,7 @@ class HelpPage extends StatelessWidget {
   }
 
   Future<void> _launchGitHub() async {
-    final Uri githubUri = Uri.parse('https://github.com/bnhminh1010/ZenDo-Focus-on-what-truly-matters.git');
+    final Uri githubUri = Uri.parse(AppInfo.githubUrl);
 
     if (await canLaunchUrl(githubUri)) {
       await launchUrl(githubUri, mode: LaunchMode.externalApplication);
@@ -503,8 +517,7 @@ class HelpPage extends StatelessWidget {
   }
 
   Future<void> _launchCommunity() async {
-    // TODO: Replace with actual community forum URL
-    final Uri communityUri = Uri.parse('https://community.zendo.app');
+    final Uri communityUri = Uri.parse(AppInfo.communityUrl);
 
     if (await canLaunchUrl(communityUri)) {
       await launchUrl(communityUri, mode: LaunchMode.externalApplication);
@@ -517,7 +530,7 @@ class HelpPage extends StatelessWidget {
   Future<void> _launchEmergencyContact() async {
     final Uri emailUri = Uri(
       scheme: 'mailto',
-      path: 'emergency@zendo.app',
+      path: AppInfo.emergencyEmail,
       query: 'subject=ZenDo Emergency Support',
     );
 

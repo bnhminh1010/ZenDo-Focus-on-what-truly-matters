@@ -16,7 +16,6 @@ class _TaskListPageState extends State<TaskListPage>
     with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   TaskCategory? _selectedCategory;
-  bool _showCompleted = true;
   late TabController _tabController;
 
   @override
@@ -87,13 +86,13 @@ class _TaskListPageState extends State<TaskListPage>
                   setState(() {
                     switch (index) {
                       case 0:
-                        _showCompleted = true;
+                        // Show all tasks
                         break;
                       case 1:
-                        _showCompleted = false;
+                        // Show pending tasks
                         break;
                       case 2:
-                        _showCompleted = true;
+                        // Show completed tasks
                         break;
                     }
                   });
@@ -264,9 +263,11 @@ class _TaskListPageState extends State<TaskListPage>
         .toList();
 
     if (incompleteTasks.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('All tasks are already completed')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('All tasks are already completed')),
+        );
+      }
       return;
     }
 
@@ -314,9 +315,11 @@ class _TaskListPageState extends State<TaskListPage>
         .toList();
 
     if (completedTasks.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No completed tasks to delete')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No completed tasks to delete')),
+        );
+      }
       return;
     }
 

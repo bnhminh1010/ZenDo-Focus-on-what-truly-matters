@@ -1,3 +1,10 @@
+plugins {
+    // Flutter Gradle plugin is already on the classpath via settings.gradle.kts
+    // Remove explicit version to avoid "plugin already on the classpath" error
+    id("dev.flutter.flutter-gradle-plugin") apply false
+    id("com.google.gms.google-services") version "4.4.0" apply false
+}
+
 allprojects {
     repositories {
         google()

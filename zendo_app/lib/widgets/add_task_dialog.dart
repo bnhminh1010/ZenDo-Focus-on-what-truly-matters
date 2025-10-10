@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../models/task.dart';
 import '../providers/task_model.dart';
 
 class AddTaskDialog extends StatefulWidget {
-  const AddTaskDialog({super.key});
+  final Task? editingTask;
+  
+  const AddTaskDialog({super.key, this.editingTask});
 
   @override
   State<AddTaskDialog> createState() => _AddTaskDialogState();
@@ -18,12 +22,37 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
   final _notesController = TextEditingController();
   final _estimatedMinutesController = TextEditingController();
   final _tagController = TextEditingController();
+  final ImagePicker _imagePicker = ImagePicker(); // Thêm ImagePicker
   
   TaskCategory _selectedCategory = TaskCategory.personal;
   TaskPriority _selectedPriority = TaskPriority.medium;
   DateTime? _selectedDueDate;
   List<String> _tags = [];
   bool _isLoading = false;
+  File? _selectedImage; // Thêm biến lưu ảnh đã chọn
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.editingTask != null) {
+      _initializeForEditing();
+    }
+  }
+
+  void _initializeForEditing() {
+    final task = widget.editingTask!;
+    _titleController.text = task.title;
+    _descriptionController.text = task.description ?? '';
+    _notesController.text = task.notes ?? '';
+    _estimatedMinutesController.text = task.estimatedMinutes.toString();
+    _selectedCategory = task.category;
+    _selectedPriority = task.priority;
+    _selectedDueDate = task.dueDate;
+    _tags = List.from(task.tags);
+    if (task.imageUrl != null && task.imageUrl!.isNotEmpty) {
+      _selectedImage = File(task.imageUrl!);
+    }
+  }
 
   @override
   void dispose() {
@@ -59,7 +88,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                 Row(
                   children: [
                     Text(
-                      'Tạo nhiệm vụ mới',
+                      widget.editingTask != null ? 'Chỉnh sửa nhiệm vụ' : 'Tạo nhiệm vụ mới',
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -128,6 +157,10 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                           _buildTagsSection(),
                           const SizedBox(height: 16),
                           
+                          // Image section - Thêm phần chọn ảnh
+                          _buildImageSection(),
+                          const SizedBox(height: 16),
+                          
                           // Notes field
                           _buildTextField(
                             controller: _notesController,
@@ -173,7 +206,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                                 width: 20,
                                 child: CircularProgressIndicator(strokeWidth: 2),
                               )
-                            : const Text('Tạo nhiệm vụ'),
+                            : Text(widget.editingTask != null ? 'Cập nhật' : 'Tạo nhiệm vụ'),
                       ),
                     ),
                   ],
@@ -212,13 +245,13 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
               ),
             ),
             focusedBorder: OutlineInputBorder(
@@ -250,13 +283,13 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<TaskCategory>(
-          value: _selectedCategory,
+          initialValue: _selectedCategory,
           isExpanded: true,
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
               ),
             ),
             contentPadding: const EdgeInsets.symmetric(
@@ -297,13 +330,13 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<TaskPriority>(
-          value: _selectedPriority,
+          initialValue: _selectedPriority,
           isExpanded: true,
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
               ),
             ),
             contentPadding: const EdgeInsets.symmetric(
@@ -365,7 +398,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               border: Border.all(
-                color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
               ),
               borderRadius: BorderRadius.circular(12),
             ),
@@ -374,7 +407,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                 Icon(
                   Icons.calendar_today,
                   size: 20,
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -385,7 +418,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: _selectedDueDate != null
                           ? Theme.of(context).colorScheme.onSurface
-                          : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                          : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                 ),
@@ -399,7 +432,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                     child: Icon(
                       Icons.clear,
                       size: 20,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
               ],
@@ -429,7 +462,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
               ),
             ),
             contentPadding: const EdgeInsets.symmetric(
@@ -465,7 +498,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
-                      color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                      color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
                     ),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
@@ -559,40 +592,74 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     });
 
     try {
-      final task = Task(
-        id: const Uuid().v4(),
-        title: _titleController.text.trim(),
-        description: _descriptionController.text.trim().isEmpty 
-            ? null 
-            : _descriptionController.text.trim(),
-        category: _selectedCategory,
-        priority: _selectedPriority,
-        createdAt: DateTime.now(),
-        dueDate: _selectedDueDate,
-        tags: _tags,
-        notes: _notesController.text.trim().isEmpty 
-            ? null 
-            : _notesController.text.trim(),
-        estimatedMinutes: int.tryParse(_estimatedMinutesController.text) ?? 0,
-      );
-
       final taskModel = context.read<TaskModel>();
-      await taskModel.addTask(task);
-
-      if (mounted) {
-        Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Đã tạo nhiệm vụ "${task.title}" thành công!'),
-            backgroundColor: Colors.green,
-          ),
+      
+      if (widget.editingTask != null) {
+        // Cập nhật task hiện có
+        final updatedTask = widget.editingTask!.copyWith(
+          title: _titleController.text.trim(),
+          description: _descriptionController.text.trim().isEmpty 
+              ? null 
+              : _descriptionController.text.trim(),
+          category: _selectedCategory,
+          priority: _selectedPriority,
+          dueDate: _selectedDueDate,
+          tags: _tags,
+          notes: _notesController.text.trim().isEmpty 
+              ? null 
+              : _notesController.text.trim(),
+          estimatedMinutes: int.tryParse(_estimatedMinutesController.text) ?? 0,
+          imageUrl: _selectedImage?.path,
         );
+        
+        await taskModel.updateTask(updatedTask);
+        
+        if (mounted) {
+          Navigator.of(context).pop(updatedTask);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Đã cập nhật nhiệm vụ "${updatedTask.title}" thành công!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        // Tạo task mới
+        final task = Task(
+          id: const Uuid().v4(),
+          title: _titleController.text.trim(),
+          description: _descriptionController.text.trim().isEmpty 
+              ? null 
+              : _descriptionController.text.trim(),
+          category: _selectedCategory,
+          priority: _selectedPriority,
+          createdAt: DateTime.now(),
+          dueDate: _selectedDueDate,
+          tags: _tags,
+          notes: _notesController.text.trim().isEmpty 
+              ? null 
+              : _notesController.text.trim(),
+          estimatedMinutes: int.tryParse(_estimatedMinutesController.text) ?? 0,
+          imageUrl: _selectedImage?.path,
+        );
+
+        await taskModel.addTask(task);
+
+        if (mounted) {
+          Navigator.of(context).pop();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Đã tạo nhiệm vụ "${task.title}" thành công!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Lỗi khi tạo nhiệm vụ: $e'),
+            content: Text('Lỗi khi ${widget.editingTask != null ? "cập nhật" : "tạo"} nhiệm vụ: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -602,6 +669,148 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
         setState(() {
           _isLoading = false;
         });
+      }
+    }
+  }
+
+  /// Widget để chọn/chụp ảnh
+  Widget _buildImageSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Hình ảnh',
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        
+        // Hiển thị ảnh đã chọn hoặc nút chọn ảnh
+        if (_selectedImage != null)
+          Container(
+            width: double.infinity,
+            height: 200,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.file(
+                    _selectedImage!,
+                    width: double.infinity,
+                    height: 200,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _selectedImage = null;
+                      });
+                    },
+                    icon: const Icon(Icons.close),
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.black54,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          Container(
+            width: double.infinity,
+            height: 120,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.image,
+                  size: 48,
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Thêm hình ảnh',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () => _pickImage(ImageSource.camera),
+                      icon: const Icon(Icons.camera_alt),
+                      label: const Text('Chụp ảnh'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    ElevatedButton.icon(
+                      onPressed: () => _pickImage(ImageSource.gallery),
+                      icon: const Icon(Icons.photo_library),
+                      label: const Text('Chọn ảnh'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// Chọn ảnh từ camera hoặc gallery
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _selectedImage = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi chọn ảnh: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }

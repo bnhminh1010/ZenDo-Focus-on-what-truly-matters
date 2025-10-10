@@ -63,7 +63,7 @@ class _CalendarPageState extends State<CalendarPage> {
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
+                  border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)),
                 ),
                 child: TableCalendar<Task>(
                   firstDay: DateTime.utc(2020, 1, 1),
@@ -89,7 +89,7 @@ class _CalendarPageState extends State<CalendarPage> {
                       shape: BoxShape.circle,
                     ),
                     todayDecoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                       shape: BoxShape.circle,
                     ),
                     markerDecoration: BoxDecoration(
@@ -119,12 +119,12 @@ class _CalendarPageState extends State<CalendarPage> {
                   daysOfWeekStyle: DaysOfWeekStyle(
                     weekdayStyle: TextStyle(
                       fontSize: 12,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                       fontWeight: FontWeight.w500,
                     ),
                     weekendStyle: TextStyle(
                       fontSize: 12,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -176,13 +176,13 @@ class _CalendarPageState extends State<CalendarPage> {
                                         Icon(
                                           Icons.event_available,
                                           size: 64,
-                                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
                                         ),
                                         const SizedBox(height: 16),
                                         Text(
                                           'Không có nhiệm vụ nào trong ngày này',
                                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                           ),
                                         ),
                                       ],
@@ -198,7 +198,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                         decoration: BoxDecoration(
                                           color: Theme.of(context).colorScheme.surfaceContainer,
                                           borderRadius: BorderRadius.circular(12),
-                                          border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.2)),
+                                          border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)),
                                         ),
                                         child: Row(
                                           children: [
@@ -217,7 +217,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                                   border: Border.all(
                                                     color: task.isCompleted 
                                                         ? Theme.of(context).colorScheme.primary 
-                                                        : Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                                                        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
                                                     width: 2,
                                                   ),
                                                   color: task.isCompleted 
@@ -242,8 +242,8 @@ class _CalendarPageState extends State<CalendarPage> {
                                                     task.title,
                                                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                                       color: task.isCompleted
-                                                          ? Theme.of(context).colorScheme.onSurface.withOpacity(0.5)
-                                                          : Theme.of(context).colorScheme.onSurface,
+                                                      ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)
+                                                      : Theme.of(context).colorScheme.onSurface,
                                                       decoration: task.isCompleted
                                                           ? TextDecoration.lineThrough
                                                           : null,
@@ -254,7 +254,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                                     Text(
                                                       task.description!,
                                                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                                       ),
                                                     ),
                                                   ],
@@ -320,7 +320,7 @@ class _CalendarPageState extends State<CalendarPage> {
       case TaskCategory.social:
         return const Color(0xFFE91E63);
       case TaskCategory.other:
-        return colorScheme.onSurface.withOpacity(0.6);
+        return colorScheme.onSurface.withValues(alpha: 0.6);
     }
   }
 }

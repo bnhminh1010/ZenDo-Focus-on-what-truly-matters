@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:go_router/go_router.dart';
 import '../../providers/auth_model.dart';
 import '../../providers/theme_provider.dart';
 // ignore: unused_import
@@ -101,6 +102,14 @@ class AccountPage extends StatelessWidget {
                           builder: (context) => const NotificationsPage(),
                         ),
                       );
+                    },
+                  ),
+                  _buildMenuItem(
+                    context: context,
+                    icon: Icons.category_outlined,
+                    title: 'Quản lý danh mục',
+                    onTap: () {
+                      context.pushNamed('categoryManagement');
                     },
                   ),
                   _buildMenuItemWithSwitch(
@@ -309,15 +318,21 @@ class AccountPage extends StatelessWidget {
     
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (context) {
         return AlertDialog(
-          backgroundColor: colorScheme.surface,
           title: Row(
             children: [
-              Icon(
-                Icons.info_outline,
-                color: colorScheme.primary,
-                size: 28,
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.info_outline,
+                  color: colorScheme.primary,
+                  size: 24,
+                ),
               ),
               const SizedBox(width: 12),
               Text(
@@ -326,68 +341,213 @@ class AccountPage extends StatelessWidget {
               ),
             ],
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'ZenDo - Focus on what truly matters',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.primary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Phiên bản: 1.0.0',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'ZenDo là nền tảng quản lý cuộc sống thông minh, giúp bạn tập trung vào những việc quan trọng nhất bằng cách kết hợp AI để nhập liệu tự nhiên, sắp xếp ưu tiên và phân tích thói quen.',
-                style: theme.textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 16),
-              InkWell(
-                onTap: () => _launchGitHub(),
-                child: Container(
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // App version and build info
+                Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: colorScheme.surfaceContainer,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: colorScheme.outline.withOpacity(0.3),
-                    ),
                   ),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.code,
-                        color: colorScheme.primary,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Xem mã nguồn trên GitHub',
-                          style: theme.textTheme.bodyMedium?.copyWith(
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.apps,
                             color: colorScheme.primary,
-                            fontWeight: FontWeight.w500,
+                            size: 20,
                           ),
-                        ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'ZenDo v1.0.0',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
-                      Icon(
-                        Icons.open_in_new,
-                        color: colorScheme.onSurfaceVariant,
-                        size: 16,
+                      const SizedBox(height: 8),
+                      Text(
+                        'Build: Flutter 3.9.2 • Dart SDK',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ),
-            ],
+                
+                const SizedBox(height: 16),
+                
+                // App description
+                Text(
+                  'ZenDo là ứng dụng quản lý công việc và tập trung được xây dựng với Flutter, giúp người dùng tối ưu hóa năng suất và tập trung vào những việc thực sự quan trọng. Ứng dụng kết hợp quản lý task thông minh với kỹ thuật Pomodoro và AI Assistant.',
+                  style: theme.textTheme.bodyMedium,
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Key features
+                Text(
+                  'Tính năng chính:',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _buildFeatureItem(context, '🎯', 'Quản lý Task thông minh với ưu tiên và danh mục'),
+                _buildFeatureItem(context, '⏰', 'Focus Sessions với kỹ thuật Pomodoro'),
+                _buildFeatureItem(context, '📅', 'Lịch và theo dõi deadline'),
+                _buildFeatureItem(context, '🤖', 'AI Assistant tích hợp Google Generative AI'),
+                _buildFeatureItem(context, '📊', 'Thống kê và phân tích năng suất'),
+                
+                const SizedBox(height: 16),
+                
+                // Technology stack
+                Text(
+                  'Công nghệ sử dụng:',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    _buildTechChip(context, 'Flutter', Colors.blue),
+                    _buildTechChip(context, 'Dart', Colors.blue.shade700),
+                    _buildTechChip(context, 'Supabase', Colors.green),
+                    _buildTechChip(context, 'PostgreSQL', Colors.blue.shade800),
+                    _buildTechChip(context, 'Material 3', Colors.purple),
+                  ],
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Development team
+                Text(
+                  'Đội ngũ phát triển:',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _buildTeamMember(context, '🚀', 'Nguyễn Bình Minh', 'Project Manager & Lead Developer'),
+                _buildTeamMember(context, '💻', 'Lại Vũ Hoàng Minh', 'Frontend Developer & UI/UX Specialist'),
+                _buildTeamMember(context, '🔧', 'Nguyễn Hoàng Anh Khoa', 'Full-Stack Developer & DevOps'),
+                
+                const SizedBox(height: 16),
+                
+                // Contact info
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainer,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Liên hệ & Hỗ trợ:',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.email_outlined,
+                            size: 16,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'pata10102004@gmail.com',
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.phone_outlined,
+                            size: 16,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '0372064929',
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // GitHub link
+                InkWell(
+                  onTap: () => _launchGitHub(),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainer,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: colorScheme.outline.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.code,
+                          color: colorScheme.primary,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Xem mã nguồn trên GitHub',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.primary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        Icon(
+                          Icons.open_in_new,
+                          color: colorScheme.onSurfaceVariant,
+                          size: 16,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // License and copyright
+                Text(
+                  '© 2024 ZenDo Team. Phân phối dưới giấy phép MIT.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -404,6 +564,82 @@ class AccountPage extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildFeatureItem(BuildContext context, String emoji, String text) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 14)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: theme.textTheme.bodySmall,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTechChip(BuildContext context, String label, Color color) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: color.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        label,
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: color,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTeamMember(BuildContext context, String emoji, String name, String role) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 14)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  role,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
