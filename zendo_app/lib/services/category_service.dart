@@ -1,11 +1,15 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/category.dart';
 
-/// Service quản lý Categories với Supabase
+/// CategoryService Class
+/// Tác dụng: Service quản lý Categories với Supabase database
+/// Sử dụng khi: Cần thao tác CRUD với categories và phân loại tasks
 class CategoryService {
   final SupabaseClient _supabase = Supabase.instance.client;
 
-  /// Lấy tất cả categories của user hiện tại
+  /// getUserCategories Method
+  /// Tác dụng: Lấy tất cả categories của user hiện tại (không bao gồm archived)
+  /// Sử dụng khi: Cần hiển thị danh sách categories cho user chọn lựa
   Future<List<Category>> getUserCategories() async {
     try {
       final user = _supabase.auth.currentUser;
@@ -20,15 +24,15 @@ class CategoryService {
           .eq('is_archived', false)
           .order('sort_order', ascending: true);
 
-      return (response as List)
-          .map((json) => Category.fromJson(json))
-          .toList();
+      return (response as List).map((json) => Category.fromJson(json)).toList();
     } catch (e) {
       throw Exception('Failed to fetch categories: $e');
     }
   }
 
-  /// Tạo category mới
+  /// createCategory Method
+  /// Tác dụng: Tạo category mới với thông tin đầy đủ
+  /// Sử dụng khi: User muốn tạo category mới để phân loại tasks
   Future<Category> createCategory({
     required String name,
     String? description,
@@ -52,8 +56,8 @@ class CategoryService {
             .order('sort_order', ascending: false)
             .limit(1);
 
-        sortOrder = maxOrderResponse.isNotEmpty 
-            ? (maxOrderResponse.first['sort_order'] as int) + 1 
+        sortOrder = maxOrderResponse.isNotEmpty
+            ? (maxOrderResponse.first['sort_order'] as int) + 1
             : 1;
       }
 
@@ -81,7 +85,8 @@ class CategoryService {
   }
 
   /// Cập nhật category
-  Future<Category> updateCategory(String categoryId, {
+  Future<Category> updateCategory(
+    String categoryId, {
     String? name,
     String? description,
     String? icon,
@@ -139,7 +144,9 @@ class CategoryService {
           .count();
 
       if (tasksCount.count > 0) {
-        throw Exception('Cannot delete category with existing tasks. Please move or delete tasks first.');
+        throw Exception(
+          'Cannot delete category with existing tasks. Please move or delete tasks first.',
+        );
       }
 
       // Soft delete - archive category
@@ -176,19 +183,16 @@ class CategoryService {
       }
 
       // Tạo default categories
-      final categoriesData = DefaultCategories.defaults.map((category) => {
-        ...category,
-        'user_id': user.id,
-      }).toList();
+      final categoriesData = DefaultCategories.defaults
+          .map((category) => {...category, 'user_id': user.id})
+          .toList();
 
       final response = await _supabase
           .from('categories')
           .insert(categoriesData)
           .select();
 
-      return (response as List)
-          .map((json) => Category.fromJson(json))
-          .toList();
+      return (response as List).map((json) => Category.fromJson(json)).toList();
     } catch (e) {
       throw Exception('Failed to create default categories: $e');
     }
@@ -261,3 +265,4 @@ class CategoryService {
     }
   }
 }
+

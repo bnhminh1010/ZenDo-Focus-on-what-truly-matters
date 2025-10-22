@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'glass_container.dart';
 import '../models/task.dart';
 import '../providers/task_model.dart';
+import '../theme.dart';
+
+/// TaskCard Widget
+/// Tác dụng: Widget hiển thị thông tin task dưới dạng card với glass effect
+/// Sử dụng khi: Cần hiển thị task trong danh sách với UI đẹp và tương tác
 
 class TaskCard extends StatelessWidget {
   final Task task;
@@ -14,181 +20,197 @@ class TaskCard extends StatelessWidget {
     final theme = Theme.of(context);
     final taskModel = Provider.of<TaskModel>(context, listen: false);
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      elevation: 2,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        splashColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-        highlightColor: theme.colorScheme.primary.withValues(alpha: 0.05),
-        child: Container(
-          decoration: BoxDecoration(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: GlassContainer(
+        borderRadius: 12,
+        padding: EdgeInsets.zero,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: theme.colorScheme.outline.withValues(alpha: 0.2),
-              width: 1,
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header với checkbox và priority
-                Row(
-                  children: [
-                    // Checkbox để đánh dấu hoàn thành
-                    Checkbox(
-                      value: task.isCompleted,
-                      onChanged: (value) {
-                        taskModel.toggleTaskCompletion(task.id);
-                      },
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
+            splashColor: theme.colorScheme.primary.withOpacity(0.1),
+            highlightColor: theme.colorScheme.primary.withOpacity(0.05),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header với checkbox và priority
+                  Row(
+                    children: [
+                      // Checkbox để đánh dấu hoàn thành
+                      Checkbox(
+                        value: task.isCompleted,
+                        onChanged: (value) {
+                          taskModel.toggleTaskCompletion(task.id);
+                        },
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
+                      const SizedBox(width: 8),
 
-                    // Title
-                    Expanded(
-                      child: Text(
-                        task.title,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          decoration: task.isCompleted
-                              ? TextDecoration.lineThrough
-                              : null,
-                          color: task.isCompleted
-                              ? theme.colorScheme.onSurface.withValues(alpha: 0.6)
-                              : null,
+                      // Title
+                      Expanded(
+                        child: Text(
+                          task.title,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            decoration: task.isCompleted
+                                ? TextDecoration.lineThrough
+                                : null,
+                            color: task.isCompleted
+                                ? theme.colorScheme.onSurface.withValues(
+                                    alpha: 0.6,
+                                  )
+                                : null,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
 
-                    // Priority indicator
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _getPriorityColor(task.priority).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: _getPriorityColor(task.priority),
-                          width: 1,
+                      // Priority indicator
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _getPriorityColor(
+                            context,
+                            task.priority,
+                          ).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: _getPriorityColor(context, task.priority),
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          task.priority.displayName,
+                          style: TextStyle(
+                            color: _getPriorityColor(context, task.priority),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
-                      child: Text(
-                        task.priority.displayName,
-                        style: TextStyle(
-                          color: _getPriorityColor(task.priority),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                    ],
+                  ),
+
+                  // Description (nếu có)
+                  if (task.description != null &&
+                      task.description!.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      task.description!,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.7,
                         ),
+                        decoration: task.isCompleted
+                            ? TextDecoration.lineThrough
+                            : null,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
-                ),
 
-                // Description (nếu có)
-                if (task.description != null && task.description!.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    task.description!,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                      decoration: task.isCompleted
-                          ? TextDecoration.lineThrough
-                          : null,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-
-                // Category và metadata
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    // Category chip
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            _getCategoryIcon(task.category),
-                            size: 14,
-                            color: _getCategoryColor(task.category),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            task.category.displayName,
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: _getCategoryColor(task.category),
-                              fontWeight: FontWeight.w500,
+                  // Category và metadata
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      // Category chip
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _getCategoryIcon(task.category),
+                              size: 14,
+                              color: _getCategoryColor(context, task.category),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 4),
+                            Text(
+                              task.category.displayName,
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: _getCategoryColor(
+                                  context,
+                                  task.category,
+                                ),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
 
-                    const Spacer(),
+                      const Spacer(),
 
-                    // Due date và estimated time
-                    Row(
-                      children: [
-                        // Due date (nếu có)
-                        if (task.dueDate != null) ...[
-                          Icon(
-                            Icons.schedule,
-                            size: 14,
-                            color: task.isOverdue
-                                ? theme.colorScheme.error
-                                : theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            _formatDueDate(task.dueDate!),
-                            style: theme.textTheme.labelSmall?.copyWith(
+                      // Due date và estimated time
+                      Row(
+                        children: [
+                          // Due date (nếu có)
+                          if (task.dueDate != null) ...[
+                            Icon(
+                              Icons.schedule,
+                              size: 14,
                               color: task.isOverdue
                                   ? theme.colorScheme.error
-                                  : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                                  : theme.colorScheme.onSurface.withValues(
+                                      alpha: 0.6,
+                                    ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 4),
+                            Text(
+                              _formatDueDate(task.dueDate!),
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: task.isOverdue
+                                    ? theme.colorScheme.error
+                                    : theme.colorScheme.onSurface.withValues(
+                                        alpha: 0.6,
+                                      ),
+                              ),
+                            ),
+                          ],
 
-                        // Estimated time (nếu có)
-                        if (task.estimatedMinutes > 0) ...[
-                          if (task.dueDate != null) const SizedBox(width: 12),
-                          Icon(
-                            Icons.timer_outlined,
-                            size: 14,
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${task.estimatedMinutes}m',
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                          // Estimated time (nếu có)
+                          if (task.estimatedMinutes > 0) ...[
+                            if (task.dueDate != null) const SizedBox(width: 12),
+                            Icon(
+                              Icons.timer_outlined,
+                              size: 14,
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.6,
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${task.estimatedMinutes}m',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.6,
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
-                      ],
-                    ),
-                  ],
-                ),
-              ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -196,35 +218,35 @@ class TaskCard extends StatelessWidget {
     );
   }
 
-  Color _getPriorityColor(TaskPriority priority) {
+  Color _getPriorityColor(BuildContext context, TaskPriority priority) {
     switch (priority) {
       case TaskPriority.low:
-        return Colors.green;
+        return context.successColor;
       case TaskPriority.medium:
-        return Colors.orange;
+        return context.warningColor;
       case TaskPriority.high:
-        return Colors.red;
+        return context.errorColor;
       case TaskPriority.urgent:
-        return Colors.purple;
+        return Theme.of(context).colorScheme.error;
     }
   }
 
-  Color _getCategoryColor(TaskCategory category) {
+  Color _getCategoryColor(BuildContext context, TaskCategory category) {
     switch (category) {
       case TaskCategory.work:
-        return Colors.blue;
+        return context.workColor;
       case TaskCategory.personal:
-        return Colors.green;
+        return context.personalColor;
       case TaskCategory.learning:
-        return Colors.purple;
+        return Theme.of(context).colorScheme.secondary;
       case TaskCategory.health:
-        return Colors.red;
+        return context.healthColor;
       case TaskCategory.finance:
-        return Colors.orange;
+        return context.warningColor;
       case TaskCategory.social:
-        return Colors.pink;
+        return Theme.of(context).colorScheme.tertiary;
       case TaskCategory.other:
-        return Colors.grey;
+        return context.grey500;
     }
   }
 
@@ -255,17 +277,18 @@ class TaskCard extends StatelessWidget {
     final difference = taskDate.difference(today).inDays;
 
     if (difference == 0) {
-      return 'Today';
+      return 'Hôm nay';
     } else if (difference == 1) {
-      return 'Tomorrow';
+      return 'Ngày mai';
     } else if (difference == -1) {
-      return 'Yesterday';
+      return 'Hôm qua';
     } else if (difference > 1 && difference <= 7) {
-      return '${difference}d left';
+      return 'Còn $difference ngày';
     } else if (difference < -1 && difference >= -7) {
-      return '${difference.abs()}d ago';
+      return '${difference.abs()} ngày trước';
     } else {
       return '${dueDate.day}/${dueDate.month}';
     }
   }
 }
+

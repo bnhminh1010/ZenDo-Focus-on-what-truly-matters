@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import '../providers/google_signin_provider.dart';
+import '../providers/auth_model.dart';
+import '../widgets/loading_state_widget.dart';
+import '../theme.dart'; // Import theme để sử dụng AppColors extension
 
 /// Custom Google Sign-In Button với Material 3 design
 /// Tự động xử lý loading state và error handling
@@ -31,23 +33,24 @@ class GoogleSignInButton extends StatelessWidget {
           width: width ?? double.infinity,
           height: height ?? 56,
           child: ElevatedButton(
-            onPressed: provider.isLoading ? null : () => _handleSignIn(context, provider),
+            onPressed: provider.isLoading
+                ? null
+                : () => _handleSignIn(context, provider),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black87,
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              foregroundColor: Theme.of(context).colorScheme.onSurface,
               elevation: 2,
-              shadowColor: Colors.black26,
+              shadowColor: Theme.of(
+                context,
+              ).colorScheme.shadow.withOpacity(0.26),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: BorderSide(
-                  color: Colors.grey.shade300,
-                  width: 1,
-                ),
+                side: BorderSide(color: context.grey300, width: 1),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
             child: provider.isLoading
-                ? _buildLoadingContent()
+                ? LoadingStateWidget(size: 24)
                 : _buildButtonContent(context),
           ),
         );
@@ -56,31 +59,31 @@ class GoogleSignInButton extends StatelessWidget {
   }
 
   /// Xử lý sự kiện đăng nhập
-  Future<void> _handleSignIn(BuildContext context, GoogleSignInProvider provider) async {
-    // Kiểm tra platform support
-    if (defaultTargetPlatform == TargetPlatform.windows ||
-        defaultTargetPlatform == TargetPlatform.linux) {
+  Future<void> _handleSignIn(
+    BuildContext context,
+    GoogleSignInProvider provider,
+  ) async {
+    final success = await provider.signInWithGoogle();
+
+    if (success) {
+      // Cập nhật AuthModel để GoRouter có thể redirect
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Google Sign-In không được hỗ trợ trên Windows/Linux. Vui lòng sử dụng GitHub Sign-In.'),
-            backgroundColor: Colors.orange,
-            behavior: SnackBarBehavior.floating,
-          ),
+        final authModel = Provider.of<AuthModel>(context, listen: false);
+        authModel.updateFromGoogleAuth(
+          true,
+          provider.email,
+          provider.displayName,
         );
       }
-      return;
-    }
 
-    final success = await provider.signInWithGoogle();
-    
-    if (success) {
       onSignInSuccess?.call();
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Đăng nhập thành công! Chào mừng ${provider.displayName}'),
-            backgroundColor: Colors.green,
+            content: Text(
+              'Đăng nhập thành công! Chào mừng ${provider.displayName}',
+            ),
+            backgroundColor: context.successColor,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -91,7 +94,7 @@ class GoogleSignInButton extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(provider.errorMessage!),
-            backgroundColor: Colors.red,
+            backgroundColor: context.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -100,149 +103,55 @@ class GoogleSignInButton extends StatelessWidget {
   }
 
   /// Build loading content
-  Widget _buildLoadingContent() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.grey.shade600),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Text(
-          'Đang đăng nhập...',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey.shade600,
-          ),
-        ),
-      ],
-    );
-  }
 
   /// Build button content
   Widget _buildButtonContent(BuildContext context) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (showIcon) ...[
-          _buildGoogleIcon(),
-          const SizedBox(width: 12),
-        ],
+        if (showIcon) ...[_buildGoogleIcon(context), const SizedBox(width: 12)],
         Flexible(
           child: Text(
             customText ?? 'Đăng nhập bằng Google',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
-              color: Colors.black87,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
             overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
           ),
         ),
       ],
     );
   }
 
-  /// Build Google icon (SVG-like design)
-  Widget _buildGoogleIcon() {
-    return Container(
+  /// Build Google icon (sử dụng ảnh PNG)
+  Widget _buildGoogleIcon(BuildContext context) {
+    return SizedBox(
       width: 24,
       height: 24,
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle,
-      ),
-      child: CustomPaint(
-        painter: GoogleIconPainter(),
+      child: Image.asset(
+        'assets/icons/google.png',
+        width: 24,
+        height: 24,
+        fit: BoxFit.contain,
       ),
     );
   }
 }
 
-/// Custom painter để vẽ Google icon
+/// Custom painter để vẽ Google icon - DEPRECATED, sử dụng PNG thay thế
 class GoogleIconPainter extends CustomPainter {
+  final Color centerColor;
+  final Color strokeColor;
+
+  GoogleIconPainter({required this.centerColor, required this.strokeColor});
+
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..style = PaintingStyle.fill;
-    
-    // Google "G" colors
-    const blueColor = Color(0xFF4285F4);
-    const redColor = Color(0xFFEA4335);
-    const yellowColor = Color(0xFFFBBC05);
-    const greenColor = Color(0xFF34A853);
-    
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2;
-    
-    // Draw blue arc (top-right)
-    paint.color = blueColor;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -1.57, // -90 degrees
-      1.57,  // 90 degrees
-      true,
-      paint,
-    );
-    
-    // Draw red arc (top-left)
-    paint.color = redColor;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -3.14, // -180 degrees
-      1.57,  // 90 degrees
-      true,
-      paint,
-    );
-    
-    // Draw yellow arc (bottom-left)
-    paint.color = yellowColor;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -1.57, // -90 degrees
-      -1.57, // -90 degrees
-      true,
-      paint,
-    );
-    
-    // Draw green arc (bottom-right)
-    paint.color = greenColor;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      0,     // 0 degrees
-      1.57,  // 90 degrees
-      true,
-      paint,
-    );
-    
-    // Draw white center circle
-    paint.color = Colors.white;
-    canvas.drawCircle(center, radius * 0.4, paint);
-    
-    // Draw "G" shape
-    paint.color = Colors.grey.shade700;
-    paint.strokeWidth = 1.5;
-    paint.style = PaintingStyle.stroke;
-    
-    final path = Path();
-    path.addArc(
-      Rect.fromCircle(center: center, radius: radius * 0.3),
-      -1.57, // Start from top
-      3.14,  // Half circle
-    );
-    
-    canvas.drawPath(path, paint);
-    
-    // Draw horizontal line for "G"
-    canvas.drawLine(
-      Offset(center.dx, center.dy - radius * 0.1),
-      Offset(center.dx + radius * 0.25, center.dy - radius * 0.1),
-      paint,
-    );
+    // Deprecated - sử dụng PNG thay thế
   }
 
   @override
@@ -270,34 +179,32 @@ class GoogleSignInIconButton extends StatelessWidget {
           width: size,
           height: size,
           child: ElevatedButton(
-            onPressed: provider.isLoading ? null : () => _handleSignIn(context, provider),
+            onPressed: provider.isLoading
+                ? null
+                : () => _handleSignIn(context, provider),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
+              backgroundColor: Theme.of(context).colorScheme.surface,
               elevation: 2,
-              shadowColor: Colors.black26,
+              shadowColor: Theme.of(
+                context,
+              ).colorScheme.shadow.withOpacity(0.26),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(size / 4),
-                side: BorderSide(
-                  color: Colors.grey.shade300,
-                  width: 1,
-                ),
+                side: BorderSide(color: context.grey300, width: 1),
               ),
               padding: EdgeInsets.zero,
             ),
             child: provider.isLoading
-                ? SizedBox(
-                    width: size * 0.4,
-                    height: size * 0.4,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.grey.shade600),
-                    ),
-                  )
-                : Container(
+                ? LoadingStateWidget(size: size * 0.4)
+                : SizedBox(
                     width: size * 0.5,
                     height: size * 0.5,
-                    decoration: const BoxDecoration(shape: BoxShape.circle),
-                    child: CustomPaint(painter: GoogleIconPainter()),
+                    child: Image.asset(
+                      'assets/icons/google.png',
+                      width: size * 0.5,
+                      height: size * 0.5,
+                      fit: BoxFit.contain,
+                    ),
                   ),
           ),
         );
@@ -305,10 +212,23 @@ class GoogleSignInIconButton extends StatelessWidget {
     );
   }
 
-  Future<void> _handleSignIn(BuildContext context, GoogleSignInProvider provider) async {
+  Future<void> _handleSignIn(
+    BuildContext context,
+    GoogleSignInProvider provider,
+  ) async {
     final success = await provider.signInWithGoogle();
-    
+
     if (success) {
+      // Cập nhật AuthModel để GoRouter có thể redirect
+      if (context.mounted) {
+        final authModel = Provider.of<AuthModel>(context, listen: false);
+        authModel.updateFromGoogleAuth(
+          true,
+          provider.email,
+          provider.displayName,
+        );
+      }
+
       onSignInSuccess?.call();
     } else {
       onSignInError?.call();
@@ -316,7 +236,7 @@ class GoogleSignInIconButton extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(provider.errorMessage!),
-            backgroundColor: Colors.red,
+            backgroundColor: context.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -324,3 +244,4 @@ class GoogleSignInIconButton extends StatelessWidget {
     }
   }
 }
+

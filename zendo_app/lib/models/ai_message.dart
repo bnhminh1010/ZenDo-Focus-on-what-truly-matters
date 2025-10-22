@@ -1,19 +1,10 @@
 import 'package:equatable/equatable.dart';
 
 /// Enum cho loại tin nhắn AI
-enum MessageType {
-  user,
-  ai,
-  system,
-}
+enum MessageType { user, ai, system }
 
 /// Enum cho trạng thái tin nhắn
-enum MessageStatus {
-  sending,
-  sent,
-  delivered,
-  error,
-}
+enum MessageStatus { sending, sent, delivered, error }
 
 /// Model cho tin nhắn chat với AI
 class AIMessage extends Equatable {
@@ -244,18 +235,19 @@ class AIMessage extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        content,
-        type,
-        status,
-        timestamp,
-        userId,
-        metadata,
-        errorMessage,
-      ];
+    id,
+    content,
+    type,
+    status,
+    timestamp,
+    userId,
+    metadata,
+    errorMessage,
+  ];
 
   @override
   String toString() {
     return 'AIMessage(id: $id, type: $type, status: $status, content: ${content.length > 50 ? '${content.substring(0, 50)}...' : content})';
   }
 }
+

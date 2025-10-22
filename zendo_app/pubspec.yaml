@@ -50,13 +50,14 @@ dependencies:
   table_calendar: ^3.1.2
   
   # Supabase Backend
-  supabase_flutter: ^2.10.2
+  supabase_flutter: ^2.6.0
   
   # AI Integration
   google_generative_ai: ^0.4.6
   
   # Authentication
-  google_sign_in: ^6.2.0
+  google_sign_in: ^6.2.1
+  flutter_web_auth_2: ^4.0.1
   oauth2: ^2.0.2
   
   # Environment Variables
@@ -78,8 +79,34 @@ dependencies:
   # File Picker
   file_picker: ^8.0.0+1
   
+  # Path utilities
+  path_provider: ^2.1.4
+  path: ^1.9.0
+  
   # Icons
   flutter_launcher_icons: ^0.13.1
+
+# Flutter Launcher Icons configuration
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/LogoLightMode.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  web:
+    generate: true
+    image_path: "assets/icons/LogoLightMode.png"
+    background_color: "#ffffff"
+    theme_color: "#6366f1"
+  windows:
+    generate: true
+    image_path: "assets/icons/LogoLightMode.png"
+    icon_size: 48 # min:48, max:256, default: 48
+  macos:
+    generate: true
+    image_path: "assets/icons/LogoLightMode.png"
+  # Adaptive icons for Android (auto-switches based on system theme)
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/icons/LogoDarkMode.png"
 
 dev_dependencies:
   flutter_test:

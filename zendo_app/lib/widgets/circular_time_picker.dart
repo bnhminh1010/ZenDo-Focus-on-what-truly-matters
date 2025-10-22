@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import '../theme.dart';
 
-/// Circular Time Picker Widget
-/// Cho phép chọn thời gian từ 5 phút đến 3 giờ với giao diện vòng tròn như đồng hồ báo thức
 class CircularTimePicker extends StatefulWidget {
   final Duration initialDuration;
+  final ValueChanged<Duration> onDurationChanged;
   final Duration minDuration;
   final Duration maxDuration;
-  final ValueChanged<Duration> onDurationChanged;
-  final Color primaryColor;
-  final Color backgroundColor;
+  final Color? primaryColor;
+  final Color? backgroundColor;
   final double size;
 
   const CircularTimePicker({
@@ -18,8 +17,8 @@ class CircularTimePicker extends StatefulWidget {
     required this.onDurationChanged,
     this.minDuration = const Duration(minutes: 5),
     this.maxDuration = const Duration(hours: 3),
-    this.primaryColor = Colors.blue,
-    this.backgroundColor = Colors.grey,
+    this.primaryColor,
+    this.backgroundColor,
     this.size = 280.0,
   });
 
@@ -42,7 +41,7 @@ class _CircularTimePickerState extends State<CircularTimePicker> {
     final totalMinutes = _currentDuration.inMinutes;
     final minMinutes = widget.minDuration.inMinutes;
     final maxMinutes = widget.maxDuration.inMinutes;
-    
+
     // Chuyển đổi từ minutes sang angle (0 - 2π)
     final progress = (totalMinutes - minMinutes) / (maxMinutes - minMinutes);
     _angle = progress * 2 * math.pi;
@@ -51,15 +50,16 @@ class _CircularTimePickerState extends State<CircularTimePicker> {
   void _updateDurationFromAngle() {
     final minMinutes = widget.minDuration.inMinutes;
     final maxMinutes = widget.maxDuration.inMinutes;
-    
+
     // Chuyển đổi từ angle sang minutes
     final progress = _angle / (2 * math.pi);
-    final totalMinutes = (minMinutes + progress * (maxMinutes - minMinutes)).round();
-    
+    final totalMinutes = (minMinutes + progress * (maxMinutes - minMinutes))
+        .round();
+
     // Làm tròn theo bước 5 phút
     final roundedMinutes = (totalMinutes / 5).round() * 5;
     final clampedMinutes = roundedMinutes.clamp(minMinutes, maxMinutes);
-    
+
     _currentDuration = Duration(minutes: clampedMinutes);
     widget.onDurationChanged(_currentDuration);
   }
@@ -67,18 +67,18 @@ class _CircularTimePickerState extends State<CircularTimePicker> {
   void _onPanUpdate(DragUpdateDetails details) {
     final center = Offset(widget.size / 2, widget.size / 2);
     final position = details.localPosition - center;
-    
+
     // Tính góc từ vị trí touch
     double newAngle = math.atan2(position.dy, position.dx);
-    
+
     // Chuyển đổi từ -π -> π sang 0 -> 2π
     if (newAngle < 0) {
       newAngle += 2 * math.pi;
     }
-    
+
     // Xoay 90 độ để bắt đầu từ trên cùng
     newAngle = (newAngle + 3 * math.pi / 2) % (2 * math.pi);
-    
+
     setState(() {
       _angle = newAngle;
       _updateDurationFromAngle();
@@ -88,7 +88,7 @@ class _CircularTimePickerState extends State<CircularTimePicker> {
   String _formatDuration(Duration duration) {
     final hours = duration.inHours;
     final minutes = duration.inMinutes % 60;
-    
+
     if (hours > 0) {
       return '${hours}h ${minutes}m';
     } else {
@@ -96,8 +96,20 @@ class _CircularTimePickerState extends State<CircularTimePicker> {
     }
   }
 
+  Offset _getHandlePosition() {
+    final radius = widget.size / 2 - 20;
+    return Offset(
+      radius * math.cos(_angle - math.pi / 2),
+      radius * math.sin(_angle - math.pi / 2),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final effectivePrimaryColor =
+        widget.primaryColor ?? Theme.of(context).colorScheme.primary;
+    final effectiveBackgroundColor = widget.backgroundColor ?? context.grey300;
+
     return SizedBox(
       width: widget.size,
       height: widget.size,
@@ -110,39 +122,39 @@ class _CircularTimePickerState extends State<CircularTimePicker> {
             height: widget.size,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: widget.backgroundColor.withValues(alpha: 0.1),
+              color: effectiveBackgroundColor.withOpacity(0.1),
               border: Border.all(
-                color: widget.backgroundColor.withValues(alpha: 0.3),
+                color: effectiveBackgroundColor.withOpacity(0.3),
                 width: 2,
               ),
             ),
           ),
-          
+
           // Time markers
           CustomPaint(
             size: Size(widget.size, widget.size),
             painter: TimeMarkersPainter(
-              primaryColor: widget.primaryColor,
-              backgroundColor: widget.backgroundColor,
+              primaryColor: effectivePrimaryColor,
+              backgroundColor: effectiveBackgroundColor,
               minDuration: widget.minDuration,
               maxDuration: widget.maxDuration,
             ),
           ),
-          
+
           // Progress arc
           CustomPaint(
             size: Size(widget.size, widget.size),
             painter: ProgressArcPainter(
               angle: _angle,
-              primaryColor: widget.primaryColor,
+              primaryColor: effectivePrimaryColor,
               strokeWidth: 8.0,
             ),
           ),
-          
+
           // Draggable handle
           Positioned(
-            left: widget.size / 2 + (widget.size / 2 - 20) * math.cos(_angle - math.pi / 2) - 15,
-            top: widget.size / 2 + (widget.size / 2 - 20) * math.sin(_angle - math.pi / 2) - 15,
+            left: widget.size / 2 + _getHandlePosition().dx - 15,
+            top: widget.size / 2 + _getHandlePosition().dy - 15,
             child: GestureDetector(
               onPanUpdate: _onPanUpdate,
               child: Container(
@@ -150,10 +162,12 @@ class _CircularTimePickerState extends State<CircularTimePicker> {
                 height: 30,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: widget.primaryColor,
+                  color: effectivePrimaryColor,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.2),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.shadow.withOpacity(0.2),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -161,13 +175,13 @@ class _CircularTimePickerState extends State<CircularTimePicker> {
                 ),
                 child: Icon(
                   Icons.drag_handle,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onPrimary,
                   size: 16,
                 ),
               ),
             ),
           ),
-          
+
           // Center display
           Container(
             width: 120,
@@ -176,7 +190,7 @@ class _CircularTimePickerState extends State<CircularTimePicker> {
               shape: BoxShape.circle,
               color: Theme.of(context).scaffoldBackgroundColor,
               border: Border.all(
-                color: widget.primaryColor.withValues(alpha: 0.3),
+                color: effectivePrimaryColor.withOpacity(0.3),
                 width: 2,
               ),
             ),
@@ -187,20 +201,20 @@ class _CircularTimePickerState extends State<CircularTimePicker> {
                   _formatDuration(_currentDuration),
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: widget.primaryColor,
+                    color: effectivePrimaryColor,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Focus Time',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+                  'Thời gian tập trung',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: context.grey600),
                 ),
               ],
             ),
           ),
-          
+
           // Gesture detector for the entire widget
           GestureDetector(
             onPanUpdate: _onPanUpdate,
@@ -234,43 +248,39 @@ class TimeMarkersPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2 - 20;
-    
+
     final paint = Paint()
-      ..color = backgroundColor.withValues(alpha: 0.5)
+      ..color = backgroundColor.withOpacity(0.5)
       ..strokeWidth = 1;
 
     // Vẽ các vạch thời gian (mỗi 15 phút)
     final totalMinutes = maxDuration.inMinutes - minDuration.inMinutes;
     final stepMinutes = 15;
     final steps = (totalMinutes / stepMinutes).ceil();
-    
+
     for (int i = 0; i <= steps; i++) {
       final angle = (i / steps) * 2 * math.pi - math.pi / 2;
       final isMainMark = i % 4 == 0; // Mỗi giờ
-      
+
       final startRadius = radius - (isMainMark ? 15 : 8);
       final endRadius = radius;
-      
+
       final startX = center.dx + startRadius * math.cos(angle);
       final startY = center.dy + startRadius * math.sin(angle);
       final endX = center.dx + endRadius * math.cos(angle);
       final endY = center.dy + endRadius * math.sin(angle);
-      
+
       paint.strokeWidth = isMainMark ? 2 : 1;
-      canvas.drawLine(
-        Offset(startX, startY),
-        Offset(endX, endY),
-        paint,
-      );
-      
+      canvas.drawLine(Offset(startX, startY), Offset(endX, endY), paint);
+
       // Vẽ nhãn thời gian cho các vạch chính
       if (isMainMark) {
         final minutes = minDuration.inMinutes + (i * stepMinutes);
         final duration = Duration(minutes: minutes);
-        final label = duration.inHours > 0 
+        final label = duration.inHours > 0
             ? '${duration.inHours}h'
             : '${duration.inMinutes}m';
-        
+
         final textPainter = TextPainter(
           text: TextSpan(
             text: label,
@@ -282,13 +292,15 @@ class TimeMarkersPainter extends CustomPainter {
           ),
           textDirection: TextDirection.ltr,
         );
-        
+
         textPainter.layout();
-        
+
         final labelRadius = radius - 30;
-        final labelX = center.dx + labelRadius * math.cos(angle) - textPainter.width / 2;
-        final labelY = center.dy + labelRadius * math.sin(angle) - textPainter.height / 2;
-        
+        final labelX =
+            center.dx + labelRadius * math.cos(angle) - textPainter.width / 2;
+        final labelY =
+            center.dy + labelRadius * math.sin(angle) - textPainter.height / 2;
+
         textPainter.paint(canvas, Offset(labelX, labelY));
       }
     }
@@ -314,7 +326,7 @@ class ProgressArcPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2 - 20;
-    
+
     final paint = Paint()
       ..color = primaryColor
       ..strokeWidth = strokeWidth
@@ -334,3 +346,4 @@ class ProgressArcPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
+

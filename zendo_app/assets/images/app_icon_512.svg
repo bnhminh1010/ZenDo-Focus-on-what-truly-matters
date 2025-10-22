@@ -1,0 +1,56 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f8fafc;stop-opacity:0.9" />
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#000000" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+  
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="240" fill="url(#bgGradient)" filter="url(#shadow)"/>
+  
+  <!-- Inner Circle -->
+  <circle cx="256" cy="256" r="200" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+  
+  <!-- Zen Symbol - Stylized Brain/Focus Icon -->
+  <g transform="translate(256,256)">
+    <!-- Central Focus Point -->
+    <circle cx="0" cy="0" r="12" fill="url(#iconGradient)"/>
+    
+    <!-- Brain/Mind Waves -->
+    <path d="M -80,-40 Q -60,-60 -40,-40 Q -20,-20 0,-40 Q 20,-20 40,-40 Q 60,-60 80,-40" 
+          stroke="url(#iconGradient)" stroke-width="4" fill="none" opacity="0.8"/>
+    
+    <path d="M -70,-10 Q -50,-30 -30,-10 Q -10,10 10,-10 Q 30,10 50,-10 Q 70,-30 90,-10" 
+          stroke="url(#iconGradient)" stroke-width="3" fill="none" opacity="0.6"/>
+    
+    <path d="M -60,20 Q -40,0 -20,20 Q 0,40 20,20 Q 40,40 60,20 Q 80,0 100,20" 
+          stroke="url(#iconGradient)" stroke-width="3" fill="none" opacity="0.6"/>
+    
+    <path d="M -80,40 Q -60,60 -40,40 Q -20,20 0,40 Q 20,20 40,40 Q 60,60 80,40" 
+          stroke="url(#iconGradient)" stroke-width="4" fill="none" opacity="0.8"/>
+    
+    <!-- Focus Rings -->
+    <circle cx="0" cy="0" r="30" fill="none" stroke="url(#iconGradient)" stroke-width="2" opacity="0.4"/>
+    <circle cx="0" cy="0" r="50" fill="none" stroke="url(#iconGradient)" stroke-width="1.5" opacity="0.3"/>
+    <circle cx="0" cy="0" r="70" fill="none" stroke="url(#iconGradient)" stroke-width="1" opacity="0.2"/>
+    
+    <!-- Meditation/Focus Dots -->
+    <circle cx="-25" cy="-25" r="3" fill="url(#iconGradient)" opacity="0.7"/>
+    <circle cx="25" cy="-25" r="3" fill="url(#iconGradient)" opacity="0.7"/>
+    <circle cx="-25" cy="25" r="3" fill="url(#iconGradient)" opacity="0.7"/>
+    <circle cx="25" cy="25" r="3" fill="url(#iconGradient)" opacity="0.7"/>
+  </g>
+  
+  <!-- Bottom Text Area (Optional) -->
+  <text x="256" y="420" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-family="Arial, sans-serif" font-size="24" font-weight="600">ZenDo</text>
+  <text x="256" y="445" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-family="Arial, sans-serif" font-size="12">Focus on what truly matters</text>
+</svg>

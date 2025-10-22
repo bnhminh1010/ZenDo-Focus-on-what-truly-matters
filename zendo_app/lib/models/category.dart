@@ -1,4 +1,6 @@
-/// Model cho Category - quản lý danh mục task tùy chỉnh
+/// Category Class
+/// Tác dụng: Model quản lý danh mục task tùy chỉnh của người dùng
+/// Sử dụng khi: Tạo, lưu trữ và quản lý các danh mục task do người dùng tự định nghĩa
 class Category {
   final String id;
   final String userId;
@@ -26,7 +28,9 @@ class Category {
     required this.updatedAt,
   });
 
-  /// Tạo Category từ JSON (từ Supabase)
+  /// fromJson factory constructor
+  /// Tác dụng: Tạo Category object từ JSON data nhận từ Supabase
+  /// Sử dụng khi: Deserialize dữ liệu category từ database
   factory Category.fromJson(Map<String, dynamic> json) {
     return Category(
       id: json['id'] as String,
@@ -43,7 +47,9 @@ class Category {
     );
   }
 
-  /// Chuyển Category thành JSON (để gửi lên Supabase)
+  /// toJson method
+  /// Tác dụng: Chuyển Category object thành JSON để gửi lên Supabase
+  /// Sử dụng khi: Serialize category để lưu vào database
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -165,3 +171,4 @@ class DefaultCategories {
     },
   ];
 }
+

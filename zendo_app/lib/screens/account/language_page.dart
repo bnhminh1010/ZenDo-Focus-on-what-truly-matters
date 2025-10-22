@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../widgets/glass_container.dart';
+import '../../widgets/glass_button.dart';
+import 'package:go_router/go_router.dart';
 
 class LanguagePage extends StatefulWidget {
   const LanguagePage({super.key});
@@ -17,48 +20,13 @@ class _LanguagePageState extends State<LanguagePage> {
       'nativeName': 'Tiếng Việt',
       'flag': '🇻🇳',
     },
-    {
-      'code': 'en',
-      'name': 'English',
-      'nativeName': 'English',
-      'flag': '🇺🇸',
-    },
-    {
-      'code': 'ja',
-      'name': 'Japanese',
-      'nativeName': '日本語',
-      'flag': '🇯🇵',
-    },
-    {
-      'code': 'ko',
-      'name': 'Korean',
-      'nativeName': '한국어',
-      'flag': '🇰🇷',
-    },
-    {
-      'code': 'zh',
-      'name': 'Chinese',
-      'nativeName': '中文',
-      'flag': '🇨🇳',
-    },
-    {
-      'code': 'fr',
-      'name': 'French',
-      'nativeName': 'Français',
-      'flag': '🇫🇷',
-    },
-    {
-      'code': 'de',
-      'name': 'German',
-      'nativeName': 'Deutsch',
-      'flag': '🇩🇪',
-    },
-    {
-      'code': 'es',
-      'name': 'Spanish',
-      'nativeName': 'Español',
-      'flag': '🇪🇸',
-    },
+    {'code': 'en', 'name': 'English', 'nativeName': 'English', 'flag': '🇺🇸'},
+    {'code': 'ja', 'name': 'Japanese', 'nativeName': '日本語', 'flag': '🇯🇵'},
+    {'code': 'ko', 'name': 'Korean', 'nativeName': '한국어', 'flag': '🇰🇷'},
+    {'code': 'zh', 'name': 'Chinese', 'nativeName': '中文', 'flag': '🇨🇳'},
+    {'code': 'fr', 'name': 'French', 'nativeName': 'Français', 'flag': '🇫🇷'},
+    {'code': 'de', 'name': 'German', 'nativeName': 'Deutsch', 'flag': '🇩🇪'},
+    {'code': 'es', 'name': 'Spanish', 'nativeName': 'Español', 'flag': '🇪🇸'},
   ];
 
   @override
@@ -67,14 +35,11 @@ class _LanguagePageState extends State<LanguagePage> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: colorScheme.surface,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(
-          'Ngôn ngữ',
-          style: theme.textTheme.titleLarge,
-        ),
+        title: Text('Ngôn ngữ', style: theme.textTheme.titleLarge),
         actions: [
           TextButton(
             onPressed: _saveLanguageSettings,
@@ -91,14 +56,13 @@ class _LanguagePageState extends State<LanguagePage> {
       body: Column(
         children: [
           // Current Language Info
-          Container(
+          GlassContainer(
             width: double.infinity,
             margin: const EdgeInsets.all(20),
             padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(16),
-            ),
+            borderRadius: 16,
+            blur: 16,
+            opacity: 0.14,
             child: Column(
               children: [
                 Text(
@@ -109,14 +73,14 @@ class _LanguagePageState extends State<LanguagePage> {
                 Text(
                   'Ngôn ngữ hiện tại',
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onPrimaryContainer,
+                    color: colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   _getCurrentLanguage()['nativeName'],
                   style: theme.textTheme.titleLarge?.copyWith(
-                    color: colorScheme.onPrimaryContainer,
+                    color: colorScheme.onSurface,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -127,26 +91,18 @@ class _LanguagePageState extends State<LanguagePage> {
           // Language List
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              // Tăng bottom padding để tránh chồng lấn với navigation bar
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
               itemCount: _languages.length,
               itemBuilder: (context, index) {
                 final language = _languages[index];
                 final isSelected = language['code'] == _selectedLanguage;
 
-                return Container(
+                return GlassContainer(
                   margin: const EdgeInsets.only(bottom: 8),
-                  decoration: BoxDecoration(
-                    color: isSelected 
-                        ? colorScheme.primaryContainer.withValues(alpha: 0.3)
-                        : colorScheme.surfaceContainer,
-                    borderRadius: BorderRadius.circular(12),
-                    border: isSelected
-                        ? Border.all(
-                            color: colorScheme.primary,
-                            width: 2,
-                          )
-                        : null,
-                  ),
+                  borderRadius: 12,
+                  blur: 16,
+                  opacity: isSelected ? 0.2 : 0.14,
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -156,7 +112,7 @@ class _LanguagePageState extends State<LanguagePage> {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: colorScheme.surface,
+                        color: colorScheme.surface.withOpacity(0.5),
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: Center(
@@ -176,8 +132,8 @@ class _LanguagePageState extends State<LanguagePage> {
                     subtitle: Text(
                       language['nativeName'],
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: isSelected 
-                            ? colorScheme.primary.withValues(alpha: 0.7)
+                        color: isSelected
+                            ? colorScheme.primary.withOpacity(0.7)
                             : colorScheme.onSurfaceVariant,
                       ),
                     ),
@@ -242,24 +198,169 @@ class _LanguagePageState extends State<LanguagePage> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Thay đổi ngôn ngữ'),
-        content: Text(
-          'Bạn có muốn thay đổi ngôn ngữ thành ${_getCurrentLanguage()['nativeName']}? Ứng dụng sẽ khởi động lại để áp dụng thay đổi.',
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: GlassContainer(
+          borderRadius: 24,
+          blur: 20,
+          opacity: 0.15,
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(
+                      Icons.language_outlined,
+                      size: 32,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Thay đổi ngôn ngữ',
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          'Ứng dụng sẽ khởi động lại',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withOpacity(0.7),
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Language info
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.primaryContainer.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(0.3),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      _getCurrentLanguage()['flag'],
+                      style: const TextStyle(fontSize: 32),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Ngôn ngữ mới:',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimaryContainer,
+                                ),
+                          ),
+                          Text(
+                            _getCurrentLanguage()['nativeName'],
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimaryContainer,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Warning message
+              Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: 20,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.7),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Ứng dụng sẽ khởi động lại để áp dụng thay đổi ngôn ngữ.',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.7),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Actions
+              Row(
+                children: [
+                  Expanded(
+                    child: Semantics(
+                      label: 'Hủy thay đổi ngôn ngữ',
+                      hint: 'Nhấn để hủy và giữ nguyên ngôn ngữ hiện tại',
+                      child: GlassOutlinedButton(
+                        onPressed: () => context.pop(),
+                        child: const Text('Hủy'),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Semantics(
+                      label: 'Áp dụng ngôn ngữ mới',
+                      hint:
+                          'Nhấn để áp dụng ngôn ngữ mới và khởi động lại ứng dụng',
+                      child: GlassElevatedButton(
+                        onPressed: () {
+                          context.pop();
+                          _applyLanguageChange();
+                        },
+                        child: const Text('Áp dụng'),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _applyLanguageChange();
-            },
-            child: const Text('Áp dụng'),
-          ),
-        ],
       ),
     );
   }
@@ -278,9 +379,7 @@ class _LanguagePageState extends State<LanguagePage> {
           onPressed: () {
             // TODO: Restart app or update locale
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Tính năng đang phát triển'),
-              ),
+              const SnackBar(content: Text('Tính năng đang phát triển')),
             );
           },
         ),
@@ -288,6 +387,7 @@ class _LanguagePageState extends State<LanguagePage> {
     );
 
     // Navigate back after saving
-    Navigator.pop(context);
+    context.pop();
   }
 }
+

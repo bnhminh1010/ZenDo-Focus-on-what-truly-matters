@@ -72,8 +72,8 @@ class Subtask {
       title: map['title'] ?? '',
       description: map['description'],
       isCompleted: map['is_completed'] ?? false,
-      completedAt: map['completed_at'] != null 
-          ? DateTime.parse(map['completed_at']) 
+      completedAt: map['completed_at'] != null
+          ? DateTime.parse(map['completed_at'])
           : null,
       sortOrder: map['sort_order'] ?? 0,
       createdAt: map['created_at'] != null
@@ -93,8 +93,8 @@ class Subtask {
       title: map['title'] ?? '',
       description: map['description'],
       isCompleted: map['is_completed'] ?? false,
-      completedAt: map['completed_at'] != null 
-          ? DateTime.parse(map['completed_at']) 
+      completedAt: map['completed_at'] != null
+          ? DateTime.parse(map['completed_at'])
           : null,
       sortOrder: map['sort_order'] ?? 0,
       createdAt: map['created_at'] != null
@@ -127,3 +127,4 @@ class Subtask {
     return id.hashCode;
   }
 }
+

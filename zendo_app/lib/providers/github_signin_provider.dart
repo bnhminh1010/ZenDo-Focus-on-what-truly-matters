@@ -5,7 +5,7 @@ import '../services/github_auth_service.dart';
 /// Sử dụng ChangeNotifier để thông báo UI về thay đổi state
 class GitHubSignInProvider with ChangeNotifier {
   final GitHubAuthService _authService = GitHubAuthService();
-  
+
   // State variables
   bool _isLoading = false;
   bool _isSignedIn = false;
@@ -17,7 +17,7 @@ class GitHubSignInProvider with ChangeNotifier {
   bool get isSignedIn => _isSignedIn;
   String? get errorMessage => _errorMessage;
   Map<String, dynamic>? get userInfo => _userInfo;
-  
+
   // User info getters
   String? get userName => _userInfo?['name'] ?? _userInfo?['login'];
   String? get userEmail => _userInfo?['email'];
@@ -44,10 +44,19 @@ class GitHubSignInProvider with ChangeNotifier {
     _clearError();
 
     try {
-      final userInfo = await _authService.signInWithGitHub();
-      
-      if (userInfo != null) {
-        _userInfo = userInfo;
+      final user = await _authService.signInWithGitHub();
+
+      if (user != null) {
+        // Chuyển đổi User object thành Map để tương thích
+        _userInfo = {
+          'id': user.id,
+          'login':
+              user.userMetadata?['user_name'] ??
+              user.userMetadata?['preferred_username'],
+          'name': user.userMetadata?['full_name'] ?? user.userMetadata?['name'],
+          'email': user.email,
+          'avatar_url': user.userMetadata?['avatar_url'],
+        };
         _isSignedIn = true;
         _setLoading(false);
         return true;
@@ -172,3 +181,4 @@ class GitHubSignInProvider with ChangeNotifier {
     super.dispose();
   }
 }
+

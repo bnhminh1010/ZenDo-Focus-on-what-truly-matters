@@ -26,6 +26,13 @@ import 'screens/tasks/category_detail_page.dart';
 import 'screens/categories/categories_list_page.dart';
 import 'screens/categories/category_management_page.dart';
 import 'screens/splash/splash_page.dart';
+import 'screens/account/profile_page.dart';
+import 'screens/account/notifications_page.dart';
+import 'screens/account/security_page.dart';
+import 'screens/account/language_page.dart';
+import 'screens/account/help_page.dart';
+
+import 'widgets/glass_container.dart';
 
 /// ZenDo App - Main Application Widget
 /// Cấu hình routing, state management và theme
@@ -179,11 +186,11 @@ class ZendoApp extends StatelessWidget {
           builder: (context, state) {
             final taskId = state.pathParameters['taskId']!;
             final extra = state.extra as Task?;
-            
+
             if (extra != null) {
-              return TaskDetailPage(task: extra as Task);
+              return TaskDetailPage(task: extra);
             }
-            
+
             // Fallback: tìm task từ TaskModel nếu không có extra
             return Consumer<TaskModel>(
               builder: (context, taskModel, child) {
@@ -230,6 +237,33 @@ class ZendoApp extends StatelessWidget {
             return AIChatPage(extra: extra);
           },
         ),
+
+        // Account sub-pages
+        GoRoute(
+          path: '/profile',
+          name: 'profile',
+          builder: (context, state) => const ProfilePage(),
+        ),
+        GoRoute(
+          path: '/notifications',
+          name: 'notifications',
+          builder: (context, state) => const NotificationsPage(),
+        ),
+        GoRoute(
+          path: '/security',
+          name: 'security',
+          builder: (context, state) => const SecurityPage(),
+        ),
+        GoRoute(
+          path: '/language',
+          name: 'language',
+          builder: (context, state) => const LanguagePage(),
+        ),
+        GoRoute(
+          path: '/help',
+          name: 'help',
+          builder: (context, state) => const HelpPage(),
+        ),
       ],
     );
   }
@@ -251,54 +285,145 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: widget.child,
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+      // Cho phép body vẽ phía sau để tạo cảm giác nổi thực sự
+      extendBody: true,
+      body: Stack(
+        children: [
+          // Nội dung chính
+          widget.child,
 
-          // Navigate based on index
-          switch (index) {
-            case 0:
-              context.goNamed('home');
-              break;
-            case 1:
-              context.goNamed('calendar');
-              break;
-            case 2:
-              context.goNamed('focus');
-              break;
-            case 3:
-              context.goNamed('account');
-              break;
-          }
-        },
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Trang chủ',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today_outlined),
-            activeIcon: Icon(Icons.calendar_today),
-            label: 'Lịch',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.timer_outlined),
-            activeIcon: Icon(Icons.timer),
-            label: 'Focus',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Tài khoản',
+          // Thanh điều hướng popup nổi thực sự
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: 18,
+            child: GlassContainer(
+              borderRadius: 28,
+              // Glass morphism effect
+              blur: 3,
+              opacity: 0.00,
+              pill: true,
+              highlightEdge: true,
+              innerShadow: false,
+              // Bóng ngoài để tạo hiệu ứng nổi
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.18),
+                  blurRadius: 20,
+                  spreadRadius: 0,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+              // Gradient nhẹ
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Theme.of(context).colorScheme.surface.withOpacity(0.06),
+        Theme.of(context).colorScheme.surface.withOpacity(0.12),
+                ],
+              ),
+              // Viền mỏng
+              border: Border.fromBorderSide(
+                BorderSide(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.outline.withOpacity(0.22),
+                  width: 1,
+                ),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildNavItem(
+                    context,
+                    icon: Icons.home_outlined,
+                    activeIcon: Icons.home,
+                    label: 'Trang chủ',
+                    index: 0,
+                    onTap: () => context.goNamed('home'),
+                  ),
+                  _buildNavItem(
+                    context,
+                    icon: Icons.calendar_today_outlined,
+                    activeIcon: Icons.calendar_today,
+                    label: 'Lịch',
+                    index: 1,
+                    onTap: () => context.goNamed('calendar'),
+                  ),
+                  _buildNavItem(
+                    context,
+                    icon: Icons.timer_outlined,
+                    activeIcon: Icons.timer,
+                    label: 'Focus',
+                    index: 2,
+                    onTap: () => context.goNamed('focus'),
+                  ),
+                  _buildNavItem(
+                    context,
+                    icon: Icons.person_outline,
+                    activeIcon: Icons.person,
+                    label: 'Tài khoản',
+                    index: 3,
+                    onTap: () => context.goNamed('account'),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
     );
   }
+
+  Widget _buildNavItem(
+    BuildContext context, {
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+    required int index,
+    required VoidCallback onTap,
+  }) {
+    final isActive = _currentIndex == index;
+    final theme = Theme.of(context);
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _currentIndex = index;
+          });
+          onTap();
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                isActive ? activeIcon : icon,
+                color: isActive
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurface.withOpacity(0.6),
+                size: 24,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                  color: isActive
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.onSurface.withOpacity(0.6),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
+

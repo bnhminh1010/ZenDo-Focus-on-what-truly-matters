@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:io';
 import '../../models/task.dart';
 import '../../providers/task_model.dart';
 import '../../widgets/add_task_dialog.dart';
 import '../../widgets/subtask_list_widget.dart';
 import '../ai/ai_chat_page.dart';
+import '../../services/image_storage_service.dart';
+import '../../widgets/glass_button.dart';
+import '../../widgets/loading_state_widget.dart';
+import '../../widgets/error_state_widget.dart';
+import '../../theme.dart';
 
 /// Trang hiển thị chi tiết task với đầy đủ thông tin và actions
 class TaskDetailPage extends StatefulWidget {
   final Task task;
 
-  const TaskDetailPage({
-    super.key,
-    required this.task,
-  });
+  const TaskDetailPage({super.key, required this.task});
 
   @override
   State<TaskDetailPage> createState() => _TaskDetailPageState();
@@ -39,15 +42,15 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
         ),
         actions: [
           // Edit button
-          IconButton(
+          GlassIconButton(
             onPressed: () => _editTask(),
-            icon: const Icon(Icons.edit),
+            icon: Icons.edit,
             tooltip: 'Chỉnh sửa',
           ),
           // Delete button
-          IconButton(
+          GlassIconButton(
             onPressed: () => _deleteTask(),
-            icon: const Icon(Icons.delete),
+            icon: Icons.delete,
             tooltip: 'Xóa',
           ),
           // More options
@@ -97,8 +100,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
             const SizedBox(height: 16),
 
             // Task image (if exists)
-            if (_currentTask.imageUrl?.isNotEmpty == true)
-              _buildImageSection(),
+            if (_currentTask.imageUrl?.isNotEmpty == true) _buildImageSection(),
 
             // Task details
             _buildDetailsCard(),
@@ -119,8 +121,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
             const SizedBox(height: 16),
 
             // Task notes (if exists)
-            if (_currentTask.notes?.isNotEmpty == true)
-              _buildNotesCard(),
+            if (_currentTask.notes?.isNotEmpty == true) _buildNotesCard(),
           ],
         ),
       ),
@@ -131,11 +132,13 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
           FloatingActionButton(
             heroTag: "ai_chat",
             onPressed: () => _openAIChat(),
-            backgroundColor: Colors.blue.shade600,
+            backgroundColor: Theme.of(context).colorScheme.primary,
             tooltip: 'Chat với AI Assistant',
-            child: const Icon(
-              Icons.smart_toy,
-              color: Colors.white,
+            child: Image.asset(
+              'assets/icons/bot.png',
+              width: 28,
+              height: 28,
+              fit: BoxFit.contain,
             ),
           ),
           const SizedBox(height: 16),
@@ -143,11 +146,17 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
           FloatingActionButton(
             heroTag: "task_completion",
             onPressed: () => _toggleCompletion(),
-            backgroundColor: _currentTask.isCompleted ? Colors.green : Colors.orange.shade600,
-            tooltip: _currentTask.isCompleted ? 'Đánh dấu chưa hoàn thành' : 'Đánh dấu hoàn thành',
+            backgroundColor: _currentTask.isCompleted
+                ? context.successColor
+                : context.warningColor,
+            tooltip: _currentTask.isCompleted
+                ? 'Đánh dấu chưa hoàn thành'
+                : 'Đánh dấu hoàn thành',
             child: Icon(
-              _currentTask.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-              color: Colors.white,
+              _currentTask.isCompleted
+                  ? Icons.check_circle
+                  : Icons.radio_button_unchecked,
+              color: Theme.of(context).colorScheme.onPrimary,
             ),
           ),
         ],
@@ -162,9 +171,11 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
         child: Row(
           children: [
             Icon(
-              _currentTask.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-              color: _currentTask.isCompleted 
-                  ? Colors.green 
+              _currentTask.isCompleted
+                  ? Icons.check_circle
+                  : Icons.radio_button_unchecked,
+              color: _currentTask.isCompleted
+                  ? context.successColor
                   : Theme.of(context).colorScheme.outline,
               size: 32,
             ),
@@ -176,20 +187,21 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                   Text(
                     _currentTask.title,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      decoration: _currentTask.isCompleted 
-                          ? TextDecoration.lineThrough 
+                      decoration: _currentTask.isCompleted
+                          ? TextDecoration.lineThrough
                           : null,
-                      color: _currentTask.isCompleted 
-                          ? Theme.of(context).colorScheme.outline 
+                      color: _currentTask.isCompleted
+                          ? Theme.of(context).colorScheme.outline
                           : null,
                     ),
                   ),
-                  if (_currentTask.isCompleted && _currentTask.completedAt != null) ...[
+                  if (_currentTask.isCompleted &&
+                      _currentTask.completedAt != null) ...[
                     const SizedBox(height: 4),
                     Text(
                       'Hoàn thành: ${_formatDateTime(_currentTask.completedAt!)}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.green,
+                        color: context.successColor,
                       ),
                     ),
                   ],
@@ -211,80 +223,177 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
           children: [
             Text(
               'Hình ảnh',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: _currentTask.imageUrl!.startsWith('http')
-                  ? Image.network(
-                      _currentTask.imageUrl!,
-                      width: double.infinity,
-                      height: 200,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          height: 200,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.broken_image,
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                size: 48,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Không thể tải hình ảnh',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    )
-                  : Image.asset(
-                      _currentTask.imageUrl!,
-                      width: double.infinity,
-                      height: 200,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          height: 200,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.broken_image,
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                size: 48,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Không thể tải hình ảnh',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+            FutureBuilder<bool>(
+              future: _currentTask.imageUrl != null
+                  ? ImageStorageService.imageExists(_currentTask.imageUrl!)
+                  : Future.value(false),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Container(
+                    height: 200,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(8),
                     ),
+                    child: const Center(child: CircularProgressIndicator()),
+                  );
+                }
+
+                final imageExists = snapshot.data ?? false;
+
+                if (!imageExists || _currentTask.imageUrl == null) {
+                  return Container(
+                    height: 200,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.broken_image,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          size: 48,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Không thể tải hình ảnh',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'File không tồn tại hoặc đã bị xóa',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant
+                                    .withOpacity(0.7),
+                              ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: _currentTask.imageUrl!.startsWith('http')
+                      ? Image.network(
+                          _currentTask.imageUrl!,
+                          width: double.infinity,
+                          height: 200,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Container(
+                              height: 200,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.surfaceContainerHighest,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const LoadingStateWidget(
+                                message: 'Đang tải hình ảnh...',
+                                size: 32,
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            debugPrint('Error loading network image: $error');
+                            return Container(
+                              height: 200,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.surfaceContainerHighest,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: ErrorStateWidget.empty(
+                                title: 'Không thể tải hình ảnh',
+                                message:
+                                    'Hình ảnh không tồn tại hoặc đã bị lỗi',
+                                icon: Icons.broken_image_outlined,
+                              ),
+                            );
+                          },
+                        )
+                      : Image.file(
+                          File(_currentTask.imageUrl!),
+                          width: double.infinity,
+                          height: 200,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            debugPrint('Error loading local image: $error');
+                            return Container(
+                              height: 200,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.surfaceContainerHighest,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.broken_image,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                                    size: 48,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Không thể tải hình ảnh',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
+                                        ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Kiểm tra kết nối mạng',
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant
+                                              .withOpacity(0.7),
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                );
+              },
             ),
           ],
         ),
@@ -301,9 +410,9 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
           children: [
             Text(
               'Chi tiết',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
 
@@ -331,7 +440,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
               icon: Icons.flag,
               label: 'Độ ưu tiên',
               value: _currentTask.priority.displayName,
-              valueColor: _getPriorityColor(_currentTask.priority),
+              valueColor: _getPriorityColor(context, _currentTask.priority),
             ),
             const SizedBox(height: 12),
 
@@ -378,9 +487,9 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
           children: [
             Text(
               'Thông tin khác',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
 
@@ -407,19 +516,23 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Tags',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
+                          'Thẻ tag',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(fontWeight: FontWeight.w500),
                         ),
                         const SizedBox(height: 4),
                         Wrap(
                           spacing: 8,
                           runSpacing: 4,
-                          children: _currentTask.tags.map((tag) => Chip(
-                            label: Text(tag),
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          )).toList(),
+                          children: _currentTask.tags
+                              .map(
+                                (tag) => Chip(
+                                  label: Text(tag),
+                                  materialTapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ),
+                              )
+                              .toList(),
                         ),
                       ],
                     ),
@@ -442,16 +555,18 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
           children: [
             Text(
               'Ghi chú',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                color: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -486,16 +601,16 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
             children: [
               Text(
                 label,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 2),
               Text(
                 value,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: valueColor,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: valueColor),
               ),
             ],
           ),
@@ -516,45 +631,45 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   Color _getCategoryColor(TaskCategory category) {
     switch (category) {
       case TaskCategory.work:
-        return Colors.blue;
+        return context.workColor;
       case TaskCategory.personal:
-        return Colors.green;
+        return context.personalColor;
       case TaskCategory.learning:
-        return Colors.orange;
+        return context.warningColor;
       case TaskCategory.health:
-        return Colors.red;
+        return context.healthColor;
       case TaskCategory.finance:
-        return Colors.purple;
+        return Theme.of(context).colorScheme.secondary;
       case TaskCategory.social:
-        return Colors.pink;
+        return Theme.of(context).colorScheme.tertiary;
       case TaskCategory.other:
-        return Colors.grey;
+        return context.grey500;
     }
   }
 
-  Color _getPriorityColor(TaskPriority priority) {
+  Color _getPriorityColor(BuildContext context, TaskPriority priority) {
     switch (priority) {
       case TaskPriority.low:
-        return Colors.green;
+        return context.successColor;
       case TaskPriority.medium:
-        return Colors.orange;
+        return context.warningColor;
       case TaskPriority.high:
-        return Colors.red;
+        return context.errorColor;
       case TaskPriority.urgent:
-        return Colors.deepOrange;
+        return Theme.of(context).colorScheme.error;
     }
   }
 
   Color _getDueDateColor(DateTime dueDate) {
     final now = DateTime.now();
     final difference = dueDate.difference(now).inDays;
-    
+
     if (difference < 0) {
-      return Colors.red; // Overdue
+      return context.errorColor; // Overdue
     } else if (difference == 0) {
-      return Colors.orange; // Due today
+      return context.warningColor; // Due today
     } else if (difference <= 3) {
-      return Colors.amber; // Due soon
+      return context.warningColor.withOpacity(0.7); // Due soon
     } else {
       return Theme.of(context).colorScheme.onSurface; // Normal
     }
@@ -564,23 +679,23 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   void _toggleCompletion() async {
     final taskModel = Provider.of<TaskModel>(context, listen: false);
     await taskModel.toggleTaskCompletion(_currentTask.id);
-    
+
     // Reload task from provider to get updated state
     final updatedTask = taskModel.tasks.firstWhere(
       (task) => task.id == _currentTask.id,
       orElse: () => _currentTask,
     );
-    
+
     setState(() {
       _currentTask = updatedTask;
     });
-    
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            _currentTask.isCompleted 
-                ? 'Đã đánh dấu hoàn thành' 
+            _currentTask.isCompleted
+                ? 'Đã đánh dấu hoàn thành'
                 : 'Đã đánh dấu chưa hoàn thành',
           ),
         ),
@@ -607,14 +722,14 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Task deleted successfully')),
+          const SnackBar(content: Text('Task đã được xóa thành công')),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error deleting task: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error deleting task: $e')));
       }
     }
   }
@@ -638,9 +753,9 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi khi nhân bản task: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi khi nhân bản task: $e')));
       }
     }
   }
@@ -649,7 +764,9 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
     // TODO: Implement share functionality
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tính năng chia sẻ sẽ được phát triển sau')),
+        const SnackBar(
+          content: Text('Tính năng chia sẻ sẽ được phát triển sau'),
+        ),
       );
     }
   }
@@ -657,13 +774,9 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   void _openAIChat() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => AIChatPage(
-          extra: {
-            'initialTask': _currentTask,
-          },
-        ),
+        builder: (context) => AIChatPage(extra: {'initialTask': _currentTask}),
       ),
     );
   }
-
 }
+

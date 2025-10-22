@@ -1,5 +1,6 @@
-/// Model cho Focus Session - phiên tập trung/pomodoro
-/// Map với bảng focus_sessions trong Supabase database
+/// FocusSession Class
+/// Tác dụng: Model quản lý phiên tập trung/pomodoro của người dùng
+/// Sử dụng khi: Theo dõi và lưu trữ thông tin các phiên làm việc tập trung
 class FocusSession {
   final String? id;
   final String userId;
@@ -43,7 +44,9 @@ class FocusSession {
     required this.updatedAt,
   });
 
-  /// Tạo FocusSession từ Supabase Map
+  /// fromSupabaseMap factory constructor
+  /// Tác dụng: Tạo FocusSession object từ Map data nhận từ Supabase
+  /// Sử dụng khi: Deserialize dữ liệu focus session từ database
   factory FocusSession.fromSupabaseMap(Map<String, dynamic> map) {
     return FocusSession(
       id: map['id'] as String?,
@@ -54,9 +57,14 @@ class FocusSession {
       actualDurationMinutes: map['actual_duration_minutes'] as int? ?? 0,
       breakDurationMinutes: map['break_duration_minutes'] as int? ?? 5,
       startedAt: DateTime.parse(map['started_at'] as String),
-      endedAt: map['ended_at'] != null ? DateTime.parse(map['ended_at'] as String) : null,
-      pausedAt: map['paused_at'] != null ? DateTime.parse(map['paused_at'] as String) : null,
-      totalPauseDurationMinutes: map['total_pause_duration_minutes'] as int? ?? 0,
+      endedAt: map['ended_at'] != null
+          ? DateTime.parse(map['ended_at'] as String)
+          : null,
+      pausedAt: map['paused_at'] != null
+          ? DateTime.parse(map['paused_at'] as String)
+          : null,
+      totalPauseDurationMinutes:
+          map['total_pause_duration_minutes'] as int? ?? 0,
       status: _parseStatus(map['status'] as String?),
       sessionType: map['session_type'] as String? ?? 'pomodoro',
       productivityRating: map['productivity_rating'] as int?,
@@ -136,13 +144,16 @@ class FocusSession {
       userId: userId ?? this.userId,
       taskId: taskId ?? this.taskId,
       title: title ?? this.title,
-      plannedDurationMinutes: plannedDurationMinutes ?? this.plannedDurationMinutes,
-      actualDurationMinutes: actualDurationMinutes ?? this.actualDurationMinutes,
+      plannedDurationMinutes:
+          plannedDurationMinutes ?? this.plannedDurationMinutes,
+      actualDurationMinutes:
+          actualDurationMinutes ?? this.actualDurationMinutes,
       breakDurationMinutes: breakDurationMinutes ?? this.breakDurationMinutes,
       startedAt: startedAt ?? this.startedAt,
       endedAt: endedAt ?? this.endedAt,
       pausedAt: pausedAt ?? this.pausedAt,
-      totalPauseDurationMinutes: totalPauseDurationMinutes ?? this.totalPauseDurationMinutes,
+      totalPauseDurationMinutes:
+          totalPauseDurationMinutes ?? this.totalPauseDurationMinutes,
       status: status ?? this.status,
       sessionType: sessionType ?? this.sessionType,
       productivityRating: productivityRating ?? this.productivityRating,
@@ -171,12 +182,7 @@ class FocusSession {
 
 /// Enum cho trạng thái Focus Session
 /// Tương ứng với focus_session_status trong database
-enum FocusSessionStatus {
-  active,
-  paused,
-  completed,
-  cancelled,
-}
+enum FocusSessionStatus { active, paused, completed, cancelled }
 
 /// Extension để lấy display name cho status
 extension FocusSessionStatusExtension on FocusSessionStatus {
@@ -206,3 +212,4 @@ extension FocusSessionStatusExtension on FocusSessionStatus {
     }
   }
 }
+

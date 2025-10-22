@@ -4,20 +4,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Provider để quản lý theme mode (light/dark)
 class ThemeProvider extends ChangeNotifier {
   static const String _themeKey = 'theme_mode';
-  
+
   ThemeMode _themeMode = ThemeMode.light;
-  
+
   /// Getter cho theme mode hiện tại
   ThemeMode get themeMode => _themeMode;
-  
+
   /// Kiểm tra xem có đang ở dark mode không
   bool get isDarkMode => _themeMode == ThemeMode.dark;
-  
+
   /// Constructor - khởi tạo và load theme từ SharedPreferences
   ThemeProvider() {
     _loadThemeFromPrefs();
   }
-  
+
   /// Load theme mode từ SharedPreferences
   Future<void> _loadThemeFromPrefs() async {
     try {
@@ -30,7 +30,7 @@ class ThemeProvider extends ChangeNotifier {
       _themeMode = ThemeMode.light;
     }
   }
-  
+
   /// Lưu theme mode vào SharedPreferences
   Future<void> _saveThemeToPrefs(bool isDark) async {
     try {
@@ -41,17 +41,17 @@ class ThemeProvider extends ChangeNotifier {
       debugPrint('Error saving theme preference: $e');
     }
   }
-  
+
   /// Chuyển đổi theme mode
   Future<void> toggleTheme() async {
-    _themeMode = _themeMode == ThemeMode.light 
-        ? ThemeMode.dark 
+    _themeMode = _themeMode == ThemeMode.light
+        ? ThemeMode.dark
         : ThemeMode.light;
-    
+
     await _saveThemeToPrefs(_themeMode == ThemeMode.dark);
     notifyListeners();
   }
-  
+
   /// Set theme mode cụ thể
   Future<void> setThemeMode(ThemeMode mode) async {
     if (_themeMode != mode) {
@@ -60,10 +60,11 @@ class ThemeProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   /// Set dark mode
   Future<void> setDarkMode(bool isDark) async {
     final newMode = isDark ? ThemeMode.dark : ThemeMode.light;
     await setThemeMode(newMode);
   }
 }
+

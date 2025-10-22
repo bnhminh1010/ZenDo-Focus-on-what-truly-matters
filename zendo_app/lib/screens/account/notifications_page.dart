@@ -26,10 +26,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       appBar: AppBar(
         backgroundColor: colorScheme.surface,
         elevation: 0,
-        title: Text(
-          'Cài đặt thông báo',
-          style: theme.textTheme.titleLarge,
-        ),
+        title: Text('Cài đặt thông báo', style: theme.textTheme.titleLarge),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -197,11 +194,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Icon(
-          icon,
-          color: colorScheme.onSurface,
-          size: 24,
-        ),
+        leading: Icon(icon, color: colorScheme.onSurface, size: 24),
         title: Text(
           title,
           style: theme.textTheme.bodyLarge?.copyWith(
@@ -267,11 +260,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   void _showTimeRangePicker() {
     // TODO: Implement time range picker
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Tính năng đang phát triển'),
-      ),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Tính năng đang phát triển')));
   }
 
   void _resetToDefault() {
@@ -293,3 +284,4 @@ class _NotificationsPageState extends State<NotificationsPage> {
     );
   }
 }
+

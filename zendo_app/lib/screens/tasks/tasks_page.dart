@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import '../../providers/task_model.dart';
 import '../../theme.dart';
 
+/// TasksPage Class
+/// Tác dụng: Màn hình hiển thị danh sách tất cả tasks với search và filter
+/// Sử dụng khi: Người dùng muốn xem và quản lý toàn bộ danh sách tasks
 class TasksPage extends StatefulWidget {
   const TasksPage({super.key});
 
@@ -10,6 +13,9 @@ class TasksPage extends StatefulWidget {
   State<TasksPage> createState() => _TasksPageState();
 }
 
+/// _TasksPageState Class
+/// Tác dụng: State class quản lý UI và logic của TasksPage
+/// Sử dụng khi: Cần quản lý trạng thái search và hiển thị danh sách tasks
 class _TasksPageState extends State<TasksPage> {
   @override
   Widget build(BuildContext context) {
@@ -38,19 +44,32 @@ class _TasksPageState extends State<TasksPage> {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceContainer,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)),
+                border: Border.all(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.outline.withOpacity(0.2),
+                ),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.search, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), size: 20),
+                  Icon(
+                    Icons.search,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.6),
+                    size: 20,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: TextField(
                       decoration: InputDecoration(
                         hintText: 'Tìm kiếm nhiệm vụ...',
-                        hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                        ),
+                        hintStyle: Theme.of(context).textTheme.bodyMedium
+                            ?.copyWith(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withOpacity(0.5),
+                            ),
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.zero,
                       ),
@@ -60,7 +79,7 @@ class _TasksPageState extends State<TasksPage> {
               ),
             ),
             const SizedBox(height: 32),
-            
+
             // Categories Grid
             Expanded(
               child: Consumer<TaskModel>(
@@ -71,10 +90,34 @@ class _TasksPageState extends State<TasksPage> {
                     mainAxisSpacing: 16,
                     childAspectRatio: 1.0,
                     children: [
-                      _buildCategoryCard(context, 'Work', AppTheme.workColor, Icons.work_outline, 12),
-                      _buildCategoryCard(context, 'Family', AppTheme.familyColor, Icons.family_restroom, 8),
-                      _buildCategoryCard(context, 'Healthy', AppTheme.healthColor, Icons.favorite_outline, 6),
-                      _buildCategoryCard(context, 'Personal', AppTheme.personalColor, Icons.person_outline, 5),
+                      _buildCategoryCard(
+                        context,
+                        'Work',
+                        AppTheme.workColor,
+                        Icons.work_outline,
+                        12,
+                      ),
+                      _buildCategoryCard(
+                        context,
+                        'Family',
+                        AppTheme.familyColor,
+                        Icons.family_restroom,
+                        8,
+                      ),
+                      _buildCategoryCard(
+                        context,
+                        'Healthy',
+                        AppTheme.healthColor,
+                        Icons.favorite_outline,
+                        6,
+                      ),
+                      _buildCategoryCard(
+                        context,
+                        'Personal',
+                        AppTheme.personalColor,
+                        Icons.person_outline,
+                        5,
+                      ),
                     ],
                   );
                 },
@@ -86,7 +129,13 @@ class _TasksPageState extends State<TasksPage> {
     );
   }
 
-  Widget _buildCategoryCard(BuildContext context, String category, Color categoryColor, IconData icon, int taskCount) {
+  Widget _buildCategoryCard(
+    BuildContext context,
+    String category,
+    Color categoryColor,
+    IconData icon,
+    int taskCount,
+  ) {
     return GestureDetector(
       onTap: () {
         // TODO: Navigate to category detail page
@@ -96,10 +145,12 @@ class _TasksPageState extends State<TasksPage> {
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1)),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: Colors.black.withOpacity(0.05),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -113,17 +164,13 @@ class _TasksPageState extends State<TasksPage> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: categoryColor.withValues(alpha: 0.1),
+                color: categoryColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                icon,
-                color: categoryColor,
-                size: 24,
-              ),
+              child: Icon(icon, color: categoryColor, size: 24),
             ),
             const Spacer(),
-            
+
             // Category name
             Text(
               category,
@@ -133,12 +180,14 @@ class _TasksPageState extends State<TasksPage> {
               ),
             ),
             const SizedBox(height: 4),
-            
+
             // Task count
             Text(
               '$taskCount Tasks',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withOpacity(0.6),
               ),
             ),
           ],
@@ -147,3 +196,4 @@ class _TasksPageState extends State<TasksPage> {
     );
   }
 }
+

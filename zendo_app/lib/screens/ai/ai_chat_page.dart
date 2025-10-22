@@ -11,6 +11,8 @@ import '../../theme.dart';
 import '../../models/task.dart';
 import '../../providers/task_model.dart';
 import '../../../services/supabase_database_service.dart';
+import '../../widgets/glass_button.dart';
+import '../../widgets/glass_container.dart';
 
 class AIChatPage extends StatefulWidget {
   final Map<String, dynamic>? extra;
@@ -77,7 +79,8 @@ class _AIChatPageState extends State<AIChatPage> with TickerProviderStateMixin {
 
   void _addWelcomeMessage() {
     // Kiểm tra nếu có task được truyền vào
-    String welcomeContent = '''Xin chào! 🐬 Tôi là BilyBily - trợ lý AI của ZenDo.
+    String welcomeContent =
+        '''Xin chào! 🐬 Tôi là BilyBily - trợ lý AI của ZenDo.
 
 Tôi có thể giúp bạn:
 • 📝 Tạo task từ mô tả tự nhiên
@@ -90,7 +93,8 @@ Hãy chat trực tiếp với tôi về bất cứ điều gì bạn cần!''';
     // Nếu có task được truyền vào, thêm thông tin task vào welcome message
     if (widget.extra != null && widget.extra!['initialTask'] != null) {
       final task = widget.extra!['initialTask'] as Task;
-      welcomeContent += '''
+      welcomeContent +=
+          '''
 
 📋 **Thông tin task hiện tại:**
 • **Tiêu đề:** ${task.title}
@@ -180,21 +184,25 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
             .toList();
 
         String contextMessage = text;
-        
+
         // Nếu có task được truyền từ task detail page, thêm thông tin chi tiết
-         if (widget.extra != null && widget.extra!['initialTask'] != null) {
-           final currentTask = widget.extra!['initialTask'] as Task;
-           contextMessage += '\n\n[Context - Task hiện tại đang thảo luận:\n';
-           contextMessage += '- Tiêu đề: ${currentTask.title}\n';
-           contextMessage += '- Mô tả: ${currentTask.description ?? 'Không có mô tả'}\n';
-           contextMessage += '- Ưu tiên: ${currentTask.priority.displayName}\n';
-           contextMessage += '- Danh mục: ${currentTask.category.displayName}\n';
-           contextMessage += '- Trạng thái: ${currentTask.isCompleted ? 'Đã hoàn thành' : 'Chưa hoàn thành'}\n';
-           contextMessage += '- Thời gian ước tính: ${currentTask.estimatedMinutes} phút\n';
-           contextMessage += '- Deadline: ${currentTask.dueDate != null ? currentTask.dueDate.toString().split(' ')[0] : 'Không có'}\n';
-           contextMessage += ']\n\n';
-         }
-        
+        if (widget.extra != null && widget.extra!['initialTask'] != null) {
+          final currentTask = widget.extra!['initialTask'] as Task;
+          contextMessage += '\n\n[Context - Task hiện tại đang thảo luận:\n';
+          contextMessage += '- Tiêu đề: ${currentTask.title}\n';
+          contextMessage +=
+              '- Mô tả: ${currentTask.description ?? 'Không có mô tả'}\n';
+          contextMessage += '- Ưu tiên: ${currentTask.priority.displayName}\n';
+          contextMessage += '- Danh mục: ${currentTask.category.displayName}\n';
+          contextMessage +=
+              '- Trạng thái: ${currentTask.isCompleted ? 'Đã hoàn thành' : 'Chưa hoàn thành'}\n';
+          contextMessage +=
+              '- Thời gian ước tính: ${currentTask.estimatedMinutes} phút\n';
+          contextMessage +=
+              '- Deadline: ${currentTask.dueDate != null ? currentTask.dueDate.toString().split(' ')[0] : 'Không có'}\n';
+          contextMessage += ']\n\n';
+        }
+
         // Thêm context từ các tasks khác nếu có
         if (currentTasks.isNotEmpty) {
           contextMessage += '[Context - Tasks khác hiện tại của user:\n';
@@ -206,19 +214,22 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
 
         // Gửi tin nhắn với file nếu có
         final response = _selectedFile != null
-            ? await _aiService.sendMessageWithFile(contextMessage, _selectedFile!)
+            ? await _aiService.sendMessageWithFile(
+                contextMessage,
+                _selectedFile!,
+              )
             : await _aiService.sendMessage(contextMessage);
 
         // Reset file sau khi gửi
         _selectedFile = null;
-        
+
         // Cập nhật UI để ẩn trạng thái file đã chọn
         setState(() {});
 
         // Tạo tin nhắn phản hồi từ AI
         // Reset file sau khi tạo task thành công
         _selectedFile = null;
-        
+
         final aiMessage = AIMessage.fromAI(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           content: response,
@@ -295,14 +306,17 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
       }
 
       // Nếu đã có đủ thông tin, tạo task
-      final task = await _aiService.createTaskFromDescription(message, imageFile: _selectedFile);
+      final task = await _aiService.createTaskFromDescription(
+        message,
+        imageFile: _selectedFile,
+      );
       if (task != null) {
         final taskModel = Provider.of<TaskModel>(context, listen: false);
         await taskModel.addTask(task);
 
         // Reset file sau khi tạo task thành công
         _selectedFile = null;
-        
+
         final aiMessage = AIMessage.fromAI(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           content:
@@ -462,22 +476,22 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.red.shade50,
+        color: context.errorColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.red.shade200),
+        border: Border.all(color: context.errorColor.withOpacity(0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.error_outline, color: Colors.red.shade600),
+              Icon(Icons.error_outline, color: context.errorColor),
               const SizedBox(width: 8),
               Text(
                 'Lỗi kết nối AI',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Colors.red.shade700,
+                  color: context.errorColor,
                 ),
               ),
             ],
@@ -488,17 +502,15 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
             '• Kết nối internet\n'
             '• Cấu hình API key trong file .env\n'
             '• Khởi động lại ứng dụng sau khi cập nhật',
-            style: TextStyle(color: Colors.red.shade600),
+            style: TextStyle(color: context.errorColor.withOpacity(0.8)),
           ),
           const SizedBox(height: 12),
-          ElevatedButton.icon(
+          GlassElevatedButton.icon(
             onPressed: _initializeAI,
             icon: const Icon(Icons.refresh),
             label: const Text('Thử lại'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade600,
-              foregroundColor: Colors.white,
-            ),
+            backgroundColor: context.errorColor,
+            foregroundColor: Theme.of(context).colorScheme.onError,
           ),
         ],
       ),
@@ -534,6 +546,11 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
+        leading: GlassIconButton(
+          icon: Icons.arrow_back,
+          onPressed: () => Navigator.of(context).pop(),
+          tooltip: 'Quay lại',
+        ),
         title: Row(
           children: [
             Container(
@@ -541,18 +558,20 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
               height: 32,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.blue.shade400, Colors.blue.shade600],
+                  colors: [
+                    Theme.of(context).colorScheme.primary,
+                    Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(0.8),
+                  ],
                 ),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: SvgPicture.asset(
-                'assets/icons/dolphin.svg',
+              child: Image.asset(
+                'assets/icons/bot.png',
                 width: 18,
                 height: 18,
-                colorFilter: const ColorFilter.mode(
-                  Colors.white,
-                  BlendMode.srcIn,
-                ),
+                color: Theme.of(context).colorScheme.onPrimary,
               ),
             ),
             const SizedBox(width: 12),
@@ -569,10 +588,10 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
                   _isInitialized ? 'Đã sẵn sàng' : 'Đang khởi tạo...',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: _isInitialized
-                        ? Colors.green
+                        ? context.successColor
                         : Theme.of(
                             context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ).colorScheme.onSurface.withOpacity(0.6),
                   ),
                 ),
               ],
@@ -580,8 +599,8 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
+          GlassIconButton(
+            icon: Icons.refresh,
             onPressed: () {
               setState(() {
                 _messages.clear();
@@ -650,14 +669,11 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
               ),
               child: isError
                   ? Icon(Icons.error_outline, color: Colors.white, size: 18)
-                  : SvgPicture.asset(
-                      'assets/icons/dolphin.svg',
+                  : Image.asset(
+                      'assets/icons/bot.png',
                       width: 18,
                       height: 18,
-                      colorFilter: const ColorFilter.mode(
-                        Colors.white,
-                        BlendMode.srcIn,
-                      ),
+                      color: Colors.white,
                     ),
             ),
             const SizedBox(width: 8),
@@ -666,22 +682,25 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
           Flexible(
             child: GestureDetector(
               onLongPress: () => _copyMessage(message.content),
-              child: Container(
+              child: GlassContainer(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: isUser
-                      ? Theme.of(context).colorScheme.primary
-                      : isError
-                      ? Colors.red.withValues(alpha: 0.1)
-                      : Theme.of(context).colorScheme.surfaceContainer,
-                  borderRadius: BorderRadius.circular(16).copyWith(
-                    bottomRight: isUser ? const Radius.circular(4) : null,
-                    bottomLeft: !isUser ? const Radius.circular(4) : null,
-                  ),
-                  border: isError
-                      ? Border.all(color: Colors.red.withValues(alpha: 0.3))
-                      : null,
-                ),
+                borderRadius: 16,
+                blur: isUser ? 8 : 12,
+                opacity: isUser ? 0.2 : 0.1,
+                color: isUser
+                    ? Theme.of(
+                        context,
+                      ).colorScheme.primary.withOpacity(0.3)
+                    : isError
+                    ? context.errorColor.withOpacity(0.1)
+                    : Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainer.withOpacity(0.5),
+                border: isError
+                    ? Border.all(
+                        color: context.errorColor.withOpacity(0.3),
+                      )
+                    : null,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -700,10 +719,10 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
                       message.displayTime,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: isUser
-                            ? Colors.white.withValues(alpha: 0.7)
+                            ? Colors.white.withOpacity(0.7)
                             : Theme.of(
                                 context,
-                              ).colorScheme.onSurface.withValues(alpha: 0.5),
+                              ).colorScheme.onSurface.withOpacity(0.5),
                         fontSize: 10,
                       ),
                     ),
@@ -719,7 +738,9 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                color: Theme.of(
+                  context,
+                ).colorScheme.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(
@@ -790,7 +811,7 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
                           decoration: BoxDecoration(
                             color: Theme.of(
                               context,
-                            ).colorScheme.onSurface.withValues(alpha: 0.6),
+                            ).colorScheme.onSurface.withOpacity(0.6),
                             borderRadius: BorderRadius.circular(3),
                           ),
                         ),
@@ -813,7 +834,7 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
         color: Theme.of(context).colorScheme.surface,
         border: Border(
           top: BorderSide(
-            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
           ),
         ),
       ),
@@ -837,19 +858,21 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
                     border: Border.all(
                       color: _selectedFile != null
                           ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+                          : Theme.of(
+                              context,
+                            ).colorScheme.outline.withOpacity(0.2),
                     ),
                   ),
-                  child: IconButton(
+                  child: GlassIconButton(
                     onPressed: _pickFile,
-                    icon: Icon(
-                      _selectedFile != null
-                          ? Icons.attach_file
-                          : Icons.attach_file_rounded,
-                      color: _selectedFile != null
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                    ),
+                    icon: _selectedFile != null
+                        ? Icons.attach_file
+                        : Icons.attach_file_rounded,
+                    iconColor: _selectedFile != null
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.7),
                     tooltip: _selectedFile != null
                         ? 'File đã chọn: ${_selectedFile!.path.split('/').last}'
                         : 'Đính kèm file',
@@ -864,7 +887,7 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
                       border: Border.all(
                         color: Theme.of(
                           context,
-                        ).colorScheme.outline.withValues(alpha: 0.2),
+                        ).colorScheme.outline.withOpacity(0.2),
                       ),
                     ),
                     child: TextField(
@@ -878,7 +901,7 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
                         hintStyle: TextStyle(
                           color: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ).colorScheme.onSurface.withOpacity(0.6),
                         ),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(
@@ -900,20 +923,12 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
                     ),
                     borderRadius: BorderRadius.circular(24),
                   ),
-                  child: IconButton(
+                  child: GlassIconButton(
                     onPressed: _isLoading ? null : _sendMessage,
                     icon: _isLoading
-                        ? SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white.withValues(alpha: 0.7),
-                              ),
-                            ),
-                          )
-                        : const Icon(Icons.send_rounded, color: Colors.white),
+                        ? Icons.hourglass_empty
+                        : Icons.send_rounded,
+                    iconColor: Theme.of(context).colorScheme.onPrimary,
                     tooltip: 'Gửi tin nhắn',
                   ),
                 ),
@@ -975,7 +990,7 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
           color: Theme.of(context).colorScheme.primaryContainer,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
           ),
         ),
         child: Row(
@@ -1023,7 +1038,7 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Đã tạo task: ${aiResponse.title}'),
-              backgroundColor: Colors.green,
+              backgroundColor: context.successColor,
             ),
           );
         }
@@ -1033,7 +1048,7 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi tạo task: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: context.errorColor,
           ),
         );
       }
@@ -1067,7 +1082,7 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
         final fileMessage =
             'Tôi đã đính kèm file: ${file.name}. Bạn có thể giúp tôi phân tích hoặc tạo task từ file này không?';
         _messageController.text = fileMessage;
-        
+
         // Cập nhật UI để hiển thị file đã chọn
         setState(() {});
       }
@@ -1075,9 +1090,10 @@ Tôi có thể giúp bạn phân tích, cải thiện hoặc thảo luận về 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Lỗi khi chọn file: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: context.errorColor,
         ),
       );
     }
   }
 }
+

@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
-import '../models/focus_session.dart';
 import '../providers/focus_session_model.dart';
 import '../theme.dart';
 import 'pyramid_timer_widget.dart';
+import 'glass_dialog.dart';
+import 'glass_button.dart';
+import 'glass_container.dart';
 
-/// Widget Pomodoro Timer có thể tái sử dụng
+/// PomodoroTimerWidget Class
+/// Tác dụng: Widget Pomodoro Timer có thể tái sử dụng với đầy đủ tính năng
+/// Sử dụng khi: Cần tích hợp Pomodoro technique vào focus sessions
 class PomodoroTimerWidget extends StatefulWidget {
   final String? taskId;
   final String? taskTitle;
@@ -37,34 +41,36 @@ class PomodoroTimerWidget extends StatefulWidget {
   State<PomodoroTimerWidget> createState() => _PomodoroTimerWidgetState();
 }
 
+/// _PomodoroTimerWidgetState Class
+/// Tác dụng: State class quản lý logic và UI của Pomodoro Timer
+/// Sử dụng khi: Cần xử lý timer, animations và state management
 class _PomodoroTimerWidgetState extends State<PomodoroTimerWidget>
     with TickerProviderStateMixin {
   Timer? _timer;
-  
+
   // Pomodoro settings
   late int _workDuration;
   late int _shortBreakDuration;
   late int _longBreakDuration;
-  
+
   // Current session state
   PomodoroPhase _currentPhase = PomodoroPhase.work;
   int _currentSeconds = 0;
   int _totalSeconds = 0;
   bool _isRunning = false;
   bool _isPaused = false;
-  
+
   // Pomodoro cycle tracking
   int _completedPomodoros = 0;
   int _distractionCount = 0;
-  
+
   // Session tracking
   DateTime? _sessionStartTime;
   String? _currentSessionId;
-  
+
   // Animations
   late AnimationController _pulseController;
   late AnimationController _progressController;
-  late Animation<double> _pulseAnimation;
   late Animation<double> _progressAnimation;
 
   @override
@@ -86,25 +92,14 @@ class _PomodoroTimerWidgetState extends State<PomodoroTimerWidget>
       duration: const Duration(seconds: 2),
       vsync: this,
     );
-    _pulseAnimation = Tween<double>(
-      begin: 0.95,
-      end: 1.05,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
-    
+
     _progressController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _progressAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _progressController,
-      curve: Curves.easeInOut,
-    ));
+    _progressAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _progressController, curve: Curves.easeInOut),
+    );
   }
 
   void _resetTimer() {
@@ -126,7 +121,9 @@ class _PomodoroTimerWidgetState extends State<PomodoroTimerWidget>
   }
 
   void _updateProgress() {
-    final progress = _totalSeconds > 0 ? (_totalSeconds - _currentSeconds) / _totalSeconds : 0.0;
+    final progress = _totalSeconds > 0
+        ? (_totalSeconds - _currentSeconds) / _totalSeconds
+        : 0.0;
     _progressController.animateTo(progress);
   }
 
@@ -214,7 +211,7 @@ class _PomodoroTimerWidgetState extends State<PomodoroTimerWidget>
   void _onTimerComplete() {
     _timer?.cancel();
     _pulseController.stop();
-    
+
     setState(() {
       _isRunning = false;
       _isPaused = false;
@@ -222,25 +219,25 @@ class _PomodoroTimerWidgetState extends State<PomodoroTimerWidget>
 
     if (_currentPhase == PomodoroPhase.work) {
       _completedPomodoros++;
-      
+
       // Complete focus session
       if (_currentSessionId != null) {
-        final actualDuration = _sessionStartTime != null 
+        final actualDuration = _sessionStartTime != null
             ? DateTime.now().difference(_sessionStartTime!).inMinutes
             : widget.initialWorkDuration;
-            
+
         context.read<FocusSessionModel>().completeFocusSession(
           _currentSessionId!,
           actualDurationMinutes: actualDuration,
           distractionCount: _distractionCount,
         );
-        
+
         _currentSessionId = null;
         _sessionStartTime = null;
       }
 
       widget.onSessionComplete?.call();
-      
+
       // Chuyển sang break
       if (_completedPomodoros % widget.sessionsBeforeLongBreak == 0) {
         _currentPhase = PomodoroPhase.longBreak;
@@ -269,23 +266,100 @@ class _PomodoroTimerWidgetState extends State<PomodoroTimerWidget>
   void _showPhaseCompleteDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(_getPhaseCompleteTitle()),
-        content: Text(_getPhaseCompleteMessage()),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-          if (!_isAutoStartEnabled())
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _startTimer();
-              },
-              child: Text(_getStartButtonText()),
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: GlassContainer(
+          borderRadius: 24,
+          blur: 20,
+          opacity: 0.15,
+          padding: const EdgeInsets.all(32),
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.9,
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Header with icon
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Center(
+                    child: Text(
+                      _getPhaseIcon(),
+                      style: const TextStyle(fontSize: 32),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Title
+                Text(
+                  _getPhaseCompleteTitle(),
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 12),
+
+                // Message
+                Text(
+                  _getPhaseCompleteMessage(),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.7),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 24),
+
+                // Action buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: Semantics(
+                        label: 'Đóng thông báo',
+                        hint: 'Nhấn để đóng dialog',
+                        child: GlassOutlinedButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Đồng ý'),
+                        ),
+                      ),
+                    ),
+                    if (!_isAutoStartEnabled()) ...[
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Semantics(
+                          label: 'Bắt đầu phiên tiếp theo',
+                          hint:
+                              'Nhấn để bắt đầu phiên ${_getStartButtonText().toLowerCase()}',
+                          child: GlassElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              _startTimer();
+                            },
+                            child: Text(_getStartButtonText()),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
             ),
-        ],
+          ),
+        ),
       ),
     );
   }
@@ -315,6 +389,17 @@ class _PomodoroTimerWidgetState extends State<PomodoroTimerWidget>
         return 'Nghỉ ngắn';
       case PomodoroPhase.longBreak:
         return 'Nghỉ dài';
+    }
+  }
+
+  String _getPhaseIcon() {
+    switch (_currentPhase) {
+      case PomodoroPhase.work:
+        return '🎯';
+      case PomodoroPhase.shortBreak:
+        return '☕';
+      case PomodoroPhase.longBreak:
+        return '🌟';
     }
   }
 
@@ -352,7 +437,7 @@ class _PomodoroTimerWidgetState extends State<PomodoroTimerWidget>
 
   bool _isAutoStartEnabled() {
     return (_currentPhase != PomodoroPhase.work && widget.autoStartBreaks) ||
-           (_currentPhase == PomodoroPhase.work && widget.autoStartWork);
+        (_currentPhase == PomodoroPhase.work && widget.autoStartWork);
   }
 
   Color _getPhaseColor() {
@@ -385,36 +470,28 @@ class _PomodoroTimerWidgetState extends State<PomodoroTimerWidget>
               ),
             ),
             const SizedBox(height: 8),
-            
+
             // Task title (if provided)
             if (widget.taskTitle != null) ...[
               Text(
                 widget.taskTitle!,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
             ],
 
             // Pyramid Timer thay vì Timer circle
-            AnimatedBuilder(
-              animation: _pulseAnimation,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _isRunning ? _pulseAnimation.value : 1.0,
-                  child: PyramidTimerWidget(
-                    progress: _progressAnimation.value,
-                    activeColor: Colors.purple, // Màu tím cho phần active
-                    inactiveColor: Colors.grey[400]!, // Màu xám cho phần inactive
-                    size: 200,
-                    timeText: _formatTime(_currentSeconds),
-                    subText: '$_completedPomodoros phiên hoàn thành',
-                    onTimeTap: _showTimePicker, // Thêm callback để chọn thời gian
-                  ),
-                );
-              },
+            PyramidTimerWidget(
+              progress: _progressAnimation.value,
+              activeColor: Colors.purple, // Màu tím cho phần active
+              inactiveColor: Colors.grey[400]!, // Màu xám cho phần inactive
+              size: 260, // tăng kích thước vùng kim tự tháp & thời gian
+              timeText: _formatTime(_currentSeconds),
+              subText: '$_completedPomodoros phiên hoàn thành',
+              onTimeTap: _showTimePicker, // Thêm callback để chọn thời gian
             ),
 
             const SizedBox(height: 24),
@@ -424,26 +501,32 @@ class _PomodoroTimerWidgetState extends State<PomodoroTimerWidget>
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 // Start/Pause button
-                ElevatedButton.icon(
-                  onPressed: _isRunning ? _pauseTimer : (_isPaused ? _resumeTimer : _startTimer),
-                  icon: Icon(_isRunning ? Icons.pause : Icons.play_arrow),
-                  label: Text(_isRunning ? 'Tạm dừng' : (_isPaused ? 'Tiếp tục' : 'Bắt đầu')),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _getPhaseColor(),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                Flexible(
+                  child: GlassElevatedButton.icon(
+                    onPressed: _isRunning
+                        ? _pauseTimer
+                        : (_isPaused ? _resumeTimer : _startTimer),
+                    icon: Icon(_isRunning ? Icons.pause : Icons.play_arrow),
+                    label: Text(
+                      _isRunning
+                          ? 'Tạm dừng'
+                          : (_isPaused ? 'Tiếp tục' : 'Bắt đầu'),
+                    ),
                   ),
                 ),
-                
+
                 // Stop button
-                OutlinedButton.icon(
-                  onPressed: (_isRunning || _isPaused) ? _stopTimer : null,
-                  icon: const Icon(Icons.stop),
-                  label: const Text('Dừng'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.red,
-                    side: const BorderSide(color: Colors.red),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                Flexible(
+                  child: GlassOutlinedButton(
+                    onPressed: (_isRunning || _isPaused) ? _stopTimer : null,
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.stop),
+                        SizedBox(width: 8),
+                        Text('Dừng'),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -456,22 +539,28 @@ class _PomodoroTimerWidgetState extends State<PomodoroTimerWidget>
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 // Distraction counter
-                TextButton.icon(
+                GlassTextButton(
                   onPressed: _addDistraction,
-                  icon: const Icon(Icons.warning_amber, color: Colors.orange),
-                  label: Text('Nhiễu: $_distractionCount'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.orange,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.warning_amber, color: Colors.orange),
+                      const SizedBox(width: 8),
+                      Text('Nhiễu: $_distractionCount'),
+                    ],
                   ),
                 ),
-                
+
                 // Skip phase
-                TextButton.icon(
+                GlassTextButton(
                   onPressed: (_isRunning || _isPaused) ? _skipPhase : null,
-                  icon: const Icon(Icons.skip_next),
-                  label: const Text('Bỏ qua'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.grey[600],
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.skip_next),
+                      SizedBox(width: 8),
+                      Text('Bỏ qua'),
+                    ],
                   ),
                 ),
               ],
@@ -489,35 +578,54 @@ class _PomodoroTimerWidgetState extends State<PomodoroTimerWidget>
     final result = await showDialog<int>(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
+        return GlassDialog(
           title: const Text('Chọn thời gian Focus'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
+                title: const Text('5 phút'),
+                subtitle: const Text('Tập trung ngắn hạn'),
+                leading: const Icon(Icons.flash_on, color: Colors.orange),
+                onTap: () => Navigator.of(context).pop(5),
+              ),
+              ListTile(
                 title: const Text('15 phút'),
+                subtitle: const Text('Tập trung vừa phải'),
+                leading: const Icon(Icons.timer, color: Colors.blue),
                 onTap: () => Navigator.of(context).pop(15),
               ),
               ListTile(
                 title: const Text('25 phút (Pomodoro)'),
+                subtitle: const Text('Kỹ thuật Pomodoro chuẩn'),
+                leading: const Icon(
+                  Icons.local_fire_department,
+                  color: Colors.red,
+                ),
                 onTap: () => Navigator.of(context).pop(25),
               ),
               ListTile(
                 title: const Text('30 phút'),
+                subtitle: const Text('Tập trung mở rộng'),
+                leading: const Icon(Icons.schedule, color: Colors.green),
                 onTap: () => Navigator.of(context).pop(30),
               ),
               ListTile(
                 title: const Text('45 phút'),
+                subtitle: const Text('Tập trung sâu'),
+                leading: const Icon(Icons.psychology, color: Colors.purple),
                 onTap: () => Navigator.of(context).pop(45),
               ),
               ListTile(
                 title: const Text('60 phút'),
+                subtitle: const Text('Tập trung tối đa'),
+                leading: const Icon(Icons.trending_up, color: Colors.indigo),
                 onTap: () => Navigator.of(context).pop(60),
               ),
             ],
           ),
           actions: [
-            TextButton(
+            GlassTextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Hủy'),
             ),
@@ -528,11 +636,11 @@ class _PomodoroTimerWidgetState extends State<PomodoroTimerWidget>
 
     if (result != null) {
       setState(() {
-        _workDuration = result * 60; // Chuyển đổi phút sang giây
-        _currentSeconds = _workDuration;
-        _totalSeconds = _workDuration;
+        _workDuration = result * 60; // Chuyển từ phút sang giây
+        if (_currentPhase == PomodoroPhase.work) {
+          _resetTimer();
+        }
       });
-      _resetTimer();
     }
   }
 
@@ -546,8 +654,5 @@ class _PomodoroTimerWidgetState extends State<PomodoroTimerWidget>
 }
 
 /// Enum cho các phase của Pomodoro
-enum PomodoroPhase {
-  work,
-  shortBreak,
-  longBreak,
-}
+enum PomodoroPhase { work, shortBreak, longBreak }
+

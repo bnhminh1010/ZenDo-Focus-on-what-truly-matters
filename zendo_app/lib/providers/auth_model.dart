@@ -1,8 +1,9 @@
 import 'package:flutter/foundation.dart';
 import '../services/supabase_auth_service.dart';
 
-/// Model quản lý trạng thái authentication với Supabase
-/// Sử dụng SupabaseAuthService để xử lý authentication
+/// AuthModel Class
+/// Tác dụng: Provider quản lý trạng thái xác thực người dùng và tương tác với Supabase Auth
+/// Sử dụng khi: Cần xử lý đăng nhập, đăng xuất, đăng ký và quản lý session người dùng
 class AuthModel extends ChangeNotifier {
   final SupabaseAuthService _authService = SupabaseAuthService();
 
@@ -17,7 +18,9 @@ class AuthModel extends ChangeNotifier {
   String? get userName => _userName;
   bool get isLoading => _isLoading;
 
-  /// Khởi tạo và kiểm tra trạng thái đăng nhập từ Supabase
+  /// initialize method
+  /// Tác dụng: Khởi tạo AuthModel và kiểm tra trạng thái đăng nhập hiện tại từ Supabase
+  /// Sử dụng khi: Khởi động ứng dụng để xác định user đã đăng nhập hay chưa
   Future<void> initialize() async {
     _isLoading = true;
     notifyListeners();
@@ -175,12 +178,18 @@ class AuthModel extends ChangeNotifier {
   }
 
   /// Cập nhật mật khẩu
-  Future<bool> updatePassword(String currentPassword, String newPassword) async {
+  Future<bool> updatePassword(
+    String currentPassword,
+    String newPassword,
+  ) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final success = await _authService.updatePassword(currentPassword, newPassword);
+      final success = await _authService.updatePassword(
+        currentPassword,
+        newPassword,
+      );
       _isLoading = false;
       notifyListeners();
       return success;
@@ -191,4 +200,13 @@ class AuthModel extends ChangeNotifier {
       return false;
     }
   }
+
+  /// Cập nhật trạng thái authentication từ Google Sign-In
+  void updateFromGoogleAuth(bool isAuthenticated, String? email, String? name) {
+    _isAuthenticated = isAuthenticated;
+    _userEmail = email;
+    _userName = name;
+    notifyListeners();
+  }
 }
+

@@ -115,10 +115,7 @@ class SubtaskService {
   /// Xóa subtask
   Future<void> deleteSubtask(String subtaskId) async {
     try {
-      await _supabase
-          .from('subtasks')
-          .delete()
-          .eq('id', subtaskId);
+      await _supabase.from('subtasks').delete().eq('id', subtaskId);
     } catch (e) {
       throw Exception('Lỗi khi xóa subtask: $e');
     }
@@ -128,7 +125,7 @@ class SubtaskService {
   Future<void> reorderSubtasks(List<Subtask> subtasks) async {
     try {
       final batch = <Map<String, dynamic>>[];
-      
+
       for (int i = 0; i < subtasks.length; i++) {
         batch.add({
           'id': subtasks[i].id,
@@ -141,7 +138,10 @@ class SubtaskService {
       for (final update in batch) {
         await _supabase
             .from('subtasks')
-            .update({'sort_order': update['sort_order'], 'updated_at': update['updated_at']})
+            .update({
+              'sort_order': update['sort_order'],
+              'updated_at': update['updated_at'],
+            })
             .eq('id', update['id']);
       }
     } catch (e) {
@@ -194,10 +194,7 @@ class SubtaskService {
   /// Xóa tất cả subtasks của một task
   Future<void> deleteAllSubtasksByTaskId(String taskId) async {
     try {
-      await _supabase
-          .from('subtasks')
-          .delete()
-          .eq('task_id', taskId);
+      await _supabase.from('subtasks').delete().eq('task_id', taskId);
     } catch (e) {
       throw Exception('Lỗi khi xóa tất cả subtasks: $e');
     }
@@ -234,3 +231,4 @@ class SubtaskService {
     }
   }
 }
+

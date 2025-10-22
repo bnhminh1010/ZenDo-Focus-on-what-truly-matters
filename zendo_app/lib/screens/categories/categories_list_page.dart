@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../models/task.dart';
 import '../../providers/task_model.dart';
 import '../../theme.dart';
+import '../../widgets/glass_container.dart';
+import '../../widgets/glass_button.dart';
 
 /// Trang hiển thị tất cả categories
 class CategoriesListPage extends StatelessWidget {
@@ -16,9 +19,9 @@ class CategoriesListPage extends StatelessWidget {
         title: const Text('Tất cả danh mục'),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => Navigator.pop(context),
+        leading: GlassIconButton(
+          icon: Icons.arrow_back_ios,
+          onPressed: () => context.pop(),
         ),
       ),
       body: Consumer<TaskModel>(
@@ -29,42 +32,63 @@ class CategoriesListPage extends StatelessWidget {
               'icon': Icons.work_outline,
               'color': AppTheme.workColor,
               'category': TaskCategory.work,
-              'taskCount': taskModel.getTasksByCategory(TaskCategory.work).length,
+              'taskCount': taskModel
+                  .getTasksByCategory(TaskCategory.work)
+                  .length,
             },
             {
               'name': 'Family',
               'icon': Icons.family_restroom,
               'color': AppTheme.familyColor,
-              'category': TaskCategory.learning,
-              'taskCount': taskModel.getTasksByCategory(TaskCategory.learning).length,
+              'category': TaskCategory.social,
+              'taskCount': taskModel
+                  .getTasksByCategory(TaskCategory.social)
+                  .length,
             },
             {
               'name': 'Healthy',
               'icon': Icons.favorite_outline,
               'color': AppTheme.healthColor,
               'category': TaskCategory.health,
-              'taskCount': taskModel.getTasksByCategory(TaskCategory.health).length,
+              'taskCount': taskModel
+                  .getTasksByCategory(TaskCategory.health)
+                  .length,
             },
             {
               'name': 'Personal',
               'icon': Icons.person_outline,
               'color': AppTheme.personalColor,
               'category': TaskCategory.personal,
-              'taskCount': taskModel.getTasksByCategory(TaskCategory.personal).length,
+              'taskCount': taskModel
+                  .getTasksByCategory(TaskCategory.personal)
+                  .length,
             },
             {
               'name': 'Learning',
               'icon': Icons.school_outlined,
               'color': Colors.orange,
               'category': TaskCategory.learning,
-              'taskCount': taskModel.getTasksByCategory(TaskCategory.learning).length,
+              'taskCount': taskModel
+                  .getTasksByCategory(TaskCategory.learning)
+                  .length,
+            },
+            {
+              'name': 'Finance',
+              'icon': Icons.account_balance_wallet_outlined,
+              'color': Colors.orange,
+              'category': TaskCategory.finance,
+              'taskCount': taskModel
+                  .getTasksByCategory(TaskCategory.finance)
+                  .length,
             },
             {
               'name': 'Other',
               'icon': Icons.more_horiz,
               'color': Colors.grey,
               'category': TaskCategory.other,
-              'taskCount': taskModel.getTasksByCategory(TaskCategory.other).length,
+              'taskCount': taskModel
+                  .getTasksByCategory(TaskCategory.other)
+                  .length,
             },
           ];
 
@@ -81,7 +105,9 @@ class CategoriesListPage extends StatelessWidget {
                     // Navigate to category detail page
                     context.pushNamed(
                       'categoryDetail',
-                      pathParameters: {'categoryName': category['name'] as String},
+                      pathParameters: {
+                        'categoryName': category['name'] as String,
+                      },
                       extra: {
                         'icon': category['icon'] as IconData,
                         'color': category['color'] as Color,
@@ -89,50 +115,44 @@ class CategoriesListPage extends StatelessWidget {
                       },
                     );
                   },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: (category['color'] as Color).withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
+                  child: GlassContainer(
+                    borderRadius: 16,
+                    blur: 12,
+                    opacity: 0.14,
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
                               category['icon'] as IconData,
                               color: category['color'] as Color,
-                              size: 24,
+                              size: 18,
                             ),
-                          ),
-                          const Spacer(),
-                          Text(
-                            category['name'] as String,
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(fontWeight: FontWeight.w600),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${category['taskCount']} Tasks',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.grey[600],
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                category['name'] as String,
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: (category['color'] as Color)
+                                          .withOpacity(0.8),
+                                    ),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          '${category['taskCount']} nhiệm vụ',
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(
+                                color: category['color'] as Color,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                      ],
                     ),
                   ),
                 );
@@ -144,3 +164,4 @@ class CategoriesListPage extends StatelessWidget {
     );
   }
 }
+

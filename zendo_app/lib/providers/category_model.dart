@@ -2,7 +2,9 @@ import 'package:flutter/foundation.dart';
 import '../models/category.dart' as app_category;
 import '../services/category_service.dart';
 
-/// Provider quản lý state của Categories
+/// CategoryModel Class
+/// Tác dụng: Provider quản lý trạng thái và logic nghiệp vụ của categories trong ứng dụng
+/// Sử dụng khi: Cần quản lý danh sách categories, thực hiện CRUD operations với categories
 class CategoryModel extends ChangeNotifier {
   final CategoryService _categoryService = CategoryService();
 
@@ -15,24 +17,28 @@ class CategoryModel extends ChangeNotifier {
   String? _error;
   String? get error => _error;
 
-  /// Khởi tạo và load categories
+  /// initialize method
+  /// Tác dụng: Khởi tạo CategoryModel và load danh sách categories
+  /// Sử dụng khi: Khởi động ứng dụng hoặc khi cần reset toàn bộ dữ liệu categories
   Future<void> initialize() async {
     await loadCategories();
   }
 
-  /// Load tất cả categories
+  /// loadCategories method
+  /// Tác dụng: Tải danh sách categories từ database, tạo default categories nếu chưa có
+  /// Sử dụng khi: Cần refresh dữ liệu categories từ server
   Future<void> loadCategories() async {
     _setLoading(true);
     _clearError();
 
     try {
       _categories = await _categoryService.getUserCategories();
-      
+
       // Nếu chưa có categories, tạo default categories
       if (_categories.isEmpty) {
         _categories = await _categoryService.createDefaultCategories();
       }
-      
+
       debugPrint('CategoryModel: Loaded ${_categories.length} categories');
     } catch (e) {
       _setError('Failed to load categories: $e');
@@ -60,9 +66,13 @@ class CategoryModel extends ChangeNotifier {
       );
 
       _categories.add(newCategory);
-      _categories.sort((a, b) => (a as app_category.Category).sortOrder.compareTo((b as app_category.Category).sortOrder));
+      _categories.sort(
+        (a, b) => (a as app_category.Category).sortOrder.compareTo(
+          (b as app_category.Category).sortOrder,
+        ),
+      );
       notifyListeners();
-      
+
       debugPrint('CategoryModel: Created category - ${newCategory.name}');
       return true;
     } catch (e) {
@@ -91,12 +101,14 @@ class CategoryModel extends ChangeNotifier {
         color: color,
       );
 
-      final index = _categories.indexWhere((c) => (c as app_category.Category).id == categoryId);
+      final index = _categories.indexWhere(
+        (c) => (c as app_category.Category).id == categoryId,
+      );
       if (index != -1) {
         _categories[index] = updatedCategory;
         notifyListeners();
       }
-      
+
       debugPrint('CategoryModel: Updated category - ${updatedCategory.name}');
       return true;
     } catch (e) {
@@ -112,9 +124,11 @@ class CategoryModel extends ChangeNotifier {
 
     try {
       await _categoryService.deleteCategory(categoryId);
-      _categories.removeWhere((c) => (c as app_category.Category).id == categoryId);
+      _categories.removeWhere(
+        (c) => (c as app_category.Category).id == categoryId,
+      );
       notifyListeners();
-      
+
       debugPrint('CategoryModel: Deleted category - $categoryId');
       return true;
     } catch (e) {
@@ -127,7 +141,10 @@ class CategoryModel extends ChangeNotifier {
   /// Lấy category theo ID
   app_category.Category? getCategoryById(String id) {
     try {
-      return _categories.firstWhere((category) => (category as app_category.Category).id == id) as app_category.Category;
+      return _categories.firstWhere(
+            (category) => (category as app_category.Category).id == id,
+          )
+          as app_category.Category;
     } catch (e) {
       return null;
     }
@@ -136,7 +153,9 @@ class CategoryModel extends ChangeNotifier {
   /// Lấy category theo name
   app_category.Category? getCategoryByName(String name) {
     try {
-      return _categories.firstWhere((category) => category.name.toLowerCase() == name.toLowerCase());
+      return _categories.firstWhere(
+        (category) => category.name.toLowerCase() == name.toLowerCase(),
+      );
     } catch (e) {
       return null;
     }
@@ -145,11 +164,12 @@ class CategoryModel extends ChangeNotifier {
   /// Tìm kiếm categories
   List<app_category.Category> searchCategories(String query) {
     if (query.isEmpty) return _categories;
-    
+
     return _categories.where((category) {
       final cat = category as app_category.Category;
       return cat.name.toLowerCase().contains(query.toLowerCase()) ||
-             (cat.description?.toLowerCase().contains(query.toLowerCase()) ?? false);
+          (cat.description?.toLowerCase().contains(query.toLowerCase()) ??
+              false);
     }).toList();
   }
 
@@ -160,7 +180,11 @@ class CategoryModel extends ChangeNotifier {
     try {
       // Cập nhật sort order local
       for (int i = 0; i < categoryIds.length; i++) {
-        final category = _categories.firstWhere((c) => (c as app_category.Category).id == categoryIds[i]) as app_category.Category;
+        final category =
+            _categories.firstWhere(
+                  (c) => (c as app_category.Category).id == categoryIds[i],
+                )
+                as app_category.Category;
         // Tạo category mới với sort order cập nhật
         final updatedCategory = app_category.Category(
           id: category.id,
@@ -173,8 +197,10 @@ class CategoryModel extends ChangeNotifier {
           createdAt: category.createdAt,
           updatedAt: DateTime.now(),
         );
-        
-        final index = _categories.indexWhere((c) => (c as app_category.Category).id == categoryIds[i]);
+
+        final index = _categories.indexWhere(
+          (c) => (c as app_category.Category).id == categoryIds[i],
+        );
         if (index != -1) {
           _categories[index] = updatedCategory;
         }
@@ -182,7 +208,7 @@ class CategoryModel extends ChangeNotifier {
 
       // Cập nhật trên server
       await _categoryService.reorderCategories(categoryIds);
-      
+
       notifyListeners();
       debugPrint('CategoryModel: Reordered categories');
       return true;
@@ -219,3 +245,4 @@ class CategoryModel extends ChangeNotifier {
     super.dispose();
   }
 }
+

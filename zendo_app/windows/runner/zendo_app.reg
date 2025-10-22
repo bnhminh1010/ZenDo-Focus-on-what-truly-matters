@@ -1,0 +1,15 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\com.zendo.app]
+@="URL:ZenDo App Protocol"
+"URL Protocol"=""
+
+[HKEY_CLASSES_ROOT\com.zendo.app\DefaultIcon]
+@="\"C:\\Program Files\\ZenDo\\zendo_app.exe\",1"
+
+[HKEY_CLASSES_ROOT\com.zendo.app\shell]
+
+[HKEY_CLASSES_ROOT\com.zendo.app\shell\open]
+
+[HKEY_CLASSES_ROOT\com.zendo.app\shell\open\command]
+@="\"C:\\Program Files\\ZenDo\\zendo_app.exe\" \"%1\""

@@ -2,8 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/task.dart';
 
-/// Service chuyên xử lý các operations liên quan đến tasks
-/// Bao gồm CRUD operations, filtering, sorting và realtime updates
+/// TaskService Class
+/// Tác dụng: Service xử lý các operations liên quan đến tasks (CRUD, filtering, sorting, realtime)
+/// Sử dụng khi: Cần thao tác với dữ liệu tasks từ database và đồng bộ realtime
 class TaskService extends ChangeNotifier {
   final SupabaseClient _supabase = Supabase.instance.client;
 
@@ -19,10 +20,14 @@ class TaskService extends ChangeNotifier {
   // Getter để lấy user ID hiện tại
   String? get _currentUserId => _supabase.auth.currentUser?.id;
 
-  /// Kiểm tra user đã đăng nhập chưa
+  /// isUserAuthenticated Getter
+  /// Tác dụng: Kiểm tra trạng thái đăng nhập của người dùng
+  /// Sử dụng khi: Cần validate quyền truy cập trước khi thực hiện operations
   bool get isUserAuthenticated => _currentUserId != null;
 
-  /// Khởi tạo service và load tasks
+  /// initialize Method
+  /// Tác dụng: Khởi tạo service, load tasks và setup realtime subscription
+  /// Sử dụng khi: App khởi động hoặc user đăng nhập
   Future<void> initialize() async {
     if (!isUserAuthenticated) {
       debugPrint('TaskService: User not authenticated');
@@ -33,7 +38,9 @@ class TaskService extends ChangeNotifier {
     _setupRealtimeSubscription();
   }
 
-  /// Load tất cả tasks của user (bao gồm cả subtasks)
+  /// loadTasks Method
+  /// Tác dụng: Load tất cả tasks của user từ database (bao gồm subtasks)
+  /// Sử dụng khi: Cần refresh dữ liệu tasks từ server
   Future<void> loadTasks() async {
     if (!isUserAuthenticated) {
       _error = 'User not authenticated';
@@ -82,7 +89,7 @@ class TaskService extends ChangeNotifier {
       for (final subtask in subtasksResponse) {
         final taskId = subtask['task_id'] as String;
         final subtaskId = subtask['id'] as String;
-        
+
         if (!taskSubtasks.containsKey(taskId)) {
           taskSubtasks[taskId] = [];
         }
@@ -364,3 +371,4 @@ class TaskService extends ChangeNotifier {
     super.dispose();
   }
 }
+

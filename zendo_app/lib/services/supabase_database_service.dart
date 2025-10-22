@@ -84,7 +84,9 @@ class SupabaseDatabaseService {
           .timeout(
             const Duration(seconds: 15), // Timeout cho operation
             onTimeout: () {
-              throw Exception('Request timeout - please check your internet connection');
+              throw Exception(
+                'Request timeout - please check your internet connection',
+              );
             },
           );
 
@@ -95,9 +97,6 @@ class SupabaseDatabaseService {
       throw Exception('Connection timeout - please try again');
     } catch (e) {
       debugPrint('Error creating task: $e');
-      if (e.toString().contains('HandshakeException')) {
-        throw Exception('Connection error - please check your internet connection and try again');
-      }
       rethrow;
     }
   }
@@ -124,7 +123,7 @@ class SupabaseDatabaseService {
       return Task.fromSupabaseMap(response);
     } catch (e) {
       debugPrint('Error updating task: $e');
-      return null;
+      rethrow;
     }
   }
 
@@ -145,7 +144,7 @@ class SupabaseDatabaseService {
       return true;
     } catch (e) {
       debugPrint('Error deleting task: $e');
-      return false;
+      rethrow;
     }
   }
 
@@ -178,7 +177,9 @@ class SupabaseDatabaseService {
           .select()
           .single();
 
-      debugPrint('Task completion toggled: ${response['title']} -> $newCompletedStatus');
+      debugPrint(
+        'Task completion toggled: ${response['title']} -> $newCompletedStatus',
+      );
       return Task.fromSupabaseMap(response);
     } catch (e) {
       debugPrint('Error toggling task completion: $e');
@@ -210,7 +211,9 @@ class SupabaseDatabaseService {
           .timeout(
             const Duration(seconds: 15),
             onTimeout: () {
-              throw Exception('Request timeout - please check your internet connection');
+              throw Exception(
+                'Request timeout - please check your internet connection',
+              );
             },
           );
 
@@ -222,14 +225,19 @@ class SupabaseDatabaseService {
     } catch (e) {
       debugPrint('Error creating focus session: $e');
       if (e.toString().contains('HandshakeException')) {
-        throw Exception('Connection error - please check your internet connection and try again');
+        throw Exception(
+          'Connection error - please check your internet connection and try again',
+        );
       }
       rethrow;
     }
   }
 
   /// Cập nhật focus session
-  Future<FocusSession?> updateFocusSession(String sessionId, FocusSession updatedSession) async {
+  Future<FocusSession?> updateFocusSession(
+    String sessionId,
+    FocusSession updatedSession,
+  ) async {
     try {
       if (!isUserAuthenticated) {
         throw Exception('User not authenticated');
@@ -250,7 +258,7 @@ class SupabaseDatabaseService {
       return FocusSession.fromSupabaseMap(response);
     } catch (e) {
       debugPrint('Error updating focus session: $e');
-      return null;
+      rethrow;
     }
   }
 
@@ -316,7 +324,7 @@ class SupabaseDatabaseService {
       return true;
     } catch (e) {
       debugPrint('Error deleting focus session: $e');
-      return false;
+      rethrow;
     }
   }
 
@@ -328,16 +336,23 @@ class SupabaseDatabaseService {
       }
 
       final sessions = await getFocusSessions();
-      final completedSessions = sessions.where((s) => s.status == FocusSessionStatus.completed).toList();
-      
+      final completedSessions = sessions
+          .where((s) => s.status == FocusSessionStatus.completed)
+          .toList();
+
       final totalSessions = sessions.length;
       final totalCompletedSessions = completedSessions.length;
-      final totalFocusMinutes = completedSessions.fold<int>(0, (sum, s) => sum + s.actualDurationMinutes);
-      final averageProductivityRating = completedSessions.isNotEmpty 
+      final totalFocusMinutes = completedSessions.fold<int>(
+        0,
+        (sum, s) => sum + s.actualDurationMinutes,
+      );
+      final averageProductivityRating = completedSessions.isNotEmpty
           ? completedSessions
-              .where((s) => s.productivityRating != null)
-              .fold<double>(0, (sum, s) => sum + s.productivityRating!) / 
-              completedSessions.where((s) => s.productivityRating != null).length
+                    .where((s) => s.productivityRating != null)
+                    .fold<double>(0, (sum, s) => sum + s.productivityRating!) /
+                completedSessions
+                    .where((s) => s.productivityRating != null)
+                    .length
           : 0.0;
 
       return {
@@ -345,7 +360,9 @@ class SupabaseDatabaseService {
         'completed_sessions': totalCompletedSessions,
         'total_focus_minutes': totalFocusMinutes,
         'average_productivity_rating': averageProductivityRating,
-        'completion_rate': totalSessions > 0 ? (totalCompletedSessions / totalSessions * 100) : 0.0,
+        'completion_rate': totalSessions > 0
+            ? (totalCompletedSessions / totalSessions * 100)
+            : 0.0,
       };
     } catch (e) {
       debugPrint('Error getting focus sessions statistics: $e');
@@ -408,7 +425,7 @@ class SupabaseDatabaseService {
       return response;
     } catch (e) {
       debugPrint('Error creating category: $e');
-      return null;
+      rethrow;
     }
   }
 
@@ -426,11 +443,7 @@ class SupabaseDatabaseService {
 
       final response = await _supabase
           .from('categories')
-          .update({
-            'name': name,
-            'icon': icon,
-            'color': color,
-          })
+          .update({'name': name, 'icon': icon, 'color': color})
           .eq('id', categoryId)
           .eq('user_id', _currentUserId!)
           .select()
@@ -440,7 +453,7 @@ class SupabaseDatabaseService {
       return response;
     } catch (e) {
       debugPrint('Error updating category: $e');
-      return null;
+      rethrow;
     }
   }
 
@@ -462,7 +475,7 @@ class SupabaseDatabaseService {
       return true;
     } catch (e) {
       debugPrint('Error deleting category: $e');
-      return false;
+      rethrow;
     }
   }
 
@@ -496,7 +509,9 @@ class SupabaseDatabaseService {
   }
 
   /// Subscribe to categories changes
-  RealtimeChannel subscribeToCategories(Function(List<Map<String, dynamic>>) onCategoriesChanged) {
+  RealtimeChannel subscribeToCategories(
+    Function(List<Map<String, dynamic>>) onCategoriesChanged,
+  ) {
     if (!isUserAuthenticated) {
       throw Exception('User not authenticated');
     }
@@ -542,11 +557,8 @@ class SupabaseDatabaseService {
       };
     } catch (e) {
       debugPrint('Error getting tasks statistics: $e');
-      return {
-        'total': 0,
-        'completed': 0,
-        'pending': 0,
-      };
+      return {'total': 0, 'completed': 0, 'pending': 0};
     }
   }
 }
+

@@ -1,8 +1,6 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:oauth2/oauth2.dart' as oauth2;
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart';
+import '../config/app_config.dart';
 
 /// Service để xử lý GitHub authentication
 /// Tích hợp với Supabase Auth để đồng bộ user data
@@ -12,43 +10,28 @@ class GitHubAuthService {
   GitHubAuthService._internal();
 
   final SupabaseClient _supabase = Supabase.instance.client;
-  
-  // Redirect URI - lấy từ environment variables
-  static String get _redirectUri => dotenv.env['GITHUB_REDIRECT_URI'] ?? 'https://ewfjqvatkzeyccilxzne.supabase.co/auth/v1/callback';
-  
+
   Map<String, dynamic>? _userInfo;
 
-  /// Đăng nhập bằng GitHub thông qua Supabase OAuth
-  /// Returns: User info nếu thành công, null nếu thất bại
-  Future<Map<String, dynamic>?> signInWithGitHub() async {
+  /// Đăng nhập GitHub sử dụng Supabase OAuth
+  Future<User?> signInWithGitHub() async {
     try {
-      // Sử dụng Supabase OAuth với cấu hình đúng format
-      final bool success = await _supabase.auth.signInWithOAuth(
+      // Sử dụng cấu hình từ AppConfig
+      final redirectUrl = AppConfig.getRedirectUri(kIsWeb);
+
+      await _supabase.auth.signInWithOAuth(
         OAuthProvider.github,
-        // Không cần redirect URI cụ thể, để Supabase tự xử lý
+        redirectTo: redirectUrl,
       );
 
-      if (success) {
-        // Đợi một chút để Supabase cập nhật user
-        await Future.delayed(const Duration(milliseconds: 500));
-        
-        final user = _supabase.auth.currentUser;
-        if (user != null) {
-          // Lấy thông tin user từ Supabase metadata
-          _userInfo = {
-            'id': user.id,
-            'login': user.userMetadata?['user_name'] ?? user.userMetadata?['preferred_username'],
-            'name': user.userMetadata?['full_name'] ?? user.userMetadata?['name'],
-            'email': user.email,
-            'avatar_url': user.userMetadata?['avatar_url'],
-          };
-          return _userInfo;
-        }
-      }
-      
-      return null;
+      // Chờ user hoàn thành OAuth flow
+      await Future.delayed(const Duration(seconds: 2));
+
+      // Lấy user sau khi OAuth hoàn thành
+      final user = _supabase.auth.currentUser;
+      return user;
     } catch (e) {
-      print('GitHub Sign-In Error: $e');
+      debugPrint('GitHub OAuth Error: $e');
       return null;
     }
   }
@@ -57,16 +40,17 @@ class GitHubAuthService {
   Future<void> signOut() async {
     try {
       _userInfo = null;
-      
+
       // Đăng xuất khỏi Supabase
       await _supabase.auth.signOut();
     } catch (e) {
-      print('GitHub sign-out error: $e');
+      debugPrint('GitHub sign-out error: $e');
     }
   }
 
   /// Kiểm tra trạng thái đăng nhập
-  bool get isSignedIn => _supabase.auth.currentUser != null && _userInfo != null;
+  bool get isSignedIn =>
+      _supabase.auth.currentUser != null && _userInfo != null;
 
   /// Lấy thông tin user hiện tại từ GitHub
   Map<String, dynamic>? get currentGitHubUser => _userInfo;
@@ -79,3 +63,4 @@ class GitHubAuthService {
     await signOut();
   }
 }
+

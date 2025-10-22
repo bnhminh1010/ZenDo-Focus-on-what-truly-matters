@@ -4,6 +4,7 @@ import 'package:table_calendar/table_calendar.dart';
 import '../../providers/task_model.dart';
 import '../../models/task.dart';
 import '../../theme.dart';
+import '../../widgets/glass_container.dart';
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
@@ -39,9 +40,11 @@ class _CalendarPageState extends State<CalendarPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      // Đồng bộ nền đậm với Home/Focus
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        // Đồng bộ nền AppBar với Home/Focus
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         title: Text(
           'Lịch',
@@ -56,98 +59,104 @@ class _CalendarPageState extends State<CalendarPage> {
         builder: (context, taskModel, child) {
           return Column(
             children: [
-              // Mini Calendar Widget
-              Container(
-                margin: const EdgeInsets.all(16),
+              // Mini Calendar Widget - đồng bộ Liquid Glass
+              Padding(
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainer,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)),
-                ),
-                child: TableCalendar<Task>(
-                  firstDay: DateTime.utc(2020, 1, 1),
-                  lastDay: DateTime.utc(2030, 12, 31),
-                  focusedDay: _focusedDay,
-                  calendarFormat: CalendarFormat.month,
-                  eventLoader: _getEventsForDay,
-                  startingDayOfWeek: StartingDayOfWeek.monday,
-                  daysOfWeekHeight: 40,
-                  rowHeight: 40,
-                  calendarStyle: CalendarStyle(
-                    outsideDaysVisible: false,
-                    weekendTextStyle: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).colorScheme.onSurface,
+                child: GlassContainer(
+                  borderRadius: 16,
+                  blur: 16,
+                  opacity: 0.14,
+                  padding: const EdgeInsets.all(16),
+                  child: TableCalendar<Task>(
+                    firstDay: DateTime.utc(2020, 1, 1),
+                    lastDay: DateTime.utc(2030, 12, 31),
+                    focusedDay: _focusedDay,
+                    calendarFormat: CalendarFormat.month,
+                    eventLoader: _getEventsForDay,
+                    startingDayOfWeek: StartingDayOfWeek.monday,
+                    daysOfWeekHeight: 40,
+                    rowHeight: 40,
+                    calendarStyle: CalendarStyle(
+                      outsideDaysVisible: false,
+                      weekendTextStyle: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      defaultTextStyle: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      selectedDecoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      todayDecoration: BoxDecoration(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withOpacity(0.3),
+                        shape: BoxShape.circle,
+                      ),
+                      markerDecoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      markersMaxCount: 1,
+                      markerSize: 6,
                     ),
-                    defaultTextStyle: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).colorScheme.onSurface,
+                    headerStyle: HeaderStyle(
+                      formatButtonVisible: false,
+                      titleCentered: true,
+                      leftChevronIcon: Icon(
+                        Icons.chevron_left,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      rightChevronIcon: Icon(
+                        Icons.chevron_right,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      titleTextStyle: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ),
-                    selectedDecoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
-                      shape: BoxShape.circle,
+                    daysOfWeekStyle: DaysOfWeekStyle(
+                      weekdayStyle: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.6),
+                        fontWeight: FontWeight.w500,
+                      ),
+                      weekendStyle: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.6),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                    todayDecoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
-                      shape: BoxShape.circle,
-                    ),
-                    markerDecoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
-                      shape: BoxShape.circle,
-                    ),
-                    markersMaxCount: 1,
-                    markerSize: 6,
+                    selectedDayPredicate: (day) {
+                      return isSameDay(_selectedDay, day);
+                    },
+                    onDaySelected: (selectedDay, focusedDay) {
+                      if (!isSameDay(_selectedDay, selectedDay)) {
+                        setState(() {
+                          _selectedDay = selectedDay;
+                          _focusedDay = focusedDay;
+                        });
+                        _selectedEvents.value = _getEventsForDay(selectedDay);
+                      }
+                    },
+                    onPageChanged: (focusedDay) {
+                      _focusedDay = focusedDay;
+                    },
                   ),
-                  headerStyle: HeaderStyle(
-                    formatButtonVisible: false,
-                    titleCentered: true,
-                    leftChevronIcon: Icon(
-                      Icons.chevron_left,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                    rightChevronIcon: Icon(
-                      Icons.chevron_right,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                    titleTextStyle: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                  daysOfWeekStyle: DaysOfWeekStyle(
-                    weekdayStyle: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                      fontWeight: FontWeight.w500,
-                    ),
-                    weekendStyle: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  selectedDayPredicate: (day) {
-                    return isSameDay(_selectedDay, day);
-                  },
-                  onDaySelected: (selectedDay, focusedDay) {
-                    if (!isSameDay(_selectedDay, selectedDay)) {
-                      setState(() {
-                        _selectedDay = selectedDay;
-                        _focusedDay = focusedDay;
-                      });
-                      _selectedEvents.value = _getEventsForDay(selectedDay);
-                    }
-                  },
-                  onPageChanged: (focusedDay) {
-                    _focusedDay = focusedDay;
-                  },
                 ),
               ),
-              
+
               const SizedBox(height: 8),
-              
+
               // Selected Day Tasks
               Expanded(
                 child: ValueListenableBuilder<List<Task>>(
@@ -159,9 +168,9 @@ class _CalendarPageState extends State<CalendarPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Tasks for ${_selectedDay != null ? "${_selectedDay!.day}/${_selectedDay!.month}/${_selectedDay!.year}" : "Selected Day"}',
+                            'Task cho ngày ${_selectedDay != null ? "${_selectedDay!.day}/${_selectedDay!.month}/${_selectedDay!.year}" : "đã chọn"}',
                             style: TextStyle(
-                              fontSize: 20, 
+                              fontSize: 20,
                               fontWeight: FontWeight.w600,
                               color: Theme.of(context).colorScheme.onSurface,
                             ),
@@ -171,42 +180,55 @@ class _CalendarPageState extends State<CalendarPage> {
                             child: value.isEmpty
                                 ? Center(
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Icon(
                                           Icons.event_available,
                                           size: 64,
-                                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withOpacity(0.4),
                                         ),
                                         const SizedBox(height: 16),
                                         Text(
                                           'Không có nhiệm vụ nào trong ngày này',
-                                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                                          ),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium
+                                              ?.copyWith(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onSurface
+                                                    .withOpacity(0.6),
+                                              ),
                                         ),
                                       ],
                                     ),
                                   )
                                 : ListView.builder(
+                                    padding: const EdgeInsets.only(bottom: 140),
                                     itemCount: value.length,
                                     itemBuilder: (context, index) {
                                       final task = value[index];
-                                      return Container(
-                                        margin: const EdgeInsets.only(bottom: 8),
+                                      return GlassContainer(
+                                        borderRadius: 12,
+                                        blur: 16,
+                                        opacity: 0.14,
                                         padding: const EdgeInsets.all(16),
-                                        decoration: BoxDecoration(
-                                          color: Theme.of(context).colorScheme.surfaceContainer,
-                                          borderRadius: BorderRadius.circular(12),
-                                          border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)),
-                                        ),
                                         child: Row(
                                           children: [
                                             GestureDetector(
                                               onTap: () {
-                                                taskModel.toggleTaskCompletion(task.id);
+                                                taskModel.toggleTaskCompletion(
+                                                  task.id,
+                                                );
                                                 if (_selectedDay != null) {
-                                                  _selectedEvents.value = _getEventsForDay(_selectedDay!);
+                                                  _selectedEvents.value =
+                                                      _getEventsForDay(
+                                                        _selectedDay!,
+                                                      );
                                                 }
                                               },
                                               child: Container(
@@ -215,19 +237,30 @@ class _CalendarPageState extends State<CalendarPage> {
                                                 decoration: BoxDecoration(
                                                   shape: BoxShape.circle,
                                                   border: Border.all(
-                                                    color: task.isCompleted 
-                                                        ? Theme.of(context).colorScheme.primary 
-                                                        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+                                                    color: task.isCompleted
+                                                        ? Theme.of(
+                                                            context,
+                                                          ).colorScheme.primary
+                                                        : Theme.of(context)
+                                                              .colorScheme
+                                                              .onSurface
+                                                              .withValues(
+                                                                alpha: 0.4,
+                                                              ),
                                                     width: 2,
                                                   ),
-                                                  color: task.isCompleted 
-                                                      ? Theme.of(context).colorScheme.primary 
+                                                  color: task.isCompleted
+                                                      ? Theme.of(
+                                                          context,
+                                                        ).colorScheme.primary
                                                       : Colors.transparent,
                                                 ),
                                                 child: task.isCompleted
-                                                    ? const Icon(
+                                                    ? Icon(
                                                         Icons.check,
-                                                        color: Colors.white,
+                                                        color: Theme.of(
+                                                          context,
+                                                        ).colorScheme.onPrimary,
                                                         size: 16,
                                                       )
                                                     : null,
@@ -236,44 +269,85 @@ class _CalendarPageState extends State<CalendarPage> {
                                             const SizedBox(width: 12),
                                             Expanded(
                                               child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
                                                     task.title,
-                                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                                      color: task.isCompleted
-                                                      ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)
-                                                      : Theme.of(context).colorScheme.onSurface,
-                                                      decoration: task.isCompleted
-                                                          ? TextDecoration.lineThrough
-                                                          : null,
-                                                    ),
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodyMedium
+                                                        ?.copyWith(
+                                                          color:
+                                                              task.isCompleted
+                                                              ? Theme.of(
+                                                                      context,
+                                                                    )
+                                                                    .colorScheme
+                                                                    .onSurface
+                                                                    .withValues(
+                                                                      alpha:
+                                                                          0.5,
+                                                                    )
+                                                              : Theme.of(
+                                                                      context,
+                                                                    )
+                                                                    .colorScheme
+                                                                    .onSurface,
+                                                          decoration:
+                                                              task.isCompleted
+                                                              ? TextDecoration
+                                                                    .lineThrough
+                                                              : null,
+                                                        ),
                                                   ),
-                                                  if (task.description?.isNotEmpty == true) ...[
+                                                  if (task
+                                                          .description
+                                                          ?.isNotEmpty ==
+                                                      true) ...[
                                                     const SizedBox(height: 4),
                                                     Text(
                                                       task.description!,
-                                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                                                      ),
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodySmall
+                                                          ?.copyWith(
+                                                            color:
+                                                                Theme.of(
+                                                                      context,
+                                                                    )
+                                                                    .colorScheme
+                                                                    .onSurface
+                                                                    .withValues(
+                                                                      alpha:
+                                                                          0.6,
+                                                                    ),
+                                                          ),
                                                     ),
                                                   ],
                                                 ],
                                               ),
                                             ),
                                             Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 8,
-                                                vertical: 4,
-                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
                                               decoration: BoxDecoration(
-                                                color: _getCategoryColor(task.category).withValues(alpha: 0.1),
-                                                borderRadius: BorderRadius.circular(8),
+                                                color: _getCategoryColor(
+                                                  task.category,
+                                                ).withOpacity(0.1),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
                                               ),
                                               child: Text(
                                                 task.category.displayName,
-                                                style: TextStyle(fontSize: 12,
-                                                  color: _getCategoryColor(task.category),
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: _getCategoryColor(
+                                                    task.category,
+                                                  ),
                                                   fontWeight: FontWeight.w500,
                                                 ),
                                               ),
@@ -294,13 +368,6 @@ class _CalendarPageState extends State<CalendarPage> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: Navigate to add task page with selected date
-        },
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
     );
   }
 
@@ -310,17 +377,18 @@ class _CalendarPageState extends State<CalendarPage> {
       case TaskCategory.work:
         return colorScheme.primary;
       case TaskCategory.personal:
-        return const Color(0xFFFF9800);
+        return colorScheme.secondary;
       case TaskCategory.learning:
-        return const Color(0xFF2196F3);
+        return colorScheme.tertiary;
       case TaskCategory.health:
-        return const Color(0xFF4CAF50);
+        return colorScheme.secondary;
       case TaskCategory.finance:
-        return const Color(0xFF9C27B0);
+        return colorScheme.primary;
       case TaskCategory.social:
-        return const Color(0xFFE91E63);
+        return colorScheme.tertiary;
       case TaskCategory.other:
-        return colorScheme.onSurface.withValues(alpha: 0.6);
+        return colorScheme.onSurface.withOpacity(0.6);
     }
   }
 }
+

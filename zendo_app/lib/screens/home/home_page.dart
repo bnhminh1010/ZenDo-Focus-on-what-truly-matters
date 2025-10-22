@@ -3,13 +3,20 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../providers/task_model.dart';
 import '../../providers/auth_model.dart';
 import '../../models/task.dart';
 import '../../theme.dart';
 import '../../widgets/add_task_dialog.dart';
 import '../../widgets/task_card.dart';
+import '../../widgets/glass_container.dart';
+import '../../widgets/glass_button.dart';
 
+/// HomePage Class
+/// Tác dụng: Màn hình chính của ứng dụng hiển thị dashboard với tasks, thống kê và navigation
+/// Sử dụng khi: Người dùng mở ứng dụng và cần xem tổng quan về tasks và hoạt động
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -17,7 +24,13 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+/// _HomePageState Class
+/// Tác dụng: State class quản lý trạng thái và logic của HomePage
+/// Sử dụng khi: Cần quản lý search functionality và lifecycle của HomePage
 class _HomePageState extends State<HomePage> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
   @override
   void initState() {
     super.initState();
@@ -25,113 +38,170 @@ class _HomePageState extends State<HomePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<TaskModel>().initialize();
     });
+
+    // Lắng nghe thay đổi trong search controller
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final isTablet = screenSize.width > 600;
+    final isDesktop = screenSize.width > 1200;
+
+    // Responsive padding
+    final horizontalPadding = isDesktop ? 40.0 : (isTablet ? 30.0 : 20.0);
+    final bottomPadding = isDesktop ? 80.0 : (isTablet ? 100.0 : 140.0);
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
-        title: Text(
-          'ZenDo - Trang chủ',
-          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-            color: Theme.of(context).colorScheme.onSurface,
-            fontWeight: FontWeight.w600,
+        title: Semantics(
+          label: 'Tiêu đề trang chủ ZenDo',
+          child: Text(
+            'ZenDo - Trang chủ',
+            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
         centerTitle: false,
         automaticallyImplyLeading: false,
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Search bar
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainer,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.outline.withValues(alpha: 0.2),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.search,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withValues(alpha: 0.6),
-                      size: 20,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Tìm kiếm nhiệm vụ...',
-                          hintStyle: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.5),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              // Responsive padding
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                20,
+                horizontalPadding,
+                bottomPadding,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Search bar dùng Liquid Glass
+                  Semantics(
+                    label: 'Thanh tìm kiếm nhiệm vụ',
+                    hint: 'Nhập từ khóa để tìm kiếm nhiệm vụ',
+                    child: GlassContainer(
+                      borderRadius: 16,
+                      blur: 16,
+                      opacity: 0.14, // đồng nhất mức trong suốt
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      child: Row(
+                        children: [
+                          Semantics(
+                            label: 'Biểu tượng tìm kiếm',
+                            child: Icon(
+                              Icons.search,
+                              color: Theme.of(context).colorScheme.onSurface
+                                  .withValues(
+                                    alpha: 0.7,
+                                  ), // Tăng contrast từ 0.6 lên 0.7
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextField(
+                              controller: _searchController,
+                              decoration: InputDecoration(
+                                hintText: 'Tìm kiếm nhiệm vụ...',
+                                hintStyle: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withValues(
+                                            alpha: 0.6,
+                                          ), // Tăng contrast từ 0.5 lên 0.6
+                                    ),
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.zero,
                               ),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
-                        ),
+                              onSubmitted: (value) {
+                                if (value.trim().isNotEmpty) {
+                                  // Navigate to tasks page with search query
+                                  context.push(
+                                    '/tasks?search=${Uri.encodeComponent(value.trim())}',
+                                  );
+                                }
+                              },
+                            ),
+                          ),
+                          if (_searchQuery.isNotEmpty)
+                            GlassIconButton(
+                              icon: Icons.clear,
+                              onPressed: () {
+                                _searchController.clear();
+                              },
+                            ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // Create buttons section (moved to top for better UX)
-              _buildCreateButtons(),
-              const SizedBox(height: 32),
-
-              // Categories Grid
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Danh mục nhiệm vụ',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
                   ),
-                  TextButton(
-                    onPressed: () {
-                      // Navigate to all categories page
-                      context.push('/categories');
-                    },
-                    child: const Text('Xem tất cả'),
+                  const SizedBox(height: 32),
+
+                  // Create buttons section (moved to top for better UX)
+                  _buildCreateButtons(isTablet, isDesktop),
+                  const SizedBox(height: 32),
+
+                  // Categories Grid
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Danh mục nhiệm vụ',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      GlassTextButton(
+                        onPressed: () {
+                          // Navigate to all categories page
+                          context.push('/categories');
+                        },
+                        child: const Text('Xem tất cả'),
+                      ),
+                    ],
                   ),
+                  const SizedBox(height: 16),
+                  _buildCategoriesGrid(isTablet, isDesktop),
+                  const SizedBox(height: 32),
+
+                  // Recent Tasks Section
+                  _buildRecentTasksSection(),
                 ],
               ),
-              const SizedBox(height: 16),
-              _buildCategoriesGrid(),
-              const SizedBox(height: 32),
-
-              // Recent Tasks Section
-              _buildRecentTasksSection(),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildCategoriesGrid() {
+  Widget _buildCategoriesGrid(bool isTablet, bool isDesktop) {
     return Consumer<TaskModel>(
       builder: (context, taskModel, child) {
         final categories = [
@@ -143,8 +213,8 @@ class _HomePageState extends State<HomePage> {
             'taskCount': taskModel.getTasksByCategory(TaskCategory.work).length,
           },
           {
-            'name': 'Family',
-            'icon': Icons.family_restroom,
+            'name': 'Learning',
+            'icon': Icons.school_outlined,
             'color': AppTheme.familyColor,
             'category': TaskCategory.learning,
             'taskCount': taskModel
@@ -152,7 +222,7 @@ class _HomePageState extends State<HomePage> {
                 .length,
           },
           {
-            'name': 'Healthy',
+            'name': 'Health',
             'icon': Icons.favorite_outline,
             'color': AppTheme.healthColor,
             'category': TaskCategory.health,
@@ -169,19 +239,44 @@ class _HomePageState extends State<HomePage> {
                 .getTasksByCategory(TaskCategory.personal)
                 .length,
           },
+          {
+            'name': 'Finance',
+            'icon': Icons.account_balance_wallet_outlined,
+            'color': context.warningColor,
+            'category': TaskCategory.finance,
+            'taskCount': taskModel
+                .getTasksByCategory(TaskCategory.finance)
+                .length,
+          },
+          {
+            'name': 'Social',
+            'icon': Icons.people_outline,
+            'color': Theme.of(context).colorScheme.tertiary,
+            'category': TaskCategory.social,
+            'taskCount': taskModel
+                .getTasksByCategory(TaskCategory.social)
+                .length,
+          },
         ];
 
-        return GridView.count(
+        // Layout danh mục đồng bộ với statistics cards
+        return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: 1.2,
-          children: categories.map((category) {
+          itemCount: categories.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: isDesktop
+                ? 4
+                : (isTablet ? 3 : 2), // Responsive columns
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            // Responsive height
+            mainAxisExtent: isDesktop ? 120 : (isTablet ? 115 : 110),
+          ),
+          itemBuilder: (context, idx) {
+            final category = categories[idx];
             return GestureDetector(
               onTap: () {
-                // Navigate to category detail page
                 context.pushNamed(
                   'categoryDetail',
                   pathParameters: {'categoryName': category['name'] as String},
@@ -192,54 +287,50 @@ class _HomePageState extends State<HomePage> {
                   },
                 );
               },
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
+              child: GlassContainer(
+                // Layout đồng bộ với statistics cards
+                borderRadius: 16,
+                blur: 12,
+                opacity: 0.14,
+                padding: const EdgeInsets.all(
+                  12,
+                ), // giảm padding để card nhỏ gọn hơn
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          category['icon'] as IconData,
+                          color: category['color'] as Color,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            category['name'] as String,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: (category['color'] as Color)
+                                      .withOpacity(0.8),
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '${category['taskCount']} nhiệm vụ',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: category['color'] as Color,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: (category['color'] as Color).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          category['icon'] as IconData,
-                          color: category['color'] as Color,
-                          size: 24,
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        category['name'] as String,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${category['taskCount']} Tasks',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ),
             );
-          }).toList(),
+          },
         );
       },
     );
@@ -255,15 +346,16 @@ class _HomePageState extends State<HomePage> {
         final completedTasks = taskModel.tasks
             .where((task) => task.isCompleted)
             .toList();
-        
+
         // Sắp xếp theo thời gian tạo (mới nhất trước)
         incompleteTasks.sort((a, b) => b.createdAt.compareTo(a.createdAt));
         completedTasks.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-        
+
         // Kết hợp: task chưa hoàn thành trước, task hoàn thành sau
-        final recentTasks = [...incompleteTasks, ...completedTasks]
-            .take(3)
-            .toList(); // Lấy 3 task gần đây nhất
+        final recentTasks = [
+          ...incompleteTasks,
+          ...completedTasks,
+        ].take(3).toList(); // Lấy 3 task gần đây nhất
 
         if (recentTasks.isEmpty) {
           return Container(
@@ -279,7 +371,7 @@ class _HomePageState extends State<HomePage> {
                   size: 48,
                   color: Theme.of(
                     context,
-                  ).colorScheme.onSurface.withValues(alpha: 0.5),
+                  ).colorScheme.onSurface.withOpacity(0.5),
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -287,7 +379,7 @@ class _HomePageState extends State<HomePage> {
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: Theme.of(
                       context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.7),
+                    ).colorScheme.onSurface.withOpacity(0.7),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -296,7 +388,7 @@ class _HomePageState extends State<HomePage> {
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(
                       context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.5),
+                    ).colorScheme.onSurface.withOpacity(0.5),
                   ),
                 ),
               ],
@@ -316,7 +408,7 @@ class _HomePageState extends State<HomePage> {
                     context,
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
                 ),
-                TextButton(
+                GlassTextButton(
                   onPressed: () {
                     context.push('/tasks');
                   },
@@ -350,52 +442,38 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildCreateButtons() {
-    return Row(
+  Widget _buildCreateButtons(bool isTablet, bool isDesktop) {
+    return Flex(
+      direction: isTablet ? Axis.horizontal : Axis.horizontal,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         // Create Task Button
-        ElevatedButton.icon(
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) => const AddTaskDialog(),
-            );
-          },
-          icon: const Icon(Icons.add),
-          label: const Text('Tạo Task'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Theme.of(context).colorScheme.onPrimary,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+        Flexible(
+          child: GlassElevatedButton.icon(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => const AddTaskDialog(),
+              );
+            },
+            icon: const Icon(Icons.add),
+            label: const Text('Tạo Task'),
           ),
         ),
-        const SizedBox(width: 16),
+        SizedBox(width: isDesktop ? 24 : 16),
         // Ask AI Button
-        ElevatedButton.icon(
-          onPressed: () {
-            context.push('/ai-chat');
-          },
-          icon: SvgPicture.asset(
-            'assets/icons/dolphin.svg',
-            width: 18,
-            height: 18,
-            colorFilter: ColorFilter.mode(
-              Theme.of(context).colorScheme.onSecondary,
-              BlendMode.srcIn,
+        Flexible(
+          child: GlassElevatedButton.icon(
+            onPressed: () {
+              context.push('/ai-chat');
+            },
+            icon: Image.asset(
+              'assets/icons/bot.png',
+              width: 18,
+              height: 18,
+              color: Theme.of(context).colorScheme.onSecondary,
             ),
-          ),
-          label: const Text('BilyBily'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.secondary,
-            foregroundColor: Theme.of(context).colorScheme.onSecondary,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+            label: const Text('BilyBily'),
           ),
         ),
       ],
@@ -406,16 +484,16 @@ class _HomePageState extends State<HomePage> {
     Color priorityColor;
     switch (task.priority) {
       case TaskPriority.high:
-        priorityColor = Colors.red;
+        priorityColor = context.errorColor;
         break;
       case TaskPriority.medium:
-        priorityColor = Colors.orange;
+        priorityColor = context.warningColor;
         break;
       case TaskPriority.low:
-        priorityColor = Colors.green;
+        priorityColor = context.successColor;
         break;
       case TaskPriority.urgent:
-        priorityColor = Colors.purple;
+        priorityColor = Theme.of(context).colorScheme.error;
         break;
     }
 
@@ -450,7 +528,7 @@ class _HomePageState extends State<HomePage> {
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
         ),
       ),
       child: Column(
@@ -491,7 +569,9 @@ class _HomePageState extends State<HomePage> {
             Text(
               task.description!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withOpacity(0.7),
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -503,7 +583,7 @@ class _HomePageState extends State<HomePage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: categoryColor.withValues(alpha: 0.1),
+                  color: categoryColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -521,7 +601,7 @@ class _HomePageState extends State<HomePage> {
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(
                       context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.6),
+                    ).colorScheme.onSurface.withOpacity(0.6),
                   ),
                 ),
             ],
@@ -531,3 +611,4 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+

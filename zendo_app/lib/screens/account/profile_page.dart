@@ -3,6 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../providers/auth_model.dart';
+import '../../widgets/glass_container.dart';
+import '../../widgets/glass_button.dart';
+import '../../widgets/loading_state_widget.dart';
+import 'package:go_router/go_router.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -18,7 +22,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final _phoneController = TextEditingController();
   final _bioController = TextEditingController();
   final ImagePicker _imagePicker = ImagePicker();
-  
+
   bool _isEditing = false;
   File? _selectedImage;
   String? _currentAvatarUrl;
@@ -43,84 +47,140 @@ class _ProfilePageState extends State<ProfilePage> {
 
   /// Hiển thị dialog chọn nguồn ảnh
   void _showImageSourceDialog() {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        final theme = Theme.of(context);
-        final colorScheme = theme.colorScheme;
-        
-        return Container(
-          padding: const EdgeInsets.all(20),
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: GlassContainer(
+          borderRadius: 24,
+          blur: 20,
+          opacity: 0.15,
+          padding: const EdgeInsets.all(32),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'Chọn ảnh đại diện',
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 20),
+              // Header
               Row(
                 children: [
-                  Expanded(
-                    child: _buildImageSourceOption(
-                      icon: Icons.camera_alt,
-                      label: 'Camera',
-                      onTap: () {
-                        Navigator.pop(context);
-                        _pickImage(ImageSource.camera);
-                      },
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(
+                      Icons.photo_camera_outlined,
+                      size: 32,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: _buildImageSourceOption(
-                      icon: Icons.photo_library,
-                      label: 'Thư viện',
-                      onTap: () {
-                        Navigator.pop(context);
-                        _pickImage(ImageSource.gallery);
-                      },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Chọn ảnh đại diện',
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          'Chọn nguồn ảnh để cập nhật',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withOpacity(0.7),
+                              ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
+              const SizedBox(height: 24),
+
+              // Options
+              Row(
+                children: [
+                  Expanded(
+                    child: Semantics(
+                      label: 'Chụp ảnh từ camera',
+                      hint: 'Nhấn để mở camera và chụp ảnh mới',
+                      child: GlassElevatedButton.icon(
+                        onPressed: () {
+                          context.pop();
+                          _pickImage(ImageSource.camera);
+                        },
+                        icon: const Icon(Icons.camera_alt_outlined),
+                        label: const Text('Camera'),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Semantics(
+                      label: 'Chọn ảnh từ thư viện',
+                      hint: 'Nhấn để mở thư viện ảnh và chọn ảnh có sẵn',
+                      child: GlassElevatedButton.icon(
+                        onPressed: () {
+                          context.pop();
+                          _pickImage(ImageSource.gallery);
+                        },
+                        icon: const Icon(Icons.photo_library_outlined),
+                        label: const Text('Thư viện'),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
               if (_selectedImage != null || _currentAvatarUrl != null) ...[
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _removeAvatar();
-                    },
-                    icon: const Icon(Icons.delete_outline),
-                    label: const Text('Xóa ảnh'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: colorScheme.error,
-                      side: BorderSide(color: colorScheme.error),
+                  child: Semantics(
+                    label: 'Xóa ảnh đại diện',
+                    hint: 'Nhấn để xóa ảnh đại diện hiện tại',
+                    child: GlassOutlinedButton(
+                      onPressed: () {
+                        context.pop();
+                        _removeAvatar();
+                      },
+                      borderColor: Theme.of(context).colorScheme.error,
+                      textColor: Theme.of(context).colorScheme.error,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.delete_outline),
+                          SizedBox(width: 8),
+                          Text('Xóa ảnh'),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ],
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
+
+              // Cancel button
+              SizedBox(
+                width: double.infinity,
+                child: Semantics(
+                  label: 'Hủy chọn ảnh',
+                  hint: 'Nhấn để đóng dialog và hủy thao tác',
+                  child: GlassTextButton(
+                    onPressed: () => context.pop(),
+                    child: const Text('Hủy'),
+                  ),
+                ),
+              ),
             ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -132,23 +192,19 @@ class _ProfilePageState extends State<ProfilePage> {
   }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          border: Border.all(color: colorScheme.outline.withValues(alpha: 0.3)),
+          border: Border.all(color: colorScheme.outline.withOpacity(0.3)),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              size: 32,
-              color: colorScheme.primary,
-            ),
+            Icon(icon, size: 32, color: colorScheme.primary),
             const SizedBox(height: 8),
             Text(
               label,
@@ -203,14 +259,11 @@ class _ProfilePageState extends State<ProfilePage> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: colorScheme.surface,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(
-          'Thông tin cá nhân',
-          style: theme.textTheme.titleLarge,
-        ),
+        title: Text('Thông tin cá nhân', style: theme.textTheme.titleLarge),
         actions: [
           if (!_isEditing)
             IconButton(
@@ -219,75 +272,84 @@ class _ProfilePageState extends State<ProfilePage> {
                   _isEditing = true;
                 });
               },
-              icon: Icon(
-                Icons.edit_outlined,
-                color: colorScheme.primary,
-              ),
+              icon: Icon(Icons.edit_outlined, color: colorScheme.primary),
             ),
         ],
       ),
       body: Consumer<AuthModel>(
         builder: (context, authModel, child) {
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            // Tăng bottom padding để tránh chồng lấn với navigation bar
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 140),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Avatar Section
+                  // Avatar Section với Glass Effect
                   Center(
-                    child: Stack(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: colorScheme.primary.withValues(alpha: 0.3),
-                              width: 3,
-                            ),
-                          ),
-                          child: CircleAvatar(
-                            radius: 60,
-                            backgroundColor: colorScheme.surfaceContainerHighest,
-                            backgroundImage: _selectedImage != null 
-                                ? FileImage(_selectedImage!) 
-                                : _currentAvatarUrl != null 
-                                    ? NetworkImage(_currentAvatarUrl!) 
-                                    : null,
-                            child: (_selectedImage == null && _currentAvatarUrl == null)
-                                ? Icon(
-                                    Icons.person,
-                                    size: 60,
-                                    color: colorScheme.onSurfaceVariant,
-                                  )
-                                : null,
-                          ),
-                        ),
-                        if (_isEditing)
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: colorScheme.primary,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: colorScheme.surface,
-                                  width: 2,
+                    child: GlassContainer(
+                      borderRadius: 80,
+                      blur: 16,
+                      opacity: 0.14,
+                      padding: const EdgeInsets.all(8),
+                      child: Stack(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: colorScheme.primary.withValues(
+                                  alpha: 0.3,
                                 ),
-                              ),
-                              child: IconButton(
-                                onPressed: _showImageSourceDialog,
-                                icon: Icon(
-                                  Icons.camera_alt,
-                                  color: colorScheme.onPrimary,
-                                  size: 20,
-                                ),
+                                width: 3,
                               ),
                             ),
+                            child: CircleAvatar(
+                              radius: 60,
+                              backgroundColor:
+                                  colorScheme.surfaceContainerHighest,
+                              backgroundImage: _selectedImage != null
+                                  ? FileImage(_selectedImage!)
+                                  : _currentAvatarUrl != null
+                                  ? NetworkImage(_currentAvatarUrl!)
+                                  : null,
+                              child:
+                                  (_selectedImage == null &&
+                                      _currentAvatarUrl == null)
+                                  ? Icon(
+                                      Icons.person,
+                                      size: 60,
+                                      color: colorScheme.onSurfaceVariant,
+                                    )
+                                  : null,
+                            ),
                           ),
-                      ],
+                          if (_isEditing)
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primary,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: colorScheme.surface,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: IconButton(
+                                  onPressed: _showImageSourceDialog,
+                                  icon: Icon(
+                                    Icons.camera_alt,
+                                    color: colorScheme.onPrimary,
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
 
@@ -320,7 +382,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       if (value == null || value.trim().isEmpty) {
                         return 'Vui lòng nhập email';
                       }
-                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                      if (!RegExp(
+                        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                      ).hasMatch(value)) {
                         return 'Email không hợp lệ';
                       }
                       return null;
@@ -364,24 +428,19 @@ class _ProfilePageState extends State<ProfilePage> {
                     Row(
                       children: [
                         Expanded(
-                          child: OutlinedButton(
+                          child: GlassOutlinedButton(
                             onPressed: () {
                               setState(() {
                                 _isEditing = false;
                                 // Reset values
                                 _nameController.text = authModel.userName ?? '';
-                                _emailController.text = authModel.userEmail ?? '';
+                                _emailController.text =
+                                    authModel.userEmail ?? '';
                                 _phoneController.clear();
                                 _bioController.clear();
                                 _selectedImage = null;
                               });
                             },
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
                             child: Text(
                               'Hủy',
                               style: theme.textTheme.titleMedium,
@@ -390,33 +449,19 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: ElevatedButton(
-                            onPressed: authModel.isLoading ? null : _saveProfile,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: colorScheme.primary,
-                              foregroundColor: colorScheme.onPrimary,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
+                          child: GlassElevatedButton(
+                            onPressed: authModel.isLoading
+                                ? null
+                                : _saveProfile,
                             child: authModel.isLoading
-                                ? SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        colorScheme.onPrimary,
-                                      ),
-                                    ),
-                                  )
+                                ? const LoadingStateWidget(size: 20)
                                 : Text(
                                     'Lưu',
-                                    style: theme.textTheme.titleMedium?.copyWith(
-                                      color: colorScheme.onPrimary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                    style: theme.textTheme.titleMedium
+                                        ?.copyWith(
+                                          color: colorScheme.onPrimary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                   ),
                           ),
                         ),
@@ -455,14 +500,10 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
         const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: _isEditing ? colorScheme.surface : colorScheme.surfaceContainer,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: colorScheme.outline.withValues(alpha: 0.3),
-            ),
-          ),
+        GlassContainer(
+          borderRadius: 12,
+          blur: 16,
+          opacity: 0.14,
           child: TextFormField(
             controller: controller,
             enabled: _isEditing,
@@ -472,11 +513,11 @@ class _ProfilePageState extends State<ProfilePage> {
             decoration: InputDecoration(
               hintText: hintText,
               hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurface.withValues(alpha: 0.4),
+                color: colorScheme.onSurface.withOpacity(0.4),
               ),
               prefixIcon: Icon(
                 icon,
-                color: colorScheme.onSurface.withValues(alpha: 0.5),
+                color: colorScheme.onSurface.withOpacity(0.5),
               ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.all(16),
@@ -488,11 +529,12 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  /// Lưu thông tin profile
   void _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
 
     final authModel = Provider.of<AuthModel>(context, listen: false);
-    
+
     // TODO: Implement avatar upload to Supabase Storage
     // For now, just update name and email
     final success = await authModel.updateProfile(
@@ -530,3 +572,4 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 }
+

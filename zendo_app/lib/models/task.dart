@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Enum định nghĩa các loại task category
+/// TaskCategory Enum
+/// Tác dụng: Định nghĩa các loại danh mục công việc có thể có trong ứng dụng
+/// Sử dụng khi: Cần phân loại task theo các lĩnh vực khác nhau như công việc, cá nhân, học tập
 enum TaskCategory {
   work('Công việc'),
   personal('Cá nhân'),
@@ -14,7 +16,9 @@ enum TaskCategory {
   final String displayName;
 }
 
-/// Enum định nghĩa mức độ ưu tiên của task
+/// TaskPriority Enum
+/// Tác dụng: Định nghĩa các mức độ ưu tiên của task từ thấp đến khẩn cấp
+/// Sử dụng khi: Cần sắp xếp và ưu tiên các task theo độ quan trọng
 enum TaskPriority {
   low('Thấp'),
   medium('Trung bình'),
@@ -24,7 +28,9 @@ enum TaskPriority {
   const TaskPriority(this.displayName);
   final String displayName;
 
-  /// Thứ tự ưu tiên (số càng cao càng ưu tiên)
+  /// priorityOrder getter
+  /// Tác dụng: Trả về số thứ tự ưu tiên để so sánh và sắp xếp
+  /// Sử dụng khi: Cần sắp xếp danh sách task theo độ ưu tiên
   int get priorityOrder {
     switch (this) {
       case TaskPriority.low:
@@ -38,7 +44,10 @@ enum TaskPriority {
     }
   }
 
-  /// Màu sắc tương ứng với mức độ ưu tiên
+  /// color getter (Deprecated)
+  /// Tác dụng: Trả về màu sắc tương ứng với mức độ ưu tiên
+  /// Sử dụng khi: Hiển thị màu sắc cho priority (nên dùng theme colors thay thế)
+  @Deprecated('Use theme colors instead')
   Color get color {
     switch (this) {
       case TaskPriority.low:
@@ -52,13 +61,17 @@ enum TaskPriority {
     }
   }
 
-  /// So sánh priority để sort
+  /// compareTo method
+  /// Tác dụng: So sánh hai priority để sắp xếp
+  /// Sử dụng khi: Cần sort danh sách task theo độ ưu tiên
   int compareTo(TaskPriority other) {
     return priorityOrder.compareTo(other.priorityOrder);
   }
 }
 
-/// Model định nghĩa cấu trúc dữ liệu của một Task
+/// Task Class
+/// Tác dụng: Model chính định nghĩa cấu trúc dữ liệu của một công việc/nhiệm vụ
+/// Sử dụng khi: Tạo, lưu trữ, và quản lý thông tin của các task trong ứng dụng
 class Task {
   final String id;
   final String title;
@@ -73,9 +86,10 @@ class Task {
   final String? notes;
   final int estimatedMinutes;
   final int actualMinutes;
-  final String? imageUrl; // Thêm trường hình ảnh
-  final String? parentTaskId; // ID của task cha (cho subtask)
-  final List<String> subtaskIds; // Danh sách ID của các subtask
+  final String? imageUrl;
+  final String? parentTaskId;
+  final List<String> subtaskIds;
+  final int focusTimeMinutes;
 
   const Task({
     required this.id,
@@ -91,12 +105,15 @@ class Task {
     this.notes,
     this.estimatedMinutes = 0,
     this.actualMinutes = 0,
-    this.imageUrl, // Thêm vào constructor
-    this.parentTaskId, // Thêm parent task ID
-    this.subtaskIds = const [], // Danh sách subtask IDs
+    this.imageUrl,
+    this.parentTaskId,
+    this.subtaskIds = const [],
+    this.focusTimeMinutes = 25,
   });
 
-  /// Tạo bản copy của Task với các thay đổi
+  /// copyWith method
+  /// Tác dụng: Tạo bản copy của Task với một số thuộc tính được thay đổi
+  /// Sử dụng khi: Cần cập nhật task mà không thay đổi object gốc (immutable pattern)
   Task copyWith({
     String? id,
     String? title,
@@ -111,9 +128,10 @@ class Task {
     String? notes,
     int? estimatedMinutes,
     int? actualMinutes,
-    String? imageUrl, // Thêm imageUrl vào copyWith
-    String? parentTaskId, // Thêm parentTaskId
-    List<String>? subtaskIds, // Thêm subtaskIds
+    String? imageUrl,
+    String? parentTaskId,
+    List<String>? subtaskIds,
+    int? focusTimeMinutes,
   }) {
     return Task(
       id: id ?? this.id,
@@ -129,13 +147,16 @@ class Task {
       notes: notes ?? this.notes,
       estimatedMinutes: estimatedMinutes ?? this.estimatedMinutes,
       actualMinutes: actualMinutes ?? this.actualMinutes,
-      imageUrl: imageUrl ?? this.imageUrl, // Thêm vào return
-      parentTaskId: parentTaskId ?? this.parentTaskId, // Thêm vào return
-      subtaskIds: subtaskIds ?? this.subtaskIds, // Thêm vào return
+      imageUrl: imageUrl ?? this.imageUrl,
+      parentTaskId: parentTaskId ?? this.parentTaskId,
+      subtaskIds: subtaskIds ?? this.subtaskIds,
+      focusTimeMinutes: focusTimeMinutes ?? this.focusTimeMinutes,
     );
   }
 
-  /// Chuyển đổi Task thành Map để lưu trữ
+  /// toMap method
+  /// Tác dụng: Chuyển đổi Task object thành Map để lưu trữ vào database
+  /// Sử dụng khi: Cần serialize task để lưu vào Supabase hoặc local storage
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -154,6 +175,7 @@ class Task {
       'imageUrl': imageUrl, // Thêm imageUrl vào toMap
       'parentTaskId': parentTaskId, // Thêm parentTaskId
       'subtaskIds': subtaskIds, // Thêm subtaskIds
+      'focusTimeMinutes': focusTimeMinutes, // Thêm focusTimeMinutes
     };
   }
 
@@ -186,6 +208,9 @@ class Task {
       imageUrl: map['imageUrl'], // Thêm imageUrl vào fromMap
       parentTaskId: map['parentTaskId'], // Thêm parentTaskId
       subtaskIds: List<String>.from(map['subtaskIds'] ?? []), // Thêm subtaskIds
+      focusTimeMinutes:
+          map['focusTimeMinutes'] ??
+          25, // Thêm focusTimeMinutes với mặc định 25
     );
   }
 
@@ -207,6 +232,7 @@ class Task {
       'actual_minutes': actualMinutes,
       'image_url': imageUrl, // Thêm imageUrl vào toSupabaseMap
       'parent_task_id': parentTaskId, // Thêm parent_task_id
+      'focus_time_minutes': focusTimeMinutes, // Thêm focus_time_minutes
       // subtaskIds sẽ được quản lý riêng trong bảng subtasks
       // user_id và category_id sẽ được thêm trong service
     };
@@ -240,6 +266,9 @@ class Task {
       actualMinutes: map['actual_minutes'] ?? 0,
       imageUrl: map['image_url'], // Thêm imageUrl vào fromSupabaseMap
       parentTaskId: map['parent_task_id'], // Thêm parent_task_id
+      focusTimeMinutes:
+          map['focus_time_minutes'] ??
+          25, // Thêm focus_time_minutes với mặc định 25
       // subtaskIds sẽ được load riêng từ service
     );
   }
@@ -322,7 +351,9 @@ class Task {
   /// Tính phần trăm hoàn thành của subtasks (nếu có)
   double getSubtaskProgress(List<String> completedSubtaskIds) {
     if (subtaskIds.isEmpty) return 0.0;
-    final completedCount = subtaskIds.where((id) => completedSubtaskIds.contains(id)).length;
+    final completedCount = subtaskIds
+        .where((id) => completedSubtaskIds.contains(id))
+        .length;
     return completedCount / subtaskIds.length;
   }
 
@@ -340,3 +371,4 @@ class Task {
   @override
   int get hashCode => id.hashCode;
 }
+

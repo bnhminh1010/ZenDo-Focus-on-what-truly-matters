@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../providers/auth_model.dart';
 import '../../theme.dart';
+import '../../widgets/glass_button.dart';
+import '../../../widgets/loading_state_widget.dart';
+import '../../widgets/password_strength_indicator.dart';
+import '../../widgets/theme_aware_logo.dart';
 
 /// Trang đăng ký của ứng dụng ZenDo
 class SignUpPage extends StatefulWidget {
@@ -34,14 +38,14 @@ class _SignUpPageState extends State<SignUpPage> {
   /// Xử lý đăng ký
   Future<void> _handleSignUp() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     if (!_acceptTerms) {
       _showErrorSnackBar('Vui lòng đồng ý với điều khoản sử dụng');
       return;
     }
 
     final authModel = context.read<AuthModel>();
-    
+
     try {
       final success = await authModel.signUp(
         _nameController.text.trim(),
@@ -88,20 +92,22 @@ class _SignUpPageState extends State<SignUpPage> {
     if (value == null || value.isEmpty) {
       return 'Vui lòng nhập email';
     }
-    
+
     // Trim whitespace
     final email = value.trim();
-    
+
     // Improved email regex that matches RFC 5322 standard
-    if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(email)) {
+    if (!RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    ).hasMatch(email)) {
       return 'Email không hợp lệ';
     }
-    
+
     // Additional checks
     if (email.length > 254) {
       return 'Email quá dài';
     }
-    
+
     return null;
   }
 
@@ -137,11 +143,9 @@ class _SignUpPageState extends State<SignUpPage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
+        leading: GlassIconButton(
+          icon: Icons.arrow_back_ios,
+          iconColor: Theme.of(context).colorScheme.onSurface,
           onPressed: () => context.go('/login'),
         ),
       ),
@@ -154,27 +158,27 @@ class _SignUpPageState extends State<SignUpPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 40),
-                
+
                 // Header
                 _buildHeader(),
-                
+
                 const SizedBox(height: 40),
-                
+
                 // Sign up form
                 _buildSignUpForm(),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Terms and conditions
                 _buildTermsCheckbox(),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Sign up button
                 _buildSignUpButton(),
-                
+
                 const SizedBox(height: 40),
-                
+
                 // Sign in link
                 _buildSignInLink(),
               ],
@@ -190,6 +194,16 @@ class _SignUpPageState extends State<SignUpPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Logo
+        Center(
+          child: AnimatedThemeAwareLogo(
+            width: 80,
+            height: 80,
+          ),
+        ),
+        
+        const SizedBox(height: 24),
+        
         Text(
           'Đăng ký',
           style: Theme.of(context).textTheme.headlineLarge?.copyWith(
@@ -197,13 +211,15 @@ class _SignUpPageState extends State<SignUpPage> {
             fontSize: 32,
           ),
         ),
-        
+
         const SizedBox(height: 8),
-        
+
         Text(
           'Tạo tài khoản mới để bắt đầu hành trình tập trung của bạn.',
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withOpacity(0.7),
             fontSize: 16,
           ),
         ),
@@ -220,7 +236,11 @@ class _SignUpPageState extends State<SignUpPage> {
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3)),
+            border: Border.all(
+              color: Theme.of(
+                context,
+              ).colorScheme.outline.withOpacity(0.3),
+            ),
           ),
           child: TextFormField(
             controller: _nameController,
@@ -230,30 +250,40 @@ class _SignUpPageState extends State<SignUpPage> {
             decoration: InputDecoration(
               labelText: 'Họ và tên',
               labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withOpacity(0.6),
               ),
               hintText: 'Nhập họ và tên của bạn',
               hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withOpacity(0.4),
               ),
               prefixIcon: Icon(
-                Icons.person_outlined, 
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                Icons.person_outlined,
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withOpacity(0.5),
               ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.all(16),
             ),
           ),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Email field
         Container(
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3)),
+            border: Border.all(
+              color: Theme.of(
+                context,
+              ).colorScheme.outline.withOpacity(0.3),
+            ),
           ),
           child: TextFormField(
             controller: _emailController,
@@ -264,75 +294,65 @@ class _SignUpPageState extends State<SignUpPage> {
             decoration: InputDecoration(
               labelText: 'Email',
               labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withOpacity(0.6),
               ),
               hintText: 'Nhập email của bạn',
               hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withOpacity(0.4),
               ),
               prefixIcon: Icon(
-                Icons.email_outlined, 
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                Icons.email_outlined,
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withOpacity(0.5),
               ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.all(16),
             ),
           ),
         ),
-        
+
         const SizedBox(height: 16),
-        
-        // Password field
+
+        // Password field với strength indicator
         Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
+            color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3)),
+            border: Border.all(
+              color: Theme.of(
+                context,
+              ).colorScheme.outline.withOpacity(0.3),
+            ),
           ),
-          child: TextFormField(
-            controller: _passwordController,
-            obscureText: !_isPasswordVisible,
-            textInputAction: TextInputAction.next,
-            validator: _validatePassword,
-            style: Theme.of(context).textTheme.bodyLarge,
-            decoration: InputDecoration(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: PasswordFieldWithStrength(
+              controller: _passwordController,
               labelText: 'Mật khẩu',
-              labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-              ),
               hintText: 'Nhập mật khẩu của bạn',
-              hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
-              ),
-              prefixIcon: Icon(
-                Icons.lock_outlined, 
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-              ),
-              suffixIcon: IconButton(
-                icon: Icon(
-                  _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                ),
-                onPressed: () {
-                  setState(() {
-                    _isPasswordVisible = !_isPasswordVisible;
-                  });
-                },
-              ),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.all(16),
+              validator: _validatePassword,
+              onChanged: () => setState(() {}),
             ),
           ),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Confirm password field
         Container(
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3)),
+            border: Border.all(
+              color: Theme.of(
+                context,
+              ).colorScheme.outline.withOpacity(0.3),
+            ),
           ),
           child: TextFormField(
             controller: _confirmPasswordController,
@@ -344,21 +364,29 @@ class _SignUpPageState extends State<SignUpPage> {
             decoration: InputDecoration(
               labelText: 'Xác nhận mật khẩu',
               labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withOpacity(0.6),
               ),
               hintText: 'Nhập lại mật khẩu của bạn',
               hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withOpacity(0.4),
               ),
               prefixIcon: Icon(
-                Icons.lock_outlined, 
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                Icons.lock_outlined,
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withOpacity(0.5),
               ),
-              suffixIcon: IconButton(
-                icon: Icon(
-                  _isConfirmPasswordVisible ? Icons.visibility_off : Icons.visibility,
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                ),
+              suffixIcon: GlassIconButton(
+                icon: _isConfirmPasswordVisible
+                    ? Icons.visibility_off
+                    : Icons.visibility,
+                iconColor: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withOpacity(0.5),
                 onPressed: () {
                   setState(() {
                     _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
@@ -393,13 +421,18 @@ class _SignUpPageState extends State<SignUpPage> {
             }
             return Colors.transparent;
           }),
-          side: BorderSide(color: Theme.of(context).colorScheme.outline, width: 1.5),
+          side: BorderSide(
+            color: Theme.of(context).colorScheme.outline,
+            width: 1.5,
+          ),
         ),
         Expanded(
           child: RichText(
             text: TextSpan(
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withOpacity(0.7),
               ),
               children: [
                 const TextSpan(text: 'Tôi đồng ý với '),
@@ -433,27 +466,13 @@ class _SignUpPageState extends State<SignUpPage> {
         return SizedBox(
           width: double.infinity,
           height: 56,
-          child: ElevatedButton(
+          child: GlassElevatedButton(
             onPressed: authModel.isLoading ? null : _handleSignUp,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              foregroundColor: Theme.of(context).colorScheme.onPrimary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 0,
-            ),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            borderRadius: 12,
             child: authModel.isLoading
-                ? SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        Theme.of(context).colorScheme.onPrimary,
-                      ),
-                    ),
-                  )
+                ? const LoadingStateWidget(size: 24)
                 : Text(
                     'Đăng ký',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -475,18 +494,15 @@ class _SignUpPageState extends State<SignUpPage> {
         Text(
           'Đã có tài khoản? ',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withOpacity(0.7),
           ),
         ),
-        TextButton(
+        GlassTextButton(
           onPressed: () {
             context.go('/login');
           },
-          style: TextButton.styleFrom(
-            padding: EdgeInsets.zero,
-            minimumSize: Size.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
           child: Text(
             'Đăng nhập ngay',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -499,3 +515,4 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 }
+

@@ -1,11 +1,15 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/focus_session.dart';
 
-/// Service để quản lý Focus Sessions với Supabase
+/// FocusSessionService Class
+/// Tác dụng: Service quản lý Focus Sessions với Supabase database
+/// Sử dụng khi: Cần thao tác CRUD với focus sessions và tracking thời gian làm việc
 class FocusSessionService {
   final SupabaseClient _supabase = Supabase.instance.client;
 
-  /// Tạo focus session mới
+  /// createFocusSession Method
+  /// Tác dụng: Tạo focus session mới trong database
+  /// Sử dụng khi: Người dùng bắt đầu một phiên focus mới
   Future<FocusSession> createFocusSession(FocusSession session) async {
     try {
       final response = await _supabase
@@ -20,7 +24,9 @@ class FocusSessionService {
     }
   }
 
-  /// Cập nhật focus session
+  /// updateFocusSession Method
+  /// Tác dụng: Cập nhật thông tin focus session đã tồn tại
+  /// Sử dụng khi: Cần update trạng thái hoặc thông tin của session đang chạy
   Future<FocusSession> updateFocusSession(FocusSession session) async {
     try {
       final response = await _supabase
@@ -36,8 +42,11 @@ class FocusSessionService {
     }
   }
 
-  /// Lấy focus sessions của user
-  Future<List<FocusSession>> getUserFocusSessions(String userId, {
+  /// getUserFocusSessions Method
+  /// Tác dụng: Lấy danh sách focus sessions của user với filter options
+  /// Sử dụng khi: Cần hiển thị lịch sử focus sessions hoặc thống kê
+  Future<List<FocusSession>> getUserFocusSessions(
+    String userId, {
     int? limit,
     DateTime? startDate,
     DateTime? endDate,
@@ -65,7 +74,9 @@ class FocusSessionService {
       }
 
       final response = await query;
-      return response.map((data) => FocusSession.fromSupabaseMap(data)).toList();
+      return response
+          .map((data) => FocusSession.fromSupabaseMap(data))
+          .toList();
     } catch (e) {
       throw Exception('Không thể lấy focus sessions: $e');
     }
@@ -90,24 +101,24 @@ class FocusSessionService {
   /// Xóa focus session
   Future<void> deleteFocusSession(String sessionId) async {
     try {
-      await _supabase
-          .from('focus_sessions')
-          .delete()
-          .eq('id', sessionId);
+      await _supabase.from('focus_sessions').delete().eq('id', sessionId);
     } catch (e) {
       throw Exception('Không thể xóa focus session: $e');
     }
   }
 
   /// Lấy thống kê focus sessions của user
-  Future<Map<String, dynamic>> getFocusSessionStats(String userId, {
+  Future<Map<String, dynamic>> getFocusSessionStats(
+    String userId, {
     DateTime? startDate,
     DateTime? endDate,
   }) async {
     try {
       var query = _supabase
           .from('focus_sessions')
-          .select('actual_duration_minutes, distraction_count, status, started_at')
+          .select(
+            'actual_duration_minutes, distraction_count, status, started_at',
+          )
           .eq('user_id', userId);
 
       if (startDate != null) {
@@ -119,15 +130,29 @@ class FocusSessionService {
       }
 
       final response = await query;
-      
+
       int totalSessions = response.length;
-      int completedSessions = response.where((s) => s['status'] == 'completed').length;
-      int totalMinutes = response.fold(0, (sum, s) => sum + (s['actual_duration_minutes'] as int? ?? 0));
-      int totalDistractions = response.fold(0, (sum, s) => sum + (s['distraction_count'] as int? ?? 0));
-      
-      double averageSessionLength = totalSessions > 0 ? totalMinutes / totalSessions : 0;
-      double completionRate = totalSessions > 0 ? completedSessions / totalSessions : 0;
-      double averageDistractions = totalSessions > 0 ? totalDistractions / totalSessions : 0;
+      int completedSessions = response
+          .where((s) => s['status'] == 'completed')
+          .length;
+      int totalMinutes = response.fold(
+        0,
+        (sum, s) => sum + (s['actual_duration_minutes'] as int? ?? 0),
+      );
+      int totalDistractions = response.fold(
+        0,
+        (sum, s) => sum + (s['distraction_count'] as int? ?? 0),
+      );
+
+      double averageSessionLength = totalSessions > 0
+          ? totalMinutes / totalSessions
+          : 0;
+      double completionRate = totalSessions > 0
+          ? completedSessions / totalSessions
+          : 0;
+      double averageDistractions = totalSessions > 0
+          ? totalDistractions / totalSessions
+          : 0;
 
       return {
         'totalSessions': totalSessions,
@@ -152,7 +177,9 @@ class FocusSessionService {
           .eq('task_id', taskId)
           .order('started_at', ascending: false);
 
-      return response.map((data) => FocusSession.fromSupabaseMap(data)).toList();
+      return response
+          .map((data) => FocusSession.fromSupabaseMap(data))
+          .toList();
     } catch (e) {
       throw Exception('Không thể lấy focus sessions theo task: $e');
     }
@@ -168,14 +195,19 @@ class FocusSessionService {
           .inFilter('status', ['active', 'paused'])
           .order('started_at', ascending: false);
 
-      return response.map((data) => FocusSession.fromSupabaseMap(data)).toList();
+      return response
+          .map((data) => FocusSession.fromSupabaseMap(data))
+          .toList();
     } catch (e) {
       throw Exception('Không thể lấy active focus sessions: $e');
     }
   }
 
   /// Lấy focus sessions theo ngày
-  Future<List<FocusSession>> getFocusSessionsByDate(String userId, DateTime date) async {
+  Future<List<FocusSession>> getFocusSessionsByDate(
+    String userId,
+    DateTime date,
+  ) async {
     try {
       final startOfDay = DateTime(date.year, date.month, date.day);
       final endOfDay = startOfDay.add(const Duration(days: 1));
@@ -188,14 +220,19 @@ class FocusSessionService {
           .lt('started_at', endOfDay.toIso8601String())
           .order('started_at', ascending: false);
 
-      return response.map((data) => FocusSession.fromSupabaseMap(data)).toList();
+      return response
+          .map((data) => FocusSession.fromSupabaseMap(data))
+          .toList();
     } catch (e) {
       throw Exception('Không thể lấy focus sessions theo ngày: $e');
     }
   }
 
   /// Lấy focus sessions theo tuần
-  Future<List<FocusSession>> getFocusSessionsByWeek(String userId, DateTime weekStart) async {
+  Future<List<FocusSession>> getFocusSessionsByWeek(
+    String userId,
+    DateTime weekStart,
+  ) async {
     try {
       final weekEnd = weekStart.add(const Duration(days: 7));
 
@@ -207,14 +244,19 @@ class FocusSessionService {
           .lt('started_at', weekEnd.toIso8601String())
           .order('started_at', ascending: false);
 
-      return response.map((data) => FocusSession.fromSupabaseMap(data)).toList();
+      return response
+          .map((data) => FocusSession.fromSupabaseMap(data))
+          .toList();
     } catch (e) {
       throw Exception('Không thể lấy focus sessions theo tuần: $e');
     }
   }
 
   /// Lấy focus sessions theo tháng
-  Future<List<FocusSession>> getFocusSessionsByMonth(String userId, DateTime month) async {
+  Future<List<FocusSession>> getFocusSessionsByMonth(
+    String userId,
+    DateTime month,
+  ) async {
     try {
       final startOfMonth = DateTime(month.year, month.month, 1);
       final endOfMonth = DateTime(month.year, month.month + 1, 1);
@@ -227,14 +269,17 @@ class FocusSessionService {
           .lt('started_at', endOfMonth.toIso8601String())
           .order('started_at', ascending: false);
 
-      return response.map((data) => FocusSession.fromSupabaseMap(data)).toList();
+      return response
+          .map((data) => FocusSession.fromSupabaseMap(data))
+          .toList();
     } catch (e) {
       throw Exception('Không thể lấy focus sessions theo tháng: $e');
     }
   }
 
   /// Tính tổng thời gian focus trong khoảng thời gian
-  Future<int> getTotalFocusTime(String userId, {
+  Future<int> getTotalFocusTime(
+    String userId, {
     DateTime? startDate,
     DateTime? endDate,
   }) async {
@@ -274,8 +319,10 @@ class FocusSessionService {
 
       while (true) {
         final sessions = await getFocusSessionsByDate(userId, checkDate);
-        final completedSessions = sessions.where((s) => s.status == FocusSessionStatus.completed).toList();
-        
+        final completedSessions = sessions
+            .where((s) => s.status == FocusSessionStatus.completed)
+            .toList();
+
         if (completedSessions.isEmpty) {
           // Nếu hôm nay chưa có session nào, kiểm tra hôm qua
           if (checkDate.isAtSameMomentAs(today)) {
@@ -284,7 +331,7 @@ class FocusSessionService {
           }
           break;
         }
-        
+
         streak++;
         checkDate = checkDate.subtract(const Duration(days: 1));
       }
@@ -295,3 +342,4 @@ class FocusSessionService {
     }
   }
 }
+

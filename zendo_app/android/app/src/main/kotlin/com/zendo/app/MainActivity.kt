@@ -1,4 +1,4 @@
-package com.example.zendo_app
+package com.zendo.app
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine

@@ -4,8 +4,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/task.dart';
 import '../services/supabase_database_service.dart';
 
-/// Model quản lý trạng thái tasks
-/// Sử dụng Provider pattern để quản lý danh sách tasks với Supabase
+/// TaskModel Class
+/// Tác dụng: Provider quản lý trạng thái và logic nghiệp vụ của tasks trong ứng dụng
+/// Sử dụng khi: Cần quản lý danh sách tasks, thực hiện CRUD operations và đồng bộ với Supabase
 class TaskModel extends ChangeNotifier {
   final List<Task> _tasks = [];
   final Uuid _uuid = const Uuid();
@@ -17,13 +18,17 @@ class TaskModel extends ChangeNotifier {
   List<Task> get tasks => List.unmodifiable(_tasks);
   bool get isLoading => _isLoading;
 
-  /// Khởi tạo và load tasks từ Supabase
+  /// initialize method
+  /// Tác dụng: Khởi tạo TaskModel, load dữ liệu và thiết lập realtime subscription
+  /// Sử dụng khi: Khởi động ứng dụng hoặc khi cần reset toàn bộ dữ liệu tasks
   Future<void> initialize() async {
     await loadTasks();
     _setupRealtimeSubscription();
   }
 
-  /// Load tasks từ Supabase
+  /// loadTasks method
+  /// Tác dụng: Tải danh sách tasks từ Supabase database
+  /// Sử dụng khi: Cần refresh dữ liệu tasks từ server
   Future<void> loadTasks() async {
     _isLoading = true;
     notifyListeners();
@@ -40,7 +45,9 @@ class TaskModel extends ChangeNotifier {
     }
   }
 
-  /// Setup realtime subscription cho tasks
+  /// _setupRealtimeSubscription method
+  /// Tác dụng: Thiết lập subscription realtime để đồng bộ dữ liệu tasks theo thời gian thực
+  /// Sử dụng khi: Cần cập nhật UI ngay khi có thay đổi từ database
   void _setupRealtimeSubscription() {
     try {
       _tasksSubscription = _databaseService.subscribeToTasks((updatedTasks) {
@@ -191,3 +198,4 @@ class TaskModel extends ChangeNotifier {
     );
   }
 }
+

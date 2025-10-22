@@ -1,33 +1,45 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/task.dart';
+import '../config/app_config.dart';
 
 /// Service để quản lý tương tác với Gemini AI
 class GeminiAIService {
   late final GenerativeModel _model;
   late final GenerativeModel _visionModel;
   bool _isInitialized = false;
-  
+
   /// Singleton instance
   static final GeminiAIService _instance = GeminiAIService._internal();
   factory GeminiAIService() => _instance;
   GeminiAIService._internal();
-  
+
   bool get isInitialized => _isInitialized;
-  
+
   /// Khởi tạo service với API key
   Future<void> initialize() async {
     try {
-      // Sử dụng API key mặc định cho demo
-      const apiKey = 'demo-api-key';
+      // Lấy API key từ environment (chỉ trong development) hoặc sử dụng default từ AppConfig
+      String apiKey = AppConfig.defaultGeminiApiKey;
       
+      // Chỉ load từ dotenv trong development mode
+      if (kDebugMode) {
+        try {
+          apiKey = dotenv.env['GEMINI_API_KEY'] ?? AppConfig.defaultGeminiApiKey;
+        } catch (e) {
+          // Nếu không load được dotenv, sử dụng default
+          apiKey = AppConfig.defaultGeminiApiKey;
+        }
+      }
+
       if (apiKey.isEmpty) {
         throw Exception('GEMINI_API_KEY không được tìm thấy');
       }
 
       _model = GenerativeModel(
-        model: 'gemini-2.0-flash',
+        model: 'gemini-2.0-flash-lite',
         apiKey: apiKey,
         generationConfig: GenerationConfig(
           temperature: 0.7,
@@ -39,7 +51,7 @@ class GeminiAIService {
 
       // Khởi tạo vision model để xử lý hình ảnh
       _visionModel = GenerativeModel(
-        model: 'gemini-2.0-flash',
+        model: 'gemini-2.0-flash-lite',
         apiKey: apiKey,
         generationConfig: GenerationConfig(
           temperature: 0.7,
@@ -48,25 +60,25 @@ class GeminiAIService {
           maxOutputTokens: 1024,
         ),
       );
-      
+
       _isInitialized = true;
       if (kDebugMode) {
-        print('GeminiAIService đã được khởi tạo thành công');
+        debugPrint('GeminiAIService đã được khởi tạo thành công');
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Lỗi khởi tạo GeminiAIService: $e');
+        debugPrint('Lỗi khởi tạo GeminiAIService: $e');
       }
       rethrow;
     }
   }
-  
+
   /// Gửi tin nhắn với file đính kèm
   Future<String> sendMessageWithFile(String message, File file) async {
     try {
       final fileBytes = await file.readAsBytes();
       final fileName = file.path.split('/').last.toLowerCase();
-      
+
       String mimeType = 'application/octet-stream';
       if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) {
         mimeType = 'image/jpeg';
@@ -77,14 +89,14 @@ class GeminiAIService {
       } else if (fileName.endsWith('.txt')) {
         mimeType = 'text/plain';
       }
-      
+
       final content = Content.multi([
         TextPart(message),
         DataPart(mimeType, fileBytes),
       ]);
-      
+
       final response = await _visionModel.generateContent([content]);
-      
+
       if (response.text != null && response.text!.isNotEmpty) {
         return response.text!;
       } else {
@@ -101,7 +113,7 @@ class GeminiAIService {
     try {
       final content = [Content.text(message)];
       final response = await _model.generateContent(content);
-      
+
       if (response.text != null && response.text!.isNotEmpty) {
         return response.text!;
       } else {
@@ -112,12 +124,12 @@ class GeminiAIService {
       rethrow;
     }
   }
-  
+
   /// Chat với context (lịch sử hội thoại)
   Future<String> chatWithContext(List<Map<String, String>> messages) async {
     try {
       final chat = _model.startChat();
-      
+
       // Gửi lịch sử tin nhắn (trừ tin nhắn cuối cùng)
       for (int i = 0; i < messages.length - 1; i++) {
         final msg = messages[i];
@@ -125,11 +137,13 @@ class GeminiAIService {
           await chat.sendMessage(Content.text(msg['content'] ?? ''));
         }
       }
-      
+
       // Gửi tin nhắn cuối cùng và nhận phản hồi
       final lastMessage = messages.last;
-      final response = await chat.sendMessage(Content.text(lastMessage['content'] ?? ''));
-      
+      final response = await chat.sendMessage(
+        Content.text(lastMessage['content'] ?? ''),
+      );
+
       if (response.text != null && response.text!.isNotEmpty) {
         return response.text!;
       } else {
@@ -140,11 +154,14 @@ class GeminiAIService {
       rethrow;
     }
   }
-  
+
   /// Phân tích task và đề xuất độ ưu tiên
-  Future<Map<String, dynamic>> analyzeTaskPriority(String taskDescription) async {
+  Future<Map<String, dynamic>> analyzeTaskPriority(
+    String taskDescription,
+  ) async {
     try {
-      final prompt = '''
+      final prompt =
+          '''
 Phân tích task sau và đưa ra đánh giá:
 Task: "$taskDescription"
 
@@ -158,17 +175,17 @@ Hãy trả về JSON với format:
   "reasoning": "lý do đánh giá"
 }
 ''';
-      
+
       final response = await sendMessage(prompt);
-      
+
       // Parse JSON response (simplified - trong thực tế cần xử lý robust hơn)
       return {
         'priority': 'medium',
-        'urgency': 'normal', 
+        'urgency': 'normal',
         'estimatedTime': '30',
         'category': 'other',
         'suggestions': response,
-        'reasoning': 'AI analysis completed'
+        'reasoning': 'AI analysis completed',
       };
     } catch (e) {
       debugPrint('❌ Lỗi khi phân tích task: $e');
@@ -178,19 +195,23 @@ Hãy trả về JSON với format:
         'estimatedTime': '30',
         'category': 'other',
         'suggestions': 'Không thể phân tích task này',
-        'reasoning': 'Lỗi khi gọi AI: $e'
+        'reasoning': 'Lỗi khi gọi AI: $e',
       };
     }
   }
-  
+
   /// Tạo task từ mô tả tự nhiên
-  Future<Task?> createTaskFromDescription(String description, {File? imageFile}) async {
+  Future<Task?> createTaskFromDescription(
+    String description, {
+    File? imageFile,
+  }) async {
     if (!_isInitialized) {
       throw Exception('Gemini AI service not initialized');
     }
 
     try {
-      String prompt = '''
+      String prompt =
+          '''
 Phân tích mô tả sau và tạo một task với thông tin chi tiết:
 "$description"
 ''';
@@ -218,14 +239,13 @@ Chỉ trả về JSON, không có text khác.
 ''';
 
       List<Content> content = [];
-      
+
       // Thêm hình ảnh nếu có
       if (imageFile != null) {
         final imageBytes = await imageFile.readAsBytes();
-        content.add(Content.multi([
-          TextPart(prompt),
-          DataPart('image/jpeg', imageBytes),
-        ]));
+        content.add(
+          Content.multi([TextPart(prompt), DataPart('image/jpeg', imageBytes)]),
+        );
       } else {
         content.add(Content.text(prompt));
       }
@@ -242,17 +262,17 @@ Chỉ trả về JSON, không có text khác.
       if (jsonResponse == null) return null;
 
       // Tạo Task từ JSON
-       return Task(
-         id: DateTime.now().millisecondsSinceEpoch.toString(),
-         title: jsonResponse['title'] ?? 'Untitled Task',
-         description: jsonResponse['description'] ?? '',
-         priority: _parsePriority(jsonResponse['priority']),
-         estimatedMinutes: jsonResponse['estimatedTime'] ?? 30,
-         category: _getCategoryFromName(jsonResponse['category']),
-         createdAt: DateTime.now(),
-         isCompleted: false,
-         imageUrl: imageFile?.path, // Lưu đường dẫn hình ảnh
-       );
+      return Task(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        title: jsonResponse['title'] ?? 'Untitled Task',
+        description: jsonResponse['description'] ?? '',
+        priority: _parsePriority(jsonResponse['priority']),
+        estimatedMinutes: jsonResponse['estimatedTime'] ?? 30,
+        category: _getCategoryFromName(jsonResponse['category']),
+        createdAt: DateTime.now(),
+        isCompleted: false,
+        imageUrl: imageFile?.path, // Lưu đường dẫn hình ảnh
+      );
     } catch (e) {
       throw Exception('Failed to create task from description: $e');
     }
@@ -264,11 +284,15 @@ Chỉ trả về JSON, không có text khác.
     }
 
     try {
-      final taskList = tasks.map((task) => 
-         '- ${task.title} (Ưu tiên: ${task.priority.name}, Thời gian ước tính: ${task.estimatedMinutes} phút)'
-       ).join('\n');
+      final taskList = tasks
+          .map(
+            (task) =>
+                '- ${task.title} (Ưu tiên: ${task.priority.name}, Thời gian ước tính: ${task.estimatedMinutes} phút)',
+          )
+          .join('\n');
 
-      final prompt = '''
+      final prompt =
+          '''
 Phân tích danh sách task sau và đưa ra gợi ý sắp xếp ưu tiên:
 
 $taskList
@@ -314,15 +338,20 @@ Trả lời bằng tiếng Việt.
       throw Exception('Failed to get productivity tips: $e');
     }
   }
-  
+
   /// Phân tích thói quen focus session
-  Future<String> analyzeFocusHabits(List<Map<String, dynamic>> focusSessions) async {
+  Future<String> analyzeFocusHabits(
+    List<Map<String, dynamic>> focusSessions,
+  ) async {
     try {
-      final sessionsData = focusSessions.map((session) {
-        return 'Ngày: ${session['startedAt']}, Thời lượng: ${session['duration']} phút, Nhiễu: ${session['distractionCount']}';
-      }).join('\n');
-      
-      final prompt = '''
+      final sessionsData = focusSessions
+          .map((session) {
+            return 'Ngày: ${session['startedAt']}, Thời lượng: ${session['duration']} phút, Nhiễu: ${session['distractionCount']}';
+          })
+          .join('\n');
+
+      final prompt =
+          '''
 Phân tích dữ liệu focus session sau và đưa ra nhận xét về thói quen:
 
 $sessionsData
@@ -335,7 +364,7 @@ Hãy đưa ra:
 
 Trả lời bằng tiếng Việt, ngắn gọn và thực tế.
 ''';
-      
+
       return await sendMessage(prompt);
     } catch (e) {
       debugPrint('❌ Lỗi khi phân tích thói quen: $e');
@@ -349,9 +378,9 @@ Trả lời bằng tiếng Việt, ngắn gọn và thực tế.
       // Tìm JSON trong response
       final jsonStart = response.indexOf('{');
       final jsonEnd = response.lastIndexOf('}');
-      
+
       if (jsonStart == -1 || jsonEnd == -1) return null;
-      
+
       final jsonString = response.substring(jsonStart, jsonEnd + 1);
       return _parseJson(jsonString);
     } catch (e) {
@@ -364,27 +393,35 @@ Trả lời bằng tiếng Việt, ngắn gọn và thực tế.
       // Simple JSON parser for the expected format
       final cleaned = jsonString.replaceAll('\n', '').replaceAll('  ', ' ');
       final Map<String, dynamic> result = {};
-      
+
       // Extract title
       final titleMatch = RegExp(r'"title":\s*"([^"]*)"').firstMatch(cleaned);
       if (titleMatch != null) result['title'] = titleMatch.group(1);
-      
+
       // Extract description
-      final descMatch = RegExp(r'"description":\s*"([^"]*)"').firstMatch(cleaned);
+      final descMatch = RegExp(
+        r'"description":\s*"([^"]*)"',
+      ).firstMatch(cleaned);
       if (descMatch != null) result['description'] = descMatch.group(1);
-      
+
       // Extract priority
-      final priorityMatch = RegExp(r'"priority":\s*"([^"]*)"').firstMatch(cleaned);
+      final priorityMatch = RegExp(
+        r'"priority":\s*"([^"]*)"',
+      ).firstMatch(cleaned);
       if (priorityMatch != null) result['priority'] = priorityMatch.group(1);
-      
+
       // Extract estimatedTime
       final timeMatch = RegExp(r'"estimatedTime":\s*(\d+)').firstMatch(cleaned);
-      if (timeMatch != null) result['estimatedTime'] = int.tryParse(timeMatch.group(1) ?? '30') ?? 30;
-      
+      if (timeMatch != null)
+        result['estimatedTime'] =
+            int.tryParse(timeMatch.group(1) ?? '30') ?? 30;
+
       // Extract category
-      final categoryMatch = RegExp(r'"category":\s*"([^"]*)"').firstMatch(cleaned);
+      final categoryMatch = RegExp(
+        r'"category":\s*"([^"]*)"',
+      ).firstMatch(cleaned);
       if (categoryMatch != null) result['category'] = categoryMatch.group(1);
-      
+
       return result;
     } catch (e) {
       return null;
@@ -403,20 +440,20 @@ Trả lời bằng tiếng Việt, ngắn gọn và thực tế.
   }
 
   TaskCategory _getCategoryFromName(String? categoryName) {
-     switch (categoryName?.toLowerCase()) {
-       case 'work':
-         return TaskCategory.work;
-       case 'personal':
-         return TaskCategory.personal;
-       case 'health':
-         return TaskCategory.health;
-       case 'learning':
-         return TaskCategory.learning;
-       default:
-         return TaskCategory.other;
-     }
-   }
-  
+    switch (categoryName?.toLowerCase()) {
+      case 'work':
+        return TaskCategory.work;
+      case 'personal':
+        return TaskCategory.personal;
+      case 'health':
+        return TaskCategory.health;
+      case 'learning':
+        return TaskCategory.learning;
+      default:
+        return TaskCategory.other;
+    }
+  }
+
   /// Kiểm tra trạng thái kết nối
   Future<bool> checkConnection() async {
     try {
@@ -428,3 +465,4 @@ Trả lời bằng tiếng Việt, ngắn gọn và thực tế.
     }
   }
 }
+

@@ -51,7 +51,7 @@ class GoogleSignInProvider extends ChangeNotifier {
 
     try {
       final User? user = await _googleAuthService.signInWithGoogle();
-      
+
       if (user != null) {
         _isSignedIn = true;
         _googleUser = _googleAuthService.currentGoogleUser;
@@ -142,8 +142,9 @@ class GoogleSignInProvider extends ChangeNotifier {
       return _googleUser!.displayName ?? 'Người dùng Google';
     }
     if (_supabaseUser != null) {
-      return _supabaseUser!.userMetadata?['full_name'] ?? 
-             _supabaseUser!.email ?? 'Người dùng';
+      return _supabaseUser!.userMetadata?['full_name'] ??
+          _supabaseUser!.email ??
+          'Người dùng';
     }
     return 'Chưa đăng nhập';
   }
@@ -170,3 +171,4 @@ class GoogleSignInProvider extends ChangeNotifier {
     return null;
   }
 }
+

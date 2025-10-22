@@ -29,7 +29,9 @@ class GitHubSignInButton extends StatelessWidget {
           height: height ?? 56,
           padding: padding,
           child: ElevatedButton(
-            onPressed: provider.isLoading ? null : () => _handleSignIn(context, provider),
+            onPressed: provider.isLoading
+                ? null
+                : () => _handleSignIn(context, provider),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF24292e), // GitHub dark color
               foregroundColor: Colors.white,
@@ -50,18 +52,30 @@ class GitHubSignInButton extends StatelessWidget {
                     ),
                   )
                 : Row(
+                    mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CustomPaint(
-                        size: const Size(20, 20),
-                        painter: GitHubIconPainter(),
+                      SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: Image.asset(
+                          'assets/icons/github.png',
+                          width: 20,
+                          height: 20,
+                          fit: BoxFit.contain,
+                          color: Colors.white, // Tô màu trắng cho icon
+                        ),
                       ),
                       const SizedBox(width: 12),
-                      Text(
-                        text ?? 'Đăng nhập bằng GitHub',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                      Flexible(
+                        child: Text(
+                          text ?? 'Đăng nhập bằng GitHub',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
                         ),
                       ),
                     ],
@@ -73,10 +87,13 @@ class GitHubSignInButton extends StatelessWidget {
   }
 
   /// Xử lý sự kiện đăng nhập
-  Future<void> _handleSignIn(BuildContext context, GitHubSignInProvider provider) async {
+  Future<void> _handleSignIn(
+    BuildContext context,
+    GitHubSignInProvider provider,
+  ) async {
     // Clear error trước khi đăng nhập
     provider.clearError();
-    
+
     // Gọi callback nếu có
     if (onPressed != null) {
       onPressed!();
@@ -85,7 +102,7 @@ class GitHubSignInButton extends StatelessWidget {
 
     // Thực hiện đăng nhập
     final success = await provider.signIn();
-    
+
     if (!success && provider.errorMessage != null && context.mounted) {
       // Hiển thị error message
       ScaffoldMessenger.of(context).showSnackBar(
@@ -94,79 +111,18 @@ class GitHubSignInButton extends StatelessWidget {
           backgroundColor: Theme.of(context).colorScheme.error,
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       );
     }
   }
 }
 
-/// Custom painter để vẽ GitHub icon
+/// Custom painter để vẽ GitHub icon - DEPRECATED, sử dụng PNG thay thế
 class GitHubIconPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.fill;
-
-    final path = Path();
-    
-    // GitHub icon path (simplified version)
-    // Vẽ GitHub logo dựa trên SVG path
-    final centerX = size.width / 2;
-    final centerY = size.height / 2;
-    final radius = size.width * 0.45;
-    
-    // Main circle
-    path.addOval(Rect.fromCircle(
-      center: Offset(centerX, centerY),
-      radius: radius,
-    ));
-    
-    // Cat ears (simplified)
-    path.moveTo(centerX - radius * 0.6, centerY - radius * 0.8);
-    path.lineTo(centerX - radius * 0.3, centerY - radius * 0.5);
-    path.lineTo(centerX - radius * 0.8, centerY - radius * 0.3);
-    path.close();
-    
-    path.moveTo(centerX + radius * 0.6, centerY - radius * 0.8);
-    path.lineTo(centerX + radius * 0.3, centerY - radius * 0.5);
-    path.lineTo(centerX + radius * 0.8, centerY - radius * 0.3);
-    path.close();
-    
-    canvas.drawPath(path, paint);
-    
-    // Draw simplified GitHub cat face
-    final facePaint = Paint()
-      ..color = const Color(0xFF24292e)
-      ..style = PaintingStyle.fill;
-    
-    // Eyes
-    canvas.drawCircle(
-      Offset(centerX - radius * 0.3, centerY - radius * 0.2),
-      radius * 0.15,
-      facePaint,
-    );
-    canvas.drawCircle(
-      Offset(centerX + radius * 0.3, centerY - radius * 0.2),
-      radius * 0.15,
-      facePaint,
-    );
-    
-    // Mouth area
-    final mouthPath = Path();
-    mouthPath.moveTo(centerX - radius * 0.4, centerY + radius * 0.1);
-    mouthPath.quadraticBezierTo(
-      centerX, centerY + radius * 0.4,
-      centerX + radius * 0.4, centerY + radius * 0.1,
-    );
-    mouthPath.lineTo(centerX + radius * 0.2, centerY + radius * 0.6);
-    mouthPath.lineTo(centerX - radius * 0.2, centerY + radius * 0.6);
-    mouthPath.close();
-    
-    canvas.drawPath(mouthPath, facePaint);
+    // Deprecated - sử dụng PNG thay thế
   }
 
   @override
@@ -192,7 +148,7 @@ class GitHubSignInButtonOutlined extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<GitHubSignInProvider>(
       builder: (context, provider, child) {
-        return Container(
+        return SizedBox(
           width: width ?? double.infinity,
           height: height ?? 56,
           child: OutlinedButton(
@@ -211,22 +167,38 @@ class GitHubSignInButtonOutlined extends StatelessWidget {
                     width: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF24292e)),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Color(0xFF24292e),
+                      ),
                     ),
                   )
                 : Row(
+                    mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CustomPaint(
-                        size: const Size(20, 20),
-                        painter: GitHubIconPainterOutlined(),
+                      SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: Image.asset(
+                          'assets/icons/github.png',
+                          width: 20,
+                          height: 20,
+                          fit: BoxFit.contain,
+                          color: const Color(
+                            0xFF24292e,
+                          ), // Tô màu GitHub cho outlined button
+                        ),
                       ),
                       const SizedBox(width: 12),
-                      Text(
-                        text ?? 'Đăng nhập bằng GitHub',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                      Flexible(
+                        child: Text(
+                          text ?? 'Đăng nhập bằng GitHub',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
                         ),
                       ),
                     ],
@@ -238,28 +210,14 @@ class GitHubSignInButtonOutlined extends StatelessWidget {
   }
 }
 
-/// GitHub icon painter cho outlined button
+/// GitHub icon painter cho outlined button - DEPRECATED, sử dụng PNG thay thế
 class GitHubIconPainterOutlined extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF24292e)
-      ..style = PaintingStyle.fill;
-
-    // Sử dụng cùng logic như GitHubIconPainter nhưng với màu khác
-    final path = Path();
-    final centerX = size.width / 2;
-    final centerY = size.height / 2;
-    final radius = size.width * 0.45;
-    
-    path.addOval(Rect.fromCircle(
-      center: Offset(centerX, centerY),
-      radius: radius,
-    ));
-    
-    canvas.drawPath(path, paint);
+    // Deprecated - sử dụng PNG thay thế
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
+

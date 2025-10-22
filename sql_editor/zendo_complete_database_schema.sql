@@ -100,6 +100,7 @@ CREATE TABLE public.tasks (
     -- Time tracking
     estimated_minutes INTEGER DEFAULT 0,
     actual_minutes INTEGER DEFAULT 0,
+    focus_time_minutes INTEGER DEFAULT 25, -- Thời gian focus cho task (phút)
     
     -- Flags
     is_completed BOOLEAN DEFAULT FALSE,

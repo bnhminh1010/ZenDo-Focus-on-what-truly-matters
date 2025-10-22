@@ -4,17 +4,22 @@ import 'package:go_router/go_router.dart';
 import '../models/task.dart';
 import '../providers/task_model.dart';
 import 'task_card.dart';
+import 'skeleton_loader.dart';
+import 'haptic_feedback_widget.dart';
+import 'enhanced_empty_state_widget.dart';
 
 class TaskListView extends StatefulWidget {
   final TaskCategory? filterCategory;
   final bool showCompleted;
   final String? searchQuery;
+  final Function(String)? onSearchChanged;
 
   const TaskListView({
     super.key,
     this.filterCategory,
     this.showCompleted = true,
     this.searchQuery,
+    this.onSearchChanged,
   });
 
   @override
@@ -29,6 +34,11 @@ class _TaskListViewState extends State<TaskListView> {
   Widget build(BuildContext context) {
     return Consumer<TaskModel>(
       builder: (context, taskModel, child) {
+        // Show skeleton loading while tasks are loading
+        if (taskModel.isLoading) {
+          return const TaskListSkeleton();
+        }
+
         List<Task> tasks = _getFilteredTasks(taskModel);
 
         if (tasks.isEmpty) {
@@ -86,8 +96,12 @@ class _TaskListViewState extends State<TaskListView> {
     }
 
     // Tách task hoàn thành và chưa hoàn thành
-    List<Task> incompleteTasks = tasks.where((task) => !task.isCompleted).toList();
-    List<Task> completedTasks = tasks.where((task) => task.isCompleted).toList();
+    List<Task> incompleteTasks = tasks
+        .where((task) => !task.isCompleted)
+        .toList();
+    List<Task> completedTasks = tasks
+        .where((task) => task.isCompleted)
+        .toList();
 
     // Sort incomplete tasks
     incompleteTasks.sort((a, b) {
@@ -192,16 +206,14 @@ class _TaskListViewState extends State<TaskListView> {
           const SizedBox(width: 8),
 
           // Sort direction button
-          IconButton(
+          HapticIconButton(
             onPressed: () {
               setState(() {
                 _sortAscending = !_sortAscending;
               });
             },
-            icon: Icon(
-              _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-            ),
-            tooltip: _sortAscending ? 'Ascending' : 'Descending',
+            icon: _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+            feedbackType: HapticFeedbackType.selection,
           ),
 
           const Spacer(),
@@ -212,11 +224,11 @@ class _TaskListViewState extends State<TaskListView> {
               final filteredCount = _getFilteredTasks(taskModel).length;
               final totalCount = taskModel.tasks.length;
               return Text(
-                '$filteredCount of $totalCount tasks',
+                '$filteredCount trong tổng số $totalCount task',
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
                   color: Theme.of(
                     context,
-                  ).colorScheme.onSurface.withValues(alpha: 0.6),
+                  ).colorScheme.onSurface.withOpacity(0.6),
                 ),
               );
             },
@@ -227,49 +239,38 @@ class _TaskListViewState extends State<TaskListView> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.task_alt,
-            size: 64,
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No tasks found',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            widget.searchQuery != null && widget.searchQuery!.isNotEmpty
-                ? 'Try adjusting your search terms'
-                : 'Create your first task to get started',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+    if (widget.searchQuery != null && widget.searchQuery!.isNotEmpty) {
+      return SearchEmptyState(
+        searchQuery: widget.searchQuery!,
+        onClearSearch: () {
+          // Callback để clear search
+          if (widget.onSearchChanged != null) {
+            widget.onSearchChanged!('');
+          }
+        },
+      );
+    }
+
+    return TaskListEmptyState(
+      onAddTask: () {
+        // Callback để add task - có thể trigger từ parent widget
+        // Hoặc show dialog trực tiếp
+      },
     );
   }
 
   String _getSortByDisplayName(TaskSortBy sortBy) {
     switch (sortBy) {
       case TaskSortBy.title:
-        return 'Title';
+        return 'Tiêu đề';
       case TaskSortBy.dueDate:
-        return 'Due Date';
+        return 'Ngày hạn';
       case TaskSortBy.priority:
-        return 'Priority';
+        return 'Độ ưu tiên';
       case TaskSortBy.category:
-        return 'Category';
+        return 'Danh mục';
       case TaskSortBy.createdAt:
-        return 'Created';
+        return 'Ngày tạo';
     }
   }
 
@@ -283,3 +284,4 @@ class _TaskListViewState extends State<TaskListView> {
 }
 
 enum TaskSortBy { title, dueDate, priority, category, createdAt }
+

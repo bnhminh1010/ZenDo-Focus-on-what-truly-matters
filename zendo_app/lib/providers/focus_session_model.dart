@@ -3,7 +3,9 @@ import '../models/focus_session.dart';
 import '../services/focus_session_service.dart';
 import '../services/supabase_auth_service.dart';
 
-/// Provider model để quản lý state của Focus Sessions
+/// FocusSessionModel Class
+/// Tác dụng: Provider quản lý trạng thái và logic nghiệp vụ của focus sessions trong ứng dụng
+/// Sử dụng khi: Cần quản lý phiên tập trung, theo dõi thời gian focus và thống kê hiệu suất
 class FocusSessionModel extends ChangeNotifier {
   final FocusSessionService _focusSessionService = FocusSessionService();
   final SupabaseAuthService _authService = SupabaseAuthService();
@@ -22,10 +24,14 @@ class FocusSessionModel extends ChangeNotifier {
   String? get error => _error;
   Map<String, dynamic>? get stats => _stats;
 
-  /// Lấy user ID hiện tại
+  /// _currentUserId getter
+  /// Tác dụng: Lấy ID của user hiện tại từ auth service
+  /// Sử dụng khi: Cần xác định user để thực hiện các operations với focus sessions
   String? get _currentUserId => _authService.currentUser?.id;
 
-  /// Load focus sessions của user
+  /// loadFocusSessions method
+  /// Tác dụng: Tải danh sách focus sessions của user từ database với các filter tùy chọn
+  /// Sử dụng khi: Cần hiển thị lịch sử focus sessions hoặc refresh dữ liệu
   Future<void> loadFocusSessions({
     int? limit,
     DateTime? startDate,
@@ -73,7 +79,9 @@ class FocusSessionModel extends ChangeNotifier {
         updatedAt: now,
       );
 
-      final createdSession = await _focusSessionService.createFocusSession(session);
+      final createdSession = await _focusSessionService.createFocusSession(
+        session,
+      );
       _currentSession = createdSession;
       _focusSessions.insert(0, createdSession);
       _clearError();
@@ -93,18 +101,18 @@ class FocusSessionModel extends ChangeNotifier {
       final updatedSession = await _focusSessionService.updateFocusSession(
         session.copyWith(updatedAt: DateTime.now()),
       );
-      
+
       // Cập nhật trong danh sách
       final index = _focusSessions.indexWhere((s) => s.id == session.id);
       if (index != -1) {
         _focusSessions[index] = updatedSession;
       }
-      
+
       // Cập nhật current session nếu cần
       if (_currentSession?.id == session.id) {
         _currentSession = updatedSession;
       }
-      
+
       _clearError();
       return true;
     } catch (e) {
@@ -116,19 +124,21 @@ class FocusSessionModel extends ChangeNotifier {
   }
 
   /// Hoàn thành focus session
-  Future<bool> completeFocusSession(String sessionId, {
+  Future<bool> completeFocusSession(
+    String sessionId, {
     int? actualDurationMinutes,
     int? distractionCount,
     int? productivityRating,
     String? notes,
   }) async {
     final session = _focusSessions.firstWhere((s) => s.id == sessionId);
-    
+
     return await updateFocusSession(
       session.copyWith(
         status: FocusSessionStatus.completed,
         endedAt: DateTime.now(),
-        actualDurationMinutes: actualDurationMinutes ?? session.actualDurationMinutes,
+        actualDurationMinutes:
+            actualDurationMinutes ?? session.actualDurationMinutes,
         distractionCount: distractionCount ?? session.distractionCount,
         productivityRating: productivityRating,
         notes: notes,
@@ -139,7 +149,7 @@ class FocusSessionModel extends ChangeNotifier {
   /// Tạm dừng focus session
   Future<bool> pauseFocusSession(String sessionId) async {
     final session = _focusSessions.firstWhere((s) => s.id == sessionId);
-    
+
     return await updateFocusSession(
       session.copyWith(
         status: FocusSessionStatus.paused,
@@ -151,17 +161,18 @@ class FocusSessionModel extends ChangeNotifier {
   /// Tiếp tục focus session
   Future<bool> resumeFocusSession(String sessionId) async {
     final session = _focusSessions.firstWhere((s) => s.id == sessionId);
-    
+
     // Tính thời gian pause
-    final pauseDuration = session.pausedAt != null 
+    final pauseDuration = session.pausedAt != null
         ? DateTime.now().difference(session.pausedAt!).inMinutes
         : 0;
-    
+
     return await updateFocusSession(
       session.copyWith(
         status: FocusSessionStatus.active,
         pausedAt: null,
-        totalPauseDurationMinutes: session.totalPauseDurationMinutes + pauseDuration,
+        totalPauseDurationMinutes:
+            session.totalPauseDurationMinutes + pauseDuration,
       ),
     );
   }
@@ -169,7 +180,7 @@ class FocusSessionModel extends ChangeNotifier {
   /// Hủy focus session
   Future<bool> cancelFocusSession(String sessionId) async {
     final session = _focusSessions.firstWhere((s) => s.id == sessionId);
-    
+
     return await updateFocusSession(
       session.copyWith(
         status: FocusSessionStatus.cancelled,
@@ -184,11 +195,11 @@ class FocusSessionModel extends ChangeNotifier {
     try {
       await _focusSessionService.deleteFocusSession(sessionId);
       _focusSessions.removeWhere((s) => s.id == sessionId);
-      
+
       if (_currentSession?.id == sessionId) {
         _currentSession = null;
       }
-      
+
       _clearError();
       return true;
     } catch (e) {
@@ -200,10 +211,7 @@ class FocusSessionModel extends ChangeNotifier {
   }
 
   /// Load thống kê focus sessions
-  Future<void> loadStats({
-    DateTime? startDate,
-    DateTime? endDate,
-  }) async {
+  Future<void> loadStats({DateTime? startDate, DateTime? endDate}) async {
     if (_currentUserId == null) return;
 
     _setLoading(true);
@@ -226,7 +234,10 @@ class FocusSessionModel extends ChangeNotifier {
     if (_currentUserId == null) return [];
 
     try {
-      return await _focusSessionService.getFocusSessionsByDate(_currentUserId!, date);
+      return await _focusSessionService.getFocusSessionsByDate(
+        _currentUserId!,
+        date,
+      );
     } catch (e) {
       _setError('Không thể lấy focus sessions theo ngày: $e');
       return [];
@@ -238,7 +249,10 @@ class FocusSessionModel extends ChangeNotifier {
     if (_currentUserId == null) return [];
 
     try {
-      return await _focusSessionService.getFocusSessionsByWeek(_currentUserId!, weekStart);
+      return await _focusSessionService.getFocusSessionsByWeek(
+        _currentUserId!,
+        weekStart,
+      );
     } catch (e) {
       _setError('Không thể lấy focus sessions theo tuần: $e');
       return [];
@@ -250,7 +264,10 @@ class FocusSessionModel extends ChangeNotifier {
     if (_currentUserId == null) return [];
 
     try {
-      return await _focusSessionService.getFocusSessionsByMonth(_currentUserId!, month);
+      return await _focusSessionService.getFocusSessionsByMonth(
+        _currentUserId!,
+        month,
+      );
     } catch (e) {
       _setError('Không thể lấy focus sessions theo tháng: $e');
       return [];
@@ -293,7 +310,9 @@ class FocusSessionModel extends ChangeNotifier {
     if (_currentUserId == null) return;
 
     try {
-      final activeSessions = await _focusSessionService.getActiveFocusSessions(_currentUserId!);
+      final activeSessions = await _focusSessionService.getActiveFocusSessions(
+        _currentUserId!,
+      );
       if (activeSessions.isNotEmpty) {
         _currentSession = activeSessions.first;
       }
@@ -347,3 +366,4 @@ class FocusSessionModel extends ChangeNotifier {
     super.dispose();
   }
 }
+

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/subtask.dart';
 import '../services/subtask_service.dart';
+import 'loading_state_widget.dart';
+import 'package:go_router/go_router.dart';
+import 'glass_container.dart';
+import 'glass_button.dart';
 
 /// Widget hiển thị danh sách subtasks của một task
 class SubtaskListWidget extends StatefulWidget {
@@ -49,9 +53,9 @@ class _SubtaskListWidgetState extends State<SubtaskListWidget> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi khi tải subtasks: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi khi tải subtasks: $e')));
       }
     }
   }
@@ -74,17 +78,19 @@ class _SubtaskListWidgetState extends State<SubtaskListWidget> {
       widget.onSubtasksChanged?.call(_subtasks);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi khi thêm subtask: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi khi thêm subtask: $e')));
       }
     }
   }
 
   Future<void> _toggleSubtask(String subtaskId) async {
     try {
-      final updatedSubtask = await _subtaskService.toggleSubtaskCompletion(subtaskId);
-      
+      final updatedSubtask = await _subtaskService.toggleSubtaskCompletion(
+        subtaskId,
+      );
+
       setState(() {
         final index = _subtasks.indexWhere((s) => s.id == subtaskId);
         if (index != -1) {
@@ -94,9 +100,9 @@ class _SubtaskListWidgetState extends State<SubtaskListWidget> {
       widget.onSubtasksChanged?.call(_subtasks);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi khi cập nhật subtask: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi khi cập nhật subtask: $e')));
       }
     }
   }
@@ -104,73 +110,152 @@ class _SubtaskListWidgetState extends State<SubtaskListWidget> {
   Future<void> _deleteSubtask(String subtaskId) async {
     try {
       await _subtaskService.deleteSubtask(subtaskId);
-      
+
       setState(() {
         _subtasks.removeWhere((s) => s.id == subtaskId);
       });
       widget.onSubtasksChanged?.call(_subtasks);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi khi xóa subtask: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi khi xóa subtask: $e')));
       }
     }
   }
 
   void _showEditSubtaskDialog(Subtask subtask) {
     final controller = TextEditingController(text: subtask.title);
-    
+
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Chỉnh sửa Subtask'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            labelText: 'Tiêu đề subtask',
-            border: OutlineInputBorder(),
-          ),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Hủy'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              final navigator = Navigator.of(dialogContext);
-              final scaffoldMessenger = ScaffoldMessenger.of(context);
-              
-              if (controller.text.trim().isNotEmpty) {
-                try {
-                  await _subtaskService.updateSubtask(
-                    subtask.copyWith(
-                      title: controller.text.trim(),
+      builder: (dialogContext) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: GlassContainer(
+          borderRadius: 20,
+          blur: 20,
+          opacity: 0.15,
+          padding: const EdgeInsets.all(24),
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.85,
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header với icon và tiêu đề
+                Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Center(
+                        child: Text('✏️', style: TextStyle(fontSize: 24)),
+                      ),
                     ),
-                  );
-                  
-                  setState(() {
-                    final index = _subtasks.indexWhere((s) => s.id == subtask.id);
-                    if (index != -1) {
-                      _subtasks[index] = subtask.copyWith(
-                        title: controller.text.trim(),
-                      );
-                    }
-                  });
-                  widget.onSubtasksChanged?.call(_subtasks);
-                } catch (e) {
-                  scaffoldMessenger.showSnackBar(
-                    SnackBar(content: Text('Lỗi khi cập nhật subtask: $e')),
-                  );
-                }
-              }
-              navigator.pop();
-            },
-            child: const Text('Lưu'),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Chỉnh sửa Subtask',
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(fontWeight: FontWeight.w600),
+                          ),
+                          Text(
+                            'Cập nhật tiêu đề cho subtask này',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                // Text field
+                TextField(
+                  controller: controller,
+                  decoration: const InputDecoration(
+                    labelText: 'Tiêu đề subtask',
+                    border: OutlineInputBorder(),
+                  ),
+                  autofocus: true,
+                ),
+
+                const SizedBox(height: 24),
+
+                // Action buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Semantics(
+                      label: 'Hủy chỉnh sửa subtask',
+                      hint: 'Nhấn để đóng dialog mà không lưu thay đổi',
+                      child: GlassOutlinedButton(
+                        onPressed: () => context.pop(),
+                        child: const Text('Hủy'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Semantics(
+                      label: 'Lưu thay đổi subtask',
+                      hint: 'Nhấn để cập nhật tiêu đề subtask',
+                      child: GlassElevatedButton(
+                        onPressed: () async {
+                          final scaffoldMessenger = ScaffoldMessenger.of(
+                            context,
+                          );
+
+                          if (controller.text.trim().isNotEmpty) {
+                            try {
+                              await _subtaskService.updateSubtask(
+                                subtask.copyWith(title: controller.text.trim()),
+                              );
+
+                              setState(() {
+                                final index = _subtasks.indexWhere(
+                                  (s) => s.id == subtask.id,
+                                );
+                                if (index != -1) {
+                                  _subtasks[index] = subtask.copyWith(
+                                    title: controller.text.trim(),
+                                  );
+                                }
+                              });
+                              widget.onSubtasksChanged?.call(_subtasks);
+                            } catch (e) {
+                              scaffoldMessenger.showSnackBar(
+                                SnackBar(
+                                  content: Text('Lỗi khi cập nhật subtask: $e'),
+                                ),
+                              );
+                            }
+                          }
+                          if (mounted) context.pop();
+                        },
+                        child: const Text('Lưu'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -178,12 +263,12 @@ class _SubtaskListWidgetState extends State<SubtaskListWidget> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     if (_isLoading) {
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(16.0),
-          child: CircularProgressIndicator(),
+          child: LoadingStateWidget(size: 20),
         ),
       );
     }
@@ -195,11 +280,7 @@ class _SubtaskListWidgetState extends State<SubtaskListWidget> {
         if (_subtasks.isNotEmpty) ...[
           Row(
             children: [
-              Icon(
-                Icons.checklist,
-                size: 20,
-                color: theme.colorScheme.primary,
-              ),
+              Icon(Icons.checklist, size: 20, color: theme.colorScheme.primary),
               const SizedBox(width: 8),
               Text(
                 'Subtasks',
@@ -239,7 +320,9 @@ class _SubtaskListWidgetState extends State<SubtaskListWidget> {
           height: 4,
           child: LinearProgressIndicator(
             value: progress,
-            backgroundColor: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+            backgroundColor: Theme.of(
+              context,
+            ).colorScheme.outline.withOpacity(0.2),
             valueColor: AlwaysStoppedAnimation<Color>(
               Theme.of(context).colorScheme.primary,
             ),
@@ -258,7 +341,7 @@ class _SubtaskListWidgetState extends State<SubtaskListWidget> {
 
   Widget _buildSubtaskItem(Subtask subtask) {
     final theme = Theme.of(context);
-    
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Row(
@@ -269,47 +352,40 @@ class _SubtaskListWidgetState extends State<SubtaskListWidget> {
             height: 24,
             child: Checkbox(
               value: subtask.isCompleted,
-              onChanged: widget.isEditable 
+              onChanged: widget.isEditable
                   ? (_) => _toggleSubtask(subtask.id)
                   : null,
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
           ),
           const SizedBox(width: 12),
-          
+
           // Tiêu đề subtask
           Expanded(
             child: GestureDetector(
-              onTap: widget.isEditable 
+              onTap: widget.isEditable
                   ? () => _showEditSubtaskDialog(subtask)
                   : null,
               child: Text(
                 subtask.title,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  decoration: subtask.isCompleted 
-                      ? TextDecoration.lineThrough 
+                  decoration: subtask.isCompleted
+                      ? TextDecoration.lineThrough
                       : null,
-                  color: subtask.isCompleted 
+                  color: subtask.isCompleted
                       ? theme.colorScheme.onSurfaceVariant
                       : theme.colorScheme.onSurface,
                 ),
               ),
             ),
           ),
-          
+
           // Nút xóa (nếu có thể chỉnh sửa)
           if (widget.isEditable)
             IconButton(
               onPressed: () => _deleteSubtask(subtask.id),
-              icon: Icon(
-                Icons.close,
-                size: 18,
-                color: theme.colorScheme.error,
-              ),
-              constraints: const BoxConstraints(
-                minWidth: 32,
-                minHeight: 32,
-              ),
+              icon: Icon(Icons.close, size: 18, color: theme.colorScheme.error),
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
               padding: EdgeInsets.zero,
             ),
         ],
@@ -338,17 +414,12 @@ class _SubtaskListWidgetState extends State<SubtaskListWidget> {
         ),
         IconButton(
           onPressed: _addSubtask,
-          icon: Icon(
-            Icons.add,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          constraints: const BoxConstraints(
-            minWidth: 32,
-            minHeight: 32,
-          ),
+          icon: Icon(Icons.add, color: Theme.of(context).colorScheme.primary),
+          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
           padding: EdgeInsets.zero,
         ),
       ],
     );
   }
 }
+

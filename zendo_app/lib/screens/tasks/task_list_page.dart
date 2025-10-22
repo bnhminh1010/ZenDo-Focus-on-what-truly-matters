@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../models/task.dart';
 import '../../providers/task_model.dart';
 import '../../widgets/task_list_view.dart';
-import '../../widgets/add_task_dialog.dart';
+import '../../widgets/haptic_feedback_widget.dart';
+import '../../widgets/glass_container.dart';
+import '../../widgets/glass_button.dart';
 
 class TaskListPage extends StatefulWidget {
   const TaskListPage({super.key});
@@ -22,6 +25,16 @@ class _TaskListPageState extends State<TaskListPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+
+    // Lấy search parameter từ URL nếu có
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final uri = GoRouterState.of(context).uri;
+      final searchQuery = uri.queryParameters['search'];
+      if (searchQuery != null && searchQuery.isNotEmpty) {
+        _searchController.text = searchQuery;
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -78,9 +91,9 @@ class _TaskListPageState extends State<TaskListPage>
               TabBar(
                 controller: _tabController,
                 tabs: const [
-                  Tab(text: 'All'),
-                  Tab(text: 'Active'),
-                  Tab(text: 'Completed'),
+                  Tab(text: 'Tất cả'),
+                  Tab(text: 'Đang thực hiện'),
+                  Tab(text: 'Hoàn thành'),
                 ],
                 onTap: (index) {
                   setState(() {
@@ -110,7 +123,7 @@ class _TaskListPageState extends State<TaskListPage>
                   ? Theme.of(context).colorScheme.primary
                   : null,
             ),
-            tooltip: 'Filter by category',
+            tooltip: 'Lọc theo danh mục',
             onSelected: (TaskCategory? category) {
               setState(() {
                 _selectedCategory = category;
@@ -119,7 +132,7 @@ class _TaskListPageState extends State<TaskListPage>
             itemBuilder: (context) => [
               const PopupMenuItem<TaskCategory?>(
                 value: null,
-                child: Text('All Categories'),
+                child: Text('Tất cả danh mục'),
               ),
               ...TaskCategory.values.map(
                 (category) => PopupMenuItem<TaskCategory?>(
@@ -159,7 +172,7 @@ class _TaskListPageState extends State<TaskListPage>
                   children: [
                     Icon(Icons.done_all),
                     SizedBox(width: 8),
-                    Text('Mark all complete'),
+                    Text('Đánh dấu tất cả hoàn thành'),
                   ],
                 ),
               ),
@@ -169,7 +182,7 @@ class _TaskListPageState extends State<TaskListPage>
                   children: [
                     Icon(Icons.delete_sweep),
                     SizedBox(width: 8),
-                    Text('Delete completed'),
+                    Text('Xóa các task đã hoàn thành'),
                   ],
                 ),
               ),
@@ -185,6 +198,11 @@ class _TaskListPageState extends State<TaskListPage>
             filterCategory: _selectedCategory,
             showCompleted: true,
             searchQuery: _searchController.text,
+            onSearchChanged: (query) {
+              setState(() {
+                _searchController.text = query;
+              });
+            },
           ),
 
           // Active tasks only
@@ -203,6 +221,11 @@ class _TaskListPageState extends State<TaskListPage>
                 filterCategory: _selectedCategory,
                 showCompleted: false,
                 searchQuery: _searchController.text,
+                onSearchChanged: (query) {
+                  setState(() {
+                    _searchController.text = query;
+                  });
+                },
               );
             },
           ),
@@ -227,7 +250,7 @@ class _TaskListPageState extends State<TaskListPage>
                       Icon(Icons.task_alt, size: 64, color: Colors.grey),
                       SizedBox(height: 16),
                       Text(
-                        'No completed tasks',
+                        'Không có task nào đã hoàn thành',
                         style: TextStyle(fontSize: 18, color: Colors.grey),
                       ),
                     ],
@@ -239,21 +262,28 @@ class _TaskListPageState extends State<TaskListPage>
                 filterCategory: _selectedCategory,
                 showCompleted: true,
                 searchQuery: _searchController.text,
+                onSearchChanged: (query) {
+                  setState(() {
+                    _searchController.text = query;
+                  });
+                },
               );
             },
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddTaskDialog(),
-        icon: const Icon(Icons.add),
-        label: const Text('Add Task'),
+      floatingActionButton: HapticFloatingActionButton(
+        onPressed: () => context.push('/ai-chat'),
+        feedbackType: HapticFeedbackType.medium,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        child: Image.asset(
+          'assets/icons/bot.png',
+          width: 28,
+          height: 28,
+          fit: BoxFit.contain,
+        ),
       ),
     );
-  }
-
-  void _showAddTaskDialog() {
-    showDialog(context: context, builder: (context) => const AddTaskDialog());
   }
 
   void _markAllComplete() {
@@ -265,7 +295,7 @@ class _TaskListPageState extends State<TaskListPage>
     if (incompleteTasks.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('All tasks are already completed')),
+          const SnackBar(content: Text('Tất cả task đã được hoàn thành')),
         );
       }
       return;
@@ -273,37 +303,108 @@ class _TaskListPageState extends State<TaskListPage>
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Mark All Complete'),
-        content: Text(
-          'Are you sure you want to mark ${incompleteTasks.length} tasks as complete?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.of(context).pop();
-
-              for (final task in incompleteTasks) {
-                await taskModel.toggleTaskCompletion(task.id);
-              }
-
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      '${incompleteTasks.length} tasks marked as complete',
-                    ),
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: GlassContainer(
+          borderRadius: 24,
+          blur: 20,
+          opacity: 0.15,
+          padding: const EdgeInsets.all(32),
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.9,
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Header with icon
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                );
-              }
-            },
-            child: const Text('Mark Complete'),
+                  child: const Center(
+                    child: Text('✅', style: TextStyle(fontSize: 32)),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Title
+                Text(
+                  'Đánh dấu tất cả hoàn thành',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 12),
+
+                // Message
+                Text(
+                  'Bạn có chắc chắn muốn đánh dấu ${incompleteTasks.length} task là hoàn thành?',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.7),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 24),
+
+                // Action buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: Semantics(
+                        label: 'Hủy thao tác',
+                        hint: 'Nhấn để hủy đánh dấu hoàn thành',
+                        child: GlassOutlinedButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Hủy'),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Semantics(
+                        label: 'Xác nhận đánh dấu hoàn thành',
+                        hint:
+                            'Nhấn để đánh dấu ${incompleteTasks.length} task hoàn thành',
+                        child: GlassElevatedButton(
+                          onPressed: () async {
+                            Navigator.of(context).pop();
+
+                            for (final task in incompleteTasks) {
+                              await taskModel.toggleTaskCompletion(task.id);
+                            }
+
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '${incompleteTasks.length} task đã được đánh dấu hoàn thành',
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          child: const Text('Đánh dấu hoàn thành'),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -317,7 +418,9 @@ class _TaskListPageState extends State<TaskListPage>
     if (completedTasks.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No completed tasks to delete')),
+          const SnackBar(
+            content: Text('Không có task nào đã hoàn thành để xóa'),
+          ),
         );
       }
       return;
@@ -325,40 +428,108 @@ class _TaskListPageState extends State<TaskListPage>
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Completed Tasks'),
-        content: Text(
-          'Are you sure you want to delete ${completedTasks.length} completed tasks? This action cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.of(context).pop();
-
-              for (final task in completedTasks) {
-                await taskModel.deleteTask(task.id);
-              }
-
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      '${completedTasks.length} completed tasks deleted',
-                    ),
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: GlassContainer(
+          borderRadius: 24,
+          blur: 20,
+          opacity: 0.15,
+          padding: const EdgeInsets.all(32),
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.9,
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Header with icon
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.error.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                );
-              }
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
+                  child: const Center(
+                    child: Text('🗑️', style: TextStyle(fontSize: 32)),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Title
+                Text(
+                  'Xóa các Task đã hoàn thành',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 12),
+
+                // Message
+                Text(
+                  'Bạn có chắc chắn muốn xóa ${completedTasks.length} task đã hoàn thành? Hành động này không thể hoàn tác.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.7),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 24),
+
+                // Action buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: Semantics(
+                        label: 'Hủy thao tác',
+                        hint: 'Nhấn để hủy xóa task',
+                        child: GlassOutlinedButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Hủy'),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Semantics(
+                        label: 'Xác nhận xóa task',
+                        hint:
+                            'Nhấn để xóa ${completedTasks.length} task đã hoàn thành',
+                        child: GlassElevatedButton(
+                          onPressed: () async {
+                            Navigator.of(context).pop();
+
+                            for (final task in completedTasks) {
+                              await taskModel.deleteTask(task.id);
+                            }
+
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '${completedTasks.length} task đã hoàn thành đã được xóa',
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          child: const Text('Xóa'),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            child: const Text('Delete'),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -401,3 +572,4 @@ class _TaskListPageState extends State<TaskListPage>
     }
   }
 }
+

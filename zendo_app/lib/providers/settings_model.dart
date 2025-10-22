@@ -25,7 +25,7 @@ class SettingsModel extends ChangeNotifier {
   Future<void> initialize() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       _isDarkMode = prefs.getBool('isDarkMode') ?? false;
       _notificationsEnabled = prefs.getBool('notificationsEnabled') ?? true;
       _focusSessionDuration = prefs.getInt('focusSessionDuration') ?? 25;
@@ -33,7 +33,7 @@ class SettingsModel extends ChangeNotifier {
       _longBreakDuration = prefs.getInt('longBreakDuration') ?? 15;
       _language = prefs.getString('language') ?? 'vi';
       _soundEnabled = prefs.getBool('soundEnabled') ?? true;
-      
+
       notifyListeners();
     } catch (e) {
       debugPrint('Error initializing settings: $e');
@@ -143,7 +143,7 @@ class SettingsModel extends ChangeNotifier {
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
-      
+
       // Lưu lại cài đặt mặc định
       await prefs.setBool('isDarkMode', _isDarkMode);
       await prefs.setBool('notificationsEnabled', _notificationsEnabled);
@@ -152,10 +152,11 @@ class SettingsModel extends ChangeNotifier {
       await prefs.setInt('longBreakDuration', _longBreakDuration);
       await prefs.setString('language', _language);
       await prefs.setBool('soundEnabled', _soundEnabled);
-      
+
       notifyListeners();
     } catch (e) {
       debugPrint('Error resetting settings: $e');
     }
   }
 }
+

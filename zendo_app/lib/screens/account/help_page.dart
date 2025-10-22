@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../config/app_info.dart';
+import 'package:go_router/go_router.dart';
+import '../../widgets/glass_container.dart';
+import '../../widgets/glass_button.dart';
 
 class HelpPage extends StatelessWidget {
   const HelpPage({super.key});
@@ -16,13 +19,11 @@ class HelpPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: colorScheme.surface,
         elevation: 0,
-        title: Text(
-          'Trợ giúp & Hỗ trợ',
-          style: theme.textTheme.titleLarge,
-        ),
+        title: Text('Trợ giúp & Hỗ trợ', style: theme.textTheme.titleLarge),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        // Thêm bottom padding để tránh chồng lấp với thanh điều hướng nổi
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 140),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -139,12 +140,10 @@ class HelpPage extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
-                  ElevatedButton(
+                  GlassElevatedButton(
                     onPressed: () => _launchEmergencyContact(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colorScheme.error,
-                      foregroundColor: colorScheme.onError,
-                    ),
+                    backgroundColor: colorScheme.error,
+                    foregroundColor: colorScheme.onError,
                     child: const Text('Liên hệ ngay'),
                   ),
                 ],
@@ -184,11 +183,7 @@ class HelpPage extends StatelessWidget {
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Icon(
-          icon,
-          color: colorScheme.onSurface,
-          size: 24,
-        ),
+        leading: Icon(icon, color: colorScheme.onSurface, size: 24),
         title: Text(
           title,
           style: theme.textTheme.bodyLarge?.copyWith(
@@ -234,11 +229,7 @@ class HelpPage extends StatelessWidget {
                   color: colorScheme.primary,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  Icons.apps,
-                  color: colorScheme.onPrimary,
-                  size: 24,
-                ),
+                child: Icon(Icons.apps, color: colorScheme.onPrimary, size: 24),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -313,104 +304,216 @@ class HelpPage extends StatelessWidget {
   void _showUserGuide(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Hướng dẫn sử dụng'),
-        content: const SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('1. Tạo công việc mới bằng nút "+" ở trang chủ'),
-              SizedBox(height: 8),
-              Text('2. Phân loại công việc theo danh mục'),
-              SizedBox(height: 8),
-              Text('3. Đặt mức độ ưu tiên cho từng công việc'),
-              SizedBox(height: 8),
-              Text('4. Theo dõi tiến độ trong trang thống kê'),
-              SizedBox(height: 8),
-              Text('5. Tùy chỉnh cài đặt trong trang tài khoản'),
-            ],
+      builder: (context) {
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 24,
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Đóng'),
+          child: GlassContainer(
+            borderRadius: 16,
+            blur: 18,
+            opacity: 0.12,
+            padding: const EdgeInsets.all(20),
+            color: colorScheme.surface,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Hướng dẫn sử dụng',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('1. Tạo công việc mới bằng nút "+" ở trang chủ'),
+                      SizedBox(height: 8),
+                      Text('2. Phân loại công việc theo danh mục'),
+                      SizedBox(height: 8),
+                      Text('3. Đặt mức độ ưu tiên cho từng công việc'),
+                      SizedBox(height: 8),
+                      Text('4. Theo dõi tiến độ trong trang thống kê'),
+                      SizedBox(height: 8),
+                      Text('5. Tùy chỉnh cài đặt trong trang tài khoản'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: GlassTextButton(
+                    onPressed: () => context.pop(),
+                    textColor: colorScheme.onSurface.withOpacity(0.85),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: const Text('Đóng'),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   void _showFAQ(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Câu hỏi thường gặp'),
-        content: const SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Q: Làm sao để xóa công việc?',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text('A: Vuốt sang trái trên công việc và chọn xóa.'),
-              SizedBox(height: 16),
-              Text(
-                'Q: Có thể đồng bộ dữ liệu không?',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text('A: Có, dữ liệu được đồng bộ tự động khi đăng nhập.'),
-              SizedBox(height: 16),
-              Text(
-                'Q: Làm sao để thay đổi chủ đề?',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text('A: Vào Cài đặt > Giao diện để thay đổi chủ đề.'),
-            ],
+      builder: (context) {
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 24,
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Đóng'),
+          child: GlassContainer(
+            borderRadius: 16,
+            blur: 18,
+            opacity: 0.12,
+            padding: const EdgeInsets.all(20),
+            color: colorScheme.surface,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Câu hỏi thường gặp',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Q: Làm sao để xóa công việc?',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text('A: Vuốt sang trái trên công việc và chọn xóa.'),
+                      SizedBox(height: 16),
+                      Text(
+                        'Q: Có thể đồng bộ dữ liệu không?',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        'A: Có, dữ liệu được đồng bộ tự động khi đăng nhập.',
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        'Q: Làm sao để thay đổi chủ đề?',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text('A: Vào Cài đặt > Giao diện để thay đổi chủ đề.'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: GlassTextButton(
+                    onPressed: () => context.pop(),
+                    textColor: colorScheme.onSurface.withOpacity(0.85),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: const Text('Đóng'),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   void _showTipsAndTricks(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Mẹo & Thủ thuật'),
-        content: const SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('💡 Sử dụng mức độ ưu tiên để tập trung vào việc quan trọng'),
-              SizedBox(height: 12),
-              Text('⏰ Đặt thời hạn để tạo động lực hoàn thành'),
-              SizedBox(height: 12),
-              Text('📊 Xem thống kê để theo dõi hiệu suất'),
-              SizedBox(height: 12),
-              Text('🔔 Bật thông báo để không bỏ lỡ công việc'),
-              SizedBox(height: 12),
-              Text('📱 Sử dụng widget để truy cập nhanh'),
-            ],
+      builder: (context) {
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 24,
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Đóng'),
+          child: GlassContainer(
+            borderRadius: 16,
+            blur: 18,
+            opacity: 0.12,
+            padding: const EdgeInsets.all(20),
+            color: colorScheme.surface,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Mẹo & Thủ thuật',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '💡 Sử dụng mức độ ưu tiên để tập trung vào việc quan trọng',
+                      ),
+                      SizedBox(height: 12),
+                      Text('⏰ Đặt thời hạn để tạo động lực hoàn thành'),
+                      SizedBox(height: 12),
+                      Text('📊 Xem thống kê để theo dõi hiệu suất'),
+                      SizedBox(height: 12),
+                      Text('🔔 Bật thông báo để không bỏ lỡ công việc'),
+                      SizedBox(height: 12),
+                      Text('📱 Sử dụng widget để truy cập nhanh'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: GlassTextButton(
+                    onPressed: () => context.pop(),
+                    textColor: colorScheme.onSurface.withOpacity(0.85),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: const Text('Đóng'),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -419,39 +522,81 @@ class HelpPage extends StatelessWidget {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Gửi phản hồi'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Chia sẻ ý kiến của bạn để giúp chúng tôi cải thiện ZenDo:'),
-            const SizedBox(height: 16),
-            TextField(
-              controller: feedbackController,
-              maxLines: 4,
-              decoration: const InputDecoration(
-                hintText: 'Nhập phản hồi của bạn...',
-                border: OutlineInputBorder(),
-              ),
+      builder: (context) {
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 24,
+          ),
+          child: GlassContainer(
+            borderRadius: 16,
+            blur: 18,
+            opacity: 0.12,
+            padding: const EdgeInsets.all(20),
+            color: colorScheme.surface,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Gửi phản hồi',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Chia sẻ ý kiến của bạn để giúp chúng tôi cải thiện ZenDo:',
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: feedbackController,
+                  maxLines: 4,
+                  decoration: const InputDecoration(
+                    hintText: 'Nhập phản hồi của bạn...',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: GlassOutlinedButton(
+                        onPressed: () => context.pop(),
+                        borderColor: colorScheme.onSurface,
+                        textColor: colorScheme.onSurface,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: const Text('Hủy'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: GlassElevatedButton(
+                        onPressed: () {
+                          context.pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Cảm ơn phản hồi của bạn!'),
+                            ),
+                          );
+                        },
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: const Text('Gửi'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Cảm ơn phản hồi của bạn!')),
-              );
-            },
-            child: const Text('Gửi'),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -460,39 +605,79 @@ class HelpPage extends StatelessWidget {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Báo lỗi'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Mô tả chi tiết lỗi bạn gặp phải:'),
-            const SizedBox(height: 16),
-            TextField(
-              controller: bugController,
-              maxLines: 4,
-              decoration: const InputDecoration(
-                hintText: 'Mô tả lỗi và các bước tái hiện...',
-                border: OutlineInputBorder(),
-              ),
+      builder: (context) {
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 24,
+          ),
+          child: GlassContainer(
+            borderRadius: 16,
+            blur: 18,
+            opacity: 0.12,
+            padding: const EdgeInsets.all(20),
+            color: colorScheme.surface,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Báo lỗi',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text('Mô tả chi tiết lỗi bạn gặp phải:'),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: bugController,
+                  maxLines: 4,
+                  decoration: const InputDecoration(
+                    hintText: 'Mô tả lỗi và các bước tái hiện...',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: GlassOutlinedButton(
+                        onPressed: () => context.pop(),
+                        borderColor: colorScheme.onSurface,
+                        textColor: colorScheme.onSurface,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: const Text('Hủy'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: GlassElevatedButton(
+                        onPressed: () {
+                          context.pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Đã gửi báo cáo lỗi!'),
+                            ),
+                          );
+                        },
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: const Text('Gửi'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Đã gửi báo cáo lỗi!')),
-              );
-            },
-            child: const Text('Gửi'),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -539,3 +724,4 @@ class HelpPage extends StatelessWidget {
     }
   }
 }
+
