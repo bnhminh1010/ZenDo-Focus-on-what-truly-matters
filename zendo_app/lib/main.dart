@@ -21,6 +21,24 @@ import 'app.dart';
 /// Entry point của ZenDo App
 /// Cấu hình system UI, khởi tạo Supabase và khởi chạy ứng dụng
 void main() async {
+  // Bắt tất cả lỗi Flutter framework
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    if (kDebugMode) {
+      print('Flutter Error: ${details.exception}');
+      print('Stack trace: ${details.stack}');
+    }
+  };
+
+  // Bắt lỗi từ các zone khác (async errors)
+  PlatformDispatcher.instance.onError = (error, stack) {
+    if (kDebugMode) {
+      print('Platform Error: $error');
+      print('Stack trace: $stack');
+    }
+    return true;
+  };
+
   WidgetsFlutterBinding.ensureInitialized();
 
   // In thông tin môi trường và cấu hình (chỉ trong development)

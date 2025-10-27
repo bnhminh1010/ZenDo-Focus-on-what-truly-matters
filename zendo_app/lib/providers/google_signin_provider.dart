@@ -33,8 +33,9 @@ class GoogleSignInProvider extends ChangeNotifier {
     try {
       _isSignedIn = await _googleAuthService.isSignedIn();
       if (_isSignedIn) {
-        _googleUser = _googleAuthService.currentGoogleUser;
-        _supabaseUser = _googleAuthService.currentSupabaseUser;
+        _supabaseUser = _googleAuthService.currentUser;
+        // Không còn currentGoogleUser trong API mới
+        _googleUser = null;
       }
       _clearError();
     } catch (e) {
@@ -54,8 +55,9 @@ class GoogleSignInProvider extends ChangeNotifier {
 
       if (user != null) {
         _isSignedIn = true;
-        _googleUser = _googleAuthService.currentGoogleUser;
         _supabaseUser = user;
+        // Không còn currentGoogleUser trong API mới
+        _googleUser = null;
         _setLoading(false);
         return true;
       } else {
@@ -110,8 +112,9 @@ class GoogleSignInProvider extends ChangeNotifier {
 
     _setLoading(true);
     try {
-      _googleUser = _googleAuthService.currentGoogleUser;
-      _supabaseUser = _googleAuthService.currentSupabaseUser;
+      _supabaseUser = _googleAuthService.currentUser;
+      // Không còn currentGoogleUser trong API mới
+      _googleUser = null;
       _clearError();
     } catch (e) {
       _setError('Lỗi làm mới thông tin: $e');

@@ -6,13 +6,11 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Service để xử lý Google Sign-In authentication
 /// Tích hợp với Supabase Auth để đồng bộ user data
-/// Hỗ trợ PKCE flow cho desktop platforms
+/// Hỗ trợ PKCE flow cho tất cả platforms
 class GoogleAuthService {
   static final GoogleAuthService _instance = GoogleAuthService._internal();
   factory GoogleAuthService() => _instance;
@@ -20,62 +18,19 @@ class GoogleAuthService {
 
   final SupabaseClient _supabase = Supabase.instance.client;
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    clientId: kIsWeb ? null : _getGoogleClientId(),
-    scopes: ['email', 'profile'],
-  );
-
-  /// Lấy Google Client ID an toàn
-  static String? _getGoogleClientId() {
-    if (kDebugMode) {
-      try {
-        return dotenv.env['GOOGLE_CLIENT_ID'];
-      } catch (e) {
-        return null; // Trả về null nếu không load được dotenv
-      }
-    }
-    return null; // Trong production, trả về null để sử dụng OAuth flow
-  }
-
-  /// Đăng nhập bằng Google
+  /// Đăng nhập bằng Google sử dụng Supabase OAuth
   /// Returns: User nếu thành công, null nếu thất bại hoặc user hủy
   Future<User?> signInWithGoogle() async {
     try {
-      // Luôn dùng Supabase OAuth cho tất cả platforms để tránh cấu hình phức tạp
-      return _signInWithSupabaseOAuth();
-
-      // Code cũ - comment lại để tránh lỗi SHA-1 fingerprint
-      /*
-      if (kIsWeb ||
-          defaultTargetPlatform == TargetPlatform.windows ||
-          defaultTargetPlatform == TargetPlatform.linux) {
-        return _signInWithSupabaseOAuth();
-      }
-
-      final user = await _googleSignIn.signIn();
-      if (user == null) return null;
-
-      final auth = await user.authentication;
-      final idToken = auth.idToken;
-      final accessToken = auth.accessToken;
-      if (idToken == null || accessToken == null) {
-        throw Exception('Missing Google tokens');
-      }
-
-      final res = await _supabase.auth.signInWithIdToken(
-        provider: OAuthProvider.google,
-        idToken: idToken,
-        accessToken: accessToken,
-      );
-      return res.user;
-      */
+      // Sử dụng Supabase OAuth cho tất cả platforms
+      return await _signInWithSupabaseOAuth();
     } catch (e) {
       debugPrint('Google Sign-In Error: $e');
       return null;
     }
   }
 
-  /// Đăng nhập Google cho Web/Desktop sử dụng Supabase OAuth với PKCE
+  /// Đăng nhập Google cho tất cả platforms sử dụng Supabase OAuth với PKCE
   Future<User?> _signInWithSupabaseOAuth() async {
     try {
       // Cấu hình redirect URL cho từng platform
@@ -96,8 +51,10 @@ class GoogleAuthService {
         redirectTo: redirect,
         authScreenLaunchMode: LaunchMode.externalApplication,
       );
+
       if (!started) return null;
 
+      // Đợi auth state change
       final completer = Completer<User?>();
       late final StreamSubscription sub;
 
@@ -112,6 +69,7 @@ class GoogleAuthService {
         }
       });
 
+      // Timeout sau 60 giây
       Future.delayed(const Duration(seconds: 60), () {
         if (!completer.isCompleted) {
           sub.cancel();
@@ -126,61 +84,40 @@ class GoogleAuthService {
     }
   }
 
-  /// Đăng xuất khỏi Google và Supabase
+  /// Đăng xuất khỏi Supabase
   Future<void> signOut() async {
     try {
-      final isDesktop =
-          defaultTargetPlatform == TargetPlatform.windows ||
-          defaultTargetPlatform == TargetPlatform.linux;
-
-      if (!(kIsWeb || isDesktop)) {
-        await _googleSignIn.signOut();
-      }
       await _supabase.auth.signOut();
     } catch (e) {
       debugPrint('Sign Out Error: $e');
     }
   }
 
-  /// Kiểm tra xem user có đang đăng nhập Google không
+  /// Kiểm tra xem user có đang đăng nhập không
   Future<bool> isSignedIn() async {
     try {
-      final isDesktop =
-          defaultTargetPlatform == TargetPlatform.windows ||
-          defaultTargetPlatform == TargetPlatform.linux;
-
-      if (kIsWeb || isDesktop) {
-        return _supabase.auth.currentUser != null;
-      }
-
-      final supaUser = _supabase.auth.currentUser;
-      final isG = await _googleSignIn.isSignedIn();
-      return isG && supaUser != null;
+      return _supabase.auth.currentUser != null;
     } catch (e) {
       debugPrint('Check Sign-In Status Error: $e');
       return false;
     }
   }
 
-  /// Lấy thông tin user hiện tại từ Google
-  GoogleSignInAccount? get currentGoogleUser => _googleSignIn.currentUser;
-
   /// Lấy thông tin user hiện tại từ Supabase
-  User? get currentSupabaseUser => _supabase.auth.currentUser;
+  User? get currentUser => _supabase.auth.currentUser;
 
-  /// Ngắt kết nối hoàn toàn khỏi Google account
+  /// Lấy session hiện tại
+  Session? get currentSession => _supabase.auth.currentSession;
+
+  /// Ngắt kết nối hoàn toàn khỏi account
   Future<void> disconnect() async {
     try {
-      final isDesktop =
-          defaultTargetPlatform == TargetPlatform.windows ||
-          defaultTargetPlatform == TargetPlatform.linux;
-
-      if (!(kIsWeb || isDesktop)) {
-        await _googleSignIn.disconnect();
-      }
       await _supabase.auth.signOut();
     } catch (e) {
       debugPrint('Disconnect Error: $e');
     }
   }
+
+  /// Stream để lắng nghe thay đổi auth state
+  Stream<AuthState> get authStateChanges => _supabase.auth.onAuthStateChange;
 }

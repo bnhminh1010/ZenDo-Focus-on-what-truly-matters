@@ -49,13 +49,14 @@ android {
 
     buildTypes {
         release {
-            // Bật lại signing cho release
             signingConfig = signingConfigs.getByName("release")
-            isMinifyEnabled = false
-            isShrinkResources = false
-            
-            // Thêm debug info cho release build
-            isDebuggable = true
+            isDebuggable = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }
