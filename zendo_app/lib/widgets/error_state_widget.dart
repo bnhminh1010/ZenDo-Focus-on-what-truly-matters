@@ -1,3 +1,8 @@
+/*
+ * Tên: widgets/error_state_widget.dart
+ * Tác dụng: Bộ widget hiển thị trạng thái lỗi/empty, có các factory cho network/server/not-found/permission.
+ * Khi nào dùng: Khi cần thông báo lỗi hoặc trạng thái trống với hành động Retry/Quay lại và hiệu ứng glass tuỳ chọn.
+ */
 import 'package:flutter/material.dart';
 import 'glass_container.dart';
 
@@ -213,9 +218,7 @@ class InlineErrorWidget extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: theme.colorScheme.errorContainer.withOpacity(0.1),
-        border: Border.all(
-          color: theme.colorScheme.error.withOpacity(0.3),
-        ),
+        border: Border.all(color: theme.colorScheme.error.withOpacity(0.3)),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -340,4 +343,3 @@ mixin ErrorHandlerMixin {
     );
   }
 }
-

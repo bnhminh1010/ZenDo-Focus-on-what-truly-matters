@@ -366,4 +366,3 @@ class FocusSessionModel extends ChangeNotifier {
     super.dispose();
   }
 }
-

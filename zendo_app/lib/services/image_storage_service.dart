@@ -1,3 +1,9 @@
+/*
+ * Tên: services/image_storage_service.dart
+ * Tác dụng: Service quản lý lưu trữ hình ảnh cho tasks với copy, save và delete operations
+ * Khi nào dùng: Cần xử lý việc lưu trữ và quản lý hình ảnh đính kèm trong tasks
+ */
+
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
@@ -113,4 +119,3 @@ class ImageStorageService {
     }
   }
 }
-

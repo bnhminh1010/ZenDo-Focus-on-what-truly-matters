@@ -1,3 +1,9 @@
+/*
+ * Tên: services/google_auth_service.dart
+ * Tác dụng: Service xử lý Google Sign-In authentication với PKCE flow và Supabase integration
+ * Khi nào dùng: Cần đăng nhập bằng Google và đồng bộ user data với backend
+ */
+
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -178,4 +184,3 @@ class GoogleAuthService {
     }
   }
 }
-

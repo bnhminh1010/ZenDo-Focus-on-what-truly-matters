@@ -1,3 +1,9 @@
+/*
+ * Tên: screens/auth/sign_in_page.dart
+ * Tác dụng: Màn hình đăng nhập với form email/password và social login (Google, GitHub)
+ * Khi nào dùng: Người dùng chưa đăng nhập và cần xác thực để truy cập ứng dụng
+ */
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -216,15 +222,10 @@ class _SignInPageState extends State<SignInPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Logo
-        Center(
-          child: AnimatedThemeAwareLogo(
-            width: 80,
-            height: 80,
-          ),
-        ),
-        
+        Center(child: AnimatedThemeAwareLogo(width: 80, height: 80)),
+
         const SizedBox(height: 24),
-        
+
         Text(
           'Đăng nhập',
           style: Theme.of(context).textTheme.headlineLarge?.copyWith(
@@ -238,9 +239,7 @@ class _SignInPageState extends State<SignInPage> {
         Text(
           'Chào mừng bạn trở lại! Vui lòng nhập thông tin đăng nhập.',
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: Theme.of(
-              context,
-            ).colorScheme.onSurface.withOpacity(0.7),
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
             fontSize: 16,
           ),
         ),
@@ -258,9 +257,7 @@ class _SignInPageState extends State<SignInPage> {
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: Theme.of(
-                context,
-              ).colorScheme.outline.withOpacity(0.3),
+              color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
             ),
           ),
           child: TextFormField(
@@ -272,21 +269,15 @@ class _SignInPageState extends State<SignInPage> {
             decoration: InputDecoration(
               labelText: 'Email',
               labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(
-                  context,
-                ).colorScheme.onSurface.withOpacity(0.6),
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
               ),
               hintText: 'Nhập email của bạn',
               hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(
-                  context,
-                ).colorScheme.onSurface.withOpacity(0.4),
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
               ),
               prefixIcon: Icon(
                 Icons.email_outlined,
-                color: Theme.of(
-                  context,
-                ).colorScheme.onSurface.withOpacity(0.5),
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
               ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.all(16),
@@ -302,9 +293,7 @@ class _SignInPageState extends State<SignInPage> {
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: Theme.of(
-                context,
-              ).colorScheme.outline.withOpacity(0.3),
+              color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
             ),
           ),
           child: TextFormField(
@@ -317,21 +306,15 @@ class _SignInPageState extends State<SignInPage> {
             decoration: InputDecoration(
               labelText: 'Mật khẩu',
               labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(
-                  context,
-                ).colorScheme.onSurface.withOpacity(0.6),
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
               ),
               hintText: 'Nhập mật khẩu của bạn',
               hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(
-                  context,
-                ).colorScheme.onSurface.withOpacity(0.4),
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
               ),
               prefixIcon: Icon(
                 Icons.lock_outlined,
-                color: Theme.of(
-                  context,
-                ).colorScheme.onSurface.withOpacity(0.5),
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
               ),
               suffixIcon: GlassIconButton(
                 icon: _isPasswordVisible
@@ -440,9 +423,7 @@ class _SignInPageState extends State<SignInPage> {
         Text(
           'Chưa có tài khoản? ',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(
-              context,
-            ).colorScheme.onSurface.withOpacity(0.7),
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
           ),
         ),
         GlassTextButton(
@@ -474,9 +455,7 @@ class _SignInPageState extends State<SignInPage> {
           child: Text(
             'hoặc',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(
-                context,
-              ).colorScheme.onSurface.withOpacity(0.6),
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
             ),
           ),
         ),
@@ -515,4 +494,3 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 }
-

@@ -1,3 +1,8 @@
+/*
+ * Tên: widgets/category_form_dialog.dart
+ * Tác dụng: Dialog form tạo/chỉnh sửa Category với chọn icon và màu.
+ * Khi nào dùng: Màn quản lý danh mục để thêm/sửa category.
+ */
 import 'package:flutter/material.dart';
 import '../models/category.dart';
 import '../services/category_service.dart';
@@ -458,4 +463,3 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
     }
   }
 }
-

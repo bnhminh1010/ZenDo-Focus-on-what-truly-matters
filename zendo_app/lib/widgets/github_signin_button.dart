@@ -1,3 +1,8 @@
+/*
+ * Tên: widgets/github_signin_button.dart
+ * Tác dụng: Cung cấp các biến thể nút đăng nhập GitHub (filled/outlined), tích hợp với GitHubSignInProvider.
+ * Khi nào dùng: Khi cần nút đăng nhập bằng GitHub theo Material 3, hỗ trợ trạng thái loading và hiển thị lỗi.
+ */
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/github_signin_provider.dart';

@@ -1,3 +1,9 @@
+/*
+ * Tên: services/focus_session_service.dart
+ * Tác dụng: Service quản lý Focus Sessions với Supabase database
+ * Khi nào dùng: Cần thao tác CRUD với focus sessions và tracking thời gian làm việc
+ */
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/focus_session.dart';
 
@@ -342,4 +348,3 @@ class FocusSessionService {
     }
   }
 }
-

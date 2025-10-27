@@ -1,3 +1,8 @@
+/*
+ * Tên: models/category.dart
+ * Tác dụng: Model quản lý danh mục task tùy chỉnh của người dùng, lưu trữ tên, mô tả, icon, màu, trạng thái mặc định/ẩn, thứ tự sắp xếp và thời gian tạo/cập nhật.
+ * Khi nào dùng: Khi cần tạo/cập nhật/lưu trữ danh mục task và đồng bộ với Supabase; khởi tạo danh mục mặc định cho user mới.
+ */
 /// Category Class
 /// Tác dụng: Model quản lý danh mục task tùy chỉnh của người dùng
 /// Sử dụng khi: Tạo, lưu trữ và quản lý các danh mục task do người dùng tự định nghĩa

@@ -1,3 +1,8 @@
+/*
+ * Tên: app.dart
+ * Tác dụng: Khởi tạo ứng dụng ZenDo với MultiProvider, cấu hình theme và GoRouter.
+ * Khi nào dùng: File chính của app, được import bởi main.dart để thiết lập routing và state.
+ */
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -320,7 +325,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
                 end: Alignment.bottomRight,
                 colors: [
                   Theme.of(context).colorScheme.surface.withOpacity(0.06),
-        Theme.of(context).colorScheme.surface.withOpacity(0.12),
+                  Theme.of(context).colorScheme.surface.withOpacity(0.12),
                 ],
               ),
               // Viền mỏng
@@ -426,4 +431,3 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
     );
   }
 }
-

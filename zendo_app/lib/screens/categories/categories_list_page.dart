@@ -1,3 +1,9 @@
+/*
+ * Tên: screens/categories/categories_list_page.dart
+ * Tác dụng: Màn hình hiển thị danh sách tất cả categories với navigation đến chi tiết
+ * Khi nào dùng: Người dùng muốn xem tổng quan các categories và truy cập vào từng category
+ */
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';

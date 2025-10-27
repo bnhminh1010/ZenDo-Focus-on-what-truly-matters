@@ -1,3 +1,9 @@
+/*
+ * Tên: screens/tasks/task_list_page.dart
+ * Tác dụng: Màn hình danh sách tasks với filter, sort và haptic feedback
+ * Khi nào dùng: Người dùng muốn xem tổng quan tất cả tasks với các tùy chọn lọc
+ */
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -447,9 +453,7 @@ class _TaskListPageState extends State<TaskListPage>
                   width: 64,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.error.withOpacity(0.1),
+                    color: Theme.of(context).colorScheme.error.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Center(
@@ -572,4 +576,3 @@ class _TaskListPageState extends State<TaskListPage>
     }
   }
 }
-

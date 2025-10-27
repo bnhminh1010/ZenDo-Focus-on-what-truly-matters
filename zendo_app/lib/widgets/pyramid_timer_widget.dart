@@ -1,6 +1,15 @@
+/*
+ * Tên: widgets/pyramid_timer_widget.dart
+ * Tác dụng: Vẽ và hiển thị kim tự tháp 4 tầng thể hiện tiến trình timer với animation mượt.
+ * Khi nào dùng: Trong Pomodoro Timer và các nơi cần hiển thị tiến trình dạng kim tự tháp.
+ */
 import 'package:flutter/material.dart';
 
-/// Widget kim tự tháp 4 tầng để hiển thị tiến trình timer với animation smooth
+/*
+ * Widget: PyramidTimerWidget
+ * Tác dụng: Trình bày tiến trình timer dưới dạng kim tự tháp 4 tầng với hiệu ứng mượt.
+ * Khi nào dùng: Kết hợp trong PomodoroTimerWidget hoặc nơi cần visual hóa tiến trình theo tầng.
+ */
 class PyramidTimerWidget extends StatefulWidget {
   final double progress; // 0.0 - 1.0
   final Color activeColor;
@@ -125,7 +134,7 @@ class _PyramidTimerWidgetState extends State<PyramidTimerWidget>
   }
 }
 
-/// Custom painter để vẽ kim tự tháp 4 tầng với hiệu ứng cát rơi
+/// Custom painter để vẽ kim tự tháp 4 tầng với hiệu ứng đổ nước
 class PyramidPainter extends CustomPainter {
   final double progress; // 0.0 - 1.0
   final Color activeColor;
@@ -141,11 +150,6 @@ class PyramidPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
 
-    final strokePaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..color = Colors.white.withOpacity(0.8);
-
     // Shadow paint cho hiệu ứng đổ bóng
     final shadowPaint = Paint()
       ..style = PaintingStyle.fill
@@ -158,114 +162,105 @@ class PyramidPainter extends CustomPainter {
     final pyramidWidth = size.width * 0.8;
     final levelHeight = (size.height * 0.8) / 4;
 
-    // Tạo clipping path cho toàn bộ kim tự tháp để đảm bảo hiệu ứng không tràn ra ngoài
-    final clipPath = Path();
-    clipPath.moveTo(centerX, startY); // Đỉnh kim tự tháp
-    clipPath.lineTo(
-      centerX - pyramidWidth / 2,
-      startY + levelHeight * 4,
-    ); // Góc trái dưới
-    clipPath.lineTo(
-      centerX + pyramidWidth / 2,
-      startY + levelHeight * 4,
-    ); // Góc phải dưới
-    clipPath.close();
+    // Vẽ shadow cho toàn bộ kim tự tháp
+    final pyramidShadowPath = Path();
+    pyramidShadowPath.moveTo(centerX + 2, startY + 2);
+    pyramidShadowPath.lineTo(
+      centerX - pyramidWidth / 2 + 2,
+      startY + levelHeight * 4 + 2,
+    );
+    pyramidShadowPath.lineTo(
+      centerX + pyramidWidth / 2 + 2,
+      startY + levelHeight * 4 + 2,
+    );
+    pyramidShadowPath.close();
+    canvas.drawPath(pyramidShadowPath, shadowPaint);
 
-    // Áp dụng clipping
-    canvas.clipPath(clipPath);
+    // Vẽ background inactive cho toàn bộ kim tự tháp
+    final pyramidPath = Path();
+    pyramidPath.moveTo(centerX, startY);
+    pyramidPath.lineTo(centerX - pyramidWidth / 2, startY + levelHeight * 4);
+    pyramidPath.lineTo(centerX + pyramidWidth / 2, startY + levelHeight * 4);
+    pyramidPath.close();
 
-    // Vẽ 4 tầng kim tự tháp từ dưới lên
+    paint.color = inactiveColor;
+    canvas.drawPath(pyramidPath, paint);
+
+    // Tạo clipping path cho toàn bộ kim tự tháp
+    canvas.save();
+    canvas.clipPath(pyramidPath);
+
+    // Vẽ 4 tầng kim tự tháp từ dưới lên (chỉ phần active, không có viền)
     for (int level = 3; level >= 0; level--) {
       final levelWidth = pyramidWidth * (level + 1) / 4;
       final levelY = startY + level * levelHeight;
 
-      // Tính toán progress cho từng tầng
-      final levelProgress = ((progress * 4) - (3 - level)).clamp(0.0, 1.0);
+      // Tính toán progress cho từng tầng - ĐỔ TỪ TRÊN XUỐNG
+      // Giống như đổ nước: nước chảy xuống, đầy từ dưới lên trên
+      // Tầng 3 (đáy): 0.00 - 0.25 (đầy đầu tiên)
+      // Tầng 2: 0.25 - 0.50 (đầy tiếp theo)
+      // Tầng 1: 0.50 - 0.75 (đầy tiếp theo)
+      // Tầng 0 (đỉnh): 0.75 - 1.00 (đầy cuối cùng)
+      double levelProgress;
+      final levelStart = (3 - level) * 0.25;
+      final levelEnd = (4 - level) * 0.25;
+
+      if (progress < levelStart) {
+        levelProgress = 0.0;
+      } else if (progress >= levelEnd) {
+        levelProgress = 1.0;
+      } else {
+        levelProgress = (progress - levelStart) / 0.25;
+        levelProgress = levelProgress.clamp(0.0, 1.0);
+      }
+
       final isActive = levelProgress > 0;
 
-      // Vẽ đổ bóng trước
-      final shadowPath = Path();
-      if (level == 0) {
-        // Tầng đầu tiên - tam giác
-        shadowPath.moveTo(centerX + 2, levelY + 2);
-        shadowPath.lineTo(
-          centerX - levelWidth / 2 + 2,
-          levelY + levelHeight + 2,
-        );
-        shadowPath.lineTo(
-          centerX + levelWidth / 2 + 2,
-          levelY + levelHeight + 2,
-        );
-        shadowPath.close();
-      } else {
-        // Các tầng khác - hình thang
-        final prevLevelWidth = pyramidWidth * level / 4;
-        shadowPath.moveTo(centerX - prevLevelWidth / 2 + 2, levelY + 2);
-        shadowPath.lineTo(centerX + prevLevelWidth / 2 + 2, levelY + 2);
-        shadowPath.lineTo(
-          centerX + levelWidth / 2 + 2,
-          levelY + levelHeight + 2,
-        );
-        shadowPath.lineTo(
-          centerX - levelWidth / 2 + 2,
-          levelY + levelHeight + 2,
-        );
-        shadowPath.close();
-      }
-      canvas.drawPath(shadowPath, shadowPaint);
-
-      // Vẽ tầng kim tự tháp
-      final path = Path();
-      if (level == 0) {
-        // Tầng đầu tiên - tam giác
-        path.moveTo(centerX, levelY);
-        path.lineTo(centerX - levelWidth / 2, levelY + levelHeight);
-        path.lineTo(centerX + levelWidth / 2, levelY + levelHeight);
-        path.close();
-      } else {
-        // Các tầng khác - hình thang
-        final prevLevelWidth = pyramidWidth * level / 4;
-        path.moveTo(centerX - prevLevelWidth / 2, levelY);
-        path.lineTo(centerX + prevLevelWidth / 2, levelY);
-        path.lineTo(centerX + levelWidth / 2, levelY + levelHeight);
-        path.lineTo(centerX - levelWidth / 2, levelY + levelHeight);
-        path.close();
-      }
-
-      // Chọn màu dựa trên trạng thái active và progress với hiệu ứng slight in
+      // Vẽ phần active với hiệu ứng fill từ DƯỚI LÊN TRÊN
       if (isActive) {
-        // Tạo hiệu ứng "slight in" - màu từ từ xuất hiện từ trên xuống
         final fillHeight = levelHeight * levelProgress;
         final fillPath = Path();
 
         if (level == 0) {
-          // Tầng đầu tiên - tam giác với hiệu ứng fill từ trên xuống
-          final fillY = levelY + (levelHeight - fillHeight);
-          final fillWidthRatio = fillHeight / levelHeight;
-          final fillWidth = levelWidth * fillWidthRatio;
+          // Tầng tam giác - fill từ đáy lên đỉnh
+          final fillTopY = levelY + levelHeight - fillHeight;
+          final fillWidth = levelWidth * levelProgress;
 
-          fillPath.moveTo(centerX, levelY);
-          fillPath.lineTo(centerX - fillWidth / 2, fillY);
-          fillPath.lineTo(centerX + fillWidth / 2, fillY);
+          fillPath.lineTo(
+            centerX - levelWidth / 2,
+            levelY + levelHeight,
+          ); // Đáy trái
+          fillPath.lineTo(
+            centerX + levelWidth / 2,
+            levelY + levelHeight,
+          ); // Đáy phải
+          fillPath.lineTo(centerX + fillWidth / 2, fillTopY); // Lên phải
+          fillPath.lineTo(centerX - fillWidth / 2, fillTopY); // Lên trái
           fillPath.close();
         } else {
-          // Các tầng khác - hình thang với hiệu ứng fill từ trên xuống
+          // Tầng hình thang - fill từ đáy lên
           final prevLevelWidth = pyramidWidth * level / 4;
-          final fillY = levelY + (levelHeight - fillHeight);
-          final fillWidthRatio = fillHeight / levelHeight;
-          final topFillWidth =
-              prevLevelWidth +
-              (levelWidth - prevLevelWidth) * (1 - fillWidthRatio);
-          final bottomFillWidth = levelWidth;
+          final fillTopY = levelY + levelHeight - fillHeight;
 
-          fillPath.moveTo(centerX - topFillWidth / 2, fillY);
-          fillPath.lineTo(centerX + topFillWidth / 2, fillY);
-          fillPath.lineTo(centerX + bottomFillWidth / 2, levelY + levelHeight);
-          fillPath.lineTo(centerX - bottomFillWidth / 2, levelY + levelHeight);
+          // Tính chiều rộng tại vị trí fill (càng lên càng hẹp)
+          final widthShrink =
+              (levelWidth - prevLevelWidth) * (1 - levelProgress);
+          final fillTopWidth = prevLevelWidth + widthShrink;
+
+          fillPath.moveTo(
+            centerX - levelWidth / 2,
+            levelY + levelHeight,
+          ); // Đáy trái
+          fillPath.lineTo(
+            centerX + levelWidth / 2,
+            levelY + levelHeight,
+          ); // Đáy phải
+          fillPath.lineTo(centerX + fillTopWidth / 2, fillTopY); // Lên phải
+          fillPath.lineTo(centerX - fillTopWidth / 2, fillTopY); // Lên trái
           fillPath.close();
         }
 
-        // Gradient màu đẹp hơn với hiệu ứng slight in
+        // Gradient màu cho phần active
         final gradient = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -276,25 +271,22 @@ class PyramidPainter extends CustomPainter {
           ],
           stops: const [0.0, 0.5, 1.0],
         );
-        paint.shader = gradient.createShader(fillPath.getBounds());
 
-        // Vẽ phần inactive trước
-        paint.shader = null;
-        paint.color = inactiveColor;
-        canvas.drawPath(path, paint);
-
-        // Vẽ phần active với gradient
         paint.shader = gradient.createShader(fillPath.getBounds());
         canvas.drawPath(fillPath, paint);
-      } else {
-        paint.shader = null;
-        paint.color = inactiveColor;
-        canvas.drawPath(path, paint);
       }
-
-      // Vẽ viền
-      canvas.drawPath(path, strokePaint);
     }
+
+    canvas.restore();
+
+    // Vẽ viền ngoài cho toàn bộ kim tự tháp
+    final strokePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..color = Colors.white.withOpacity(0.8);
+
+    paint.shader = null;
+    canvas.drawPath(pyramidPath, strokePaint);
   }
 
   @override
@@ -304,4 +296,3 @@ class PyramidPainter extends CustomPainter {
         oldDelegate.inactiveColor != inactiveColor;
   }
 }
-

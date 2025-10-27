@@ -171,4 +171,3 @@ class GoogleSignInProvider extends ChangeNotifier {
     return null;
   }
 }
-

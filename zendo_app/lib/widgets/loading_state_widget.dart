@@ -1,3 +1,8 @@
+/*
+ * Tên: widgets/loading_state_widget.dart
+ * Tác dụng: Cung cấp các widget loading chuẩn (list/grid) với hiệu ứng mượt và tuỳ chọn glass.
+ * Khi nào dùng: Khi cần hiển thị trạng thái đang tải cho trang, danh sách hoặc khu vực cụ thể.
+ */
 import 'package:flutter/material.dart';
 import 'glass_container.dart';
 
@@ -313,4 +318,3 @@ class _LoadingGridItemState extends State<_LoadingGridItem>
     );
   }
 }
-

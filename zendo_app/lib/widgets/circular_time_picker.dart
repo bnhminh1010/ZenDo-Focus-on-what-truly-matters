@@ -1,3 +1,8 @@
+/*
+ * Tên: widgets/circular_time_picker.dart
+ * Tác dụng: Widget chọn thời gian dạng vòng tròn với kéo thả, dùng cho Pomodoro/focus.
+ * Khi nào dùng: Đặt trong form hoặc màn cài đặt để điều chỉnh thời lượng.
+ */
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import '../theme.dart';
@@ -346,4 +351,3 @@ class ProgressArcPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
-

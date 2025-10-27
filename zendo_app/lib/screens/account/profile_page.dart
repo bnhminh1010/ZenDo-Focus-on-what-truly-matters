@@ -1,3 +1,9 @@
+/*
+ * Tên: screens/account/profile_page.dart
+ * Tác dụng: Màn hình chỉnh sửa thông tin cá nhân với avatar upload và form validation
+ * Khi nào dùng: Người dùng muốn cập nhật profile, thay đổi avatar hoặc thông tin cá nhân
+ */
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';

@@ -1,3 +1,9 @@
+/*
+ * Tên: screens/account/language_page.dart
+ * Tác dụng: Màn hình chọn ngôn ngữ hiển thị của ứng dụng với danh sách các locale
+ * Khi nào dùng: Người dùng muốn thay đổi ngôn ngữ giao diện từ tiếng Việt sang tiếng Anh hoặc ngược lại
+ */
+
 import 'package:flutter/material.dart';
 import '../../widgets/glass_container.dart';
 import '../../widgets/glass_button.dart';

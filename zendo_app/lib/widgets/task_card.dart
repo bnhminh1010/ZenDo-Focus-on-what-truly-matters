@@ -1,3 +1,8 @@
+/*
+ * Tên: widgets/task_card.dart
+ * Tác dụng: Hiển thị thẻ nhiệm vụ (Task) với hiệu ứng glass, trạng thái hoàn thành, độ ưu tiên và metadata.
+ * Khi nào dùng: Dùng trong danh sách nhiệm vụ hoặc nơi cần hiển thị một nhiệm vụ dạng card có tương tác.
+ */
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'glass_container.dart';
@@ -5,9 +10,11 @@ import '../models/task.dart';
 import '../providers/task_model.dart';
 import '../theme.dart';
 
-/// TaskCard Widget
-/// Tác dụng: Widget hiển thị thông tin task dưới dạng card với glass effect
-/// Sử dụng khi: Cần hiển thị task trong danh sách với UI đẹp và tương tác
+/*
+ * Widget: TaskCard
+ * Tác dụng: Card tương tác hiển thị thông tin chính của một Task.
+ * Khi nào dùng: Trong danh sách nhiệm vụ (Tasks) và các nơi cần hiển thị task dạng card có thể tap.
+ */
 
 class TaskCard extends StatelessWidget {
   final Task task;
@@ -291,4 +298,3 @@ class TaskCard extends StatelessWidget {
     }
   }
 }
-

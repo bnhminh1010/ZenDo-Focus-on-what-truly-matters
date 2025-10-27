@@ -1,3 +1,8 @@
+/*
+ * Tên: widgets/haptic_feedback_widget.dart
+ * Tác dụng: Cung cấp haptic feedback cho các tương tác (nút, icon, FAB), kèm các tiện ích HapticButton/HapticIconButton.
+ * Khi nào dùng: Khi muốn thêm phản hồi xúc giác cho thao tác nhấn, lựa chọn, thành công/thất bại trong UI.
+ */
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 

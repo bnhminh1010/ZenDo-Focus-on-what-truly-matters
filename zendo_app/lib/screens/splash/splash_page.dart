@@ -1,3 +1,9 @@
+/*
+ * Tên: screens/splash/splash_page.dart
+ * Tác dụng: Màn hình splash với animation và logo khi khởi động ứng dụng
+ * Khi nào dùng: Lần đầu mở app hoặc khi cần loading initial data và navigation setup
+ */
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:ui' as ui;

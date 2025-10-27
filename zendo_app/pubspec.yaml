@@ -90,23 +90,23 @@ dependencies:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/icons/LogoLightMode.png"
+  image_path: "assets/icons/logo.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
   web:
     generate: true
-    image_path: "assets/icons/LogoLightMode.png"
+    image_path: "assets/icons/logo.png"
     background_color: "#ffffff"
     theme_color: "#6366f1"
   windows:
     generate: true
-    image_path: "assets/icons/LogoLightMode.png"
+    image_path: "assets/icons/logo.png"
     icon_size: 48 # min:48, max:256, default: 48
   macos:
     generate: true
-    image_path: "assets/icons/LogoLightMode.png"
-  # Adaptive icons for Android (auto-switches based on system theme)
+    image_path: "assets/icons/logo.png"
+  # Adaptive icons for Android - sử dụng logo duy nhất
   adaptive_icon_background: "#ffffff"
-  adaptive_icon_foreground: "assets/icons/LogoDarkMode.png"
+  adaptive_icon_foreground: "assets/icons/logo.png"
 
 dev_dependencies:
   flutter_test:

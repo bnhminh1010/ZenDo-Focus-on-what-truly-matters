@@ -1,3 +1,9 @@
+/*
+ * Tên: screens/categories/category_management_page.dart
+ * Tác dụng: Màn hình quản lý Categories với CRUD operations và category form dialog
+ * Khi nào dùng: Người dùng muốn tạo, sửa, xóa categories để tổ chức tasks
+ */
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/category.dart';

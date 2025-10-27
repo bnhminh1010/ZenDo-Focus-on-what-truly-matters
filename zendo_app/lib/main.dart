@@ -1,3 +1,8 @@
+/*
+ * Tên: main.dart
+ * Tác dụng: Điểm vào ứng dụng; cấu hình System UI, tải biến môi trường, khởi tạo Supabase, và chạy ZendoApp.
+ * Khi nào dùng: Luôn dùng khi khởi chạy ứng dụng, được IDE/Flutter gọi đầu tiên.
+ */
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';

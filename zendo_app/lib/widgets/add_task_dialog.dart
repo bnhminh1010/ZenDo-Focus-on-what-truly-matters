@@ -1,3 +1,8 @@
+/*
+ * Tên: widgets/add_task_dialog.dart
+ * Tác dụng: Dialog tạo/chỉnh sửa Task với form đầy đủ, hỗ trợ tag, ảnh, thời gian focus, và xác thực.
+ * Khi nào dùng: Khi người dùng cần tạo nhiệm vụ mới hoặc cập nhật nhiệm vụ hiện có trong ứng dụng.
+ */
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
@@ -12,9 +17,11 @@ import 'glass_button.dart';
 import 'glass_container.dart';
 import 'loading_state_widget.dart';
 
-/// AddTaskDialog Class
-/// Tác dụng: Dialog để thêm mới hoặc chỉnh sửa task với đầy đủ tính năng
-/// Sử dụng khi: Người dùng muốn tạo task mới hoặc cập nhật task hiện có
+/*
+ * Widget: AddTaskDialog
+ * Tác dụng: Dialog nhập liệu để tạo/chỉnh sửa Task với các trường thông tin, ảnh và tag.
+ * Khi nào dùng: Khi cần hiển thị form tạo/cập nhật nhiệm vụ với xác thực và hành động lưu/hủy.
+ */
 class AddTaskDialog extends StatefulWidget {
   final Task? editingTask;
 
@@ -24,9 +31,11 @@ class AddTaskDialog extends StatefulWidget {
   State<AddTaskDialog> createState() => _AddTaskDialogState();
 }
 
-/// _AddTaskDialogState Class
-/// Tác dụng: State class quản lý form và logic của AddTaskDialog
-/// Sử dụng khi: Cần xử lý input validation, image picking và task operations
+/*
+ * State: _AddTaskDialogState
+ * Tác dụng: Quản lý form, xác thực dữ liệu, xử lý chọn ảnh, và thao tác với TaskModel.
+ * Khi nào dùng: Khi hiển thị AddTaskDialog để điều phối trạng thái nhập liệu và sự kiện người dùng.
+ */
 class _AddTaskDialogState extends State<AddTaskDialog> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();

@@ -1,3 +1,8 @@
+/*
+ * Tên: widgets/glass_container.dart
+ * Tác dụng: Container hiệu ứng kính mờ (glassmorphism) với tuỳ chỉnh blur, gradient, opacity, border, shadow, iOS-like styles.
+ * Khi nào dùng: Bao bọc nội dung cần nổi bật trên nền mờ; phù hợp theme tối/sáng.
+ */
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
@@ -54,8 +59,7 @@ class GlassContainer extends StatelessWidget {
         ];
 
     final defaultBorder =
-        border ??
-        Border.all(color: Colors.white.withOpacity(0.3), width: 1);
+        border ?? Border.all(color: Colors.white.withOpacity(0.3), width: 1);
 
     final defaultGradient =
         gradient ??
@@ -176,4 +180,3 @@ class GlassContainer extends StatelessWidget {
     );
   }
 }
-

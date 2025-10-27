@@ -53,6 +53,7 @@ android {
             signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             isShrinkResources = false
+            
             // Thêm debug info cho release build
             isDebuggable = true
         }

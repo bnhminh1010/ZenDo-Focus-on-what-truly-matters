@@ -1,3 +1,8 @@
+/*
+ * Tên: models/subtask.dart
+ * Tác dụng: Model nhiệm vụ con của Task, quản lý trạng thái hoàn thành, thứ tự, thời gian tạo/cập nhật và mô tả.
+ * Khi nào dùng: Khi hiển thị/ghi lưu danh sách subtasks của một Task, thao tác complete/uncomplete và đồng bộ dữ liệu.
+ */
 import 'package:flutter/foundation.dart';
 
 /// Model định nghĩa cấu trúc dữ liệu của một Subtask

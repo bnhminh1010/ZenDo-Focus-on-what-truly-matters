@@ -1,10 +1,16 @@
+/*
+ * Tên: screens/auth/sign_up_page.dart
+ * Tác dụng: Màn hình đăng ký tài khoản với form validation và password strength indicator
+ * Khi nào dùng: Người dùng mới muốn tạo tài khoản để sử dụng ứng dụng
+ */
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_model.dart';
 import '../../theme.dart';
 import '../../widgets/glass_button.dart';
-import '../../../widgets/loading_state_widget.dart';
+import '../../widgets/enhanced_loading_widget.dart';
 import '../../widgets/password_strength_indicator.dart';
 import '../../widgets/theme_aware_logo.dart';
 
@@ -466,20 +472,24 @@ class _SignUpPageState extends State<SignUpPage> {
         return SizedBox(
           width: double.infinity,
           height: 56,
-          child: GlassElevatedButton(
-            onPressed: authModel.isLoading ? null : _handleSignUp,
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Theme.of(context).colorScheme.onPrimary,
-            borderRadius: 12,
-            child: authModel.isLoading
-                ? const LoadingStateWidget(size: 24)
-                : Text(
-                    'Đăng ký',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+          child: LoadingButton(
+            onPressed: _handleSignUp,
+            isLoading: authModel.isLoading,
+            loadingText: 'Đang đăng ký...',
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'Đăng ký',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         );
       },

@@ -1,3 +1,8 @@
+/*
+ * Tên: widgets/glass_dialog.dart
+ * Tác dụng: Dialog phong cách glassmorphism với BackdropFilter, nền mờ và viền nổi.
+ * Khi nào dùng: Dùng cho các hộp thoại xác nhận/thông báo cần hiệu ứng kính sang trọng.
+ */
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
@@ -80,4 +85,3 @@ class GlassDialog extends StatelessWidget {
     );
   }
 }
-

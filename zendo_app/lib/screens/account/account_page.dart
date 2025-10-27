@@ -1,3 +1,9 @@
+/*
+ * Tên: screens/account/account_page.dart
+ * Tác dụng: Màn hình tài khoản với thông tin user, settings và navigation đến các trang con
+ * Khi nào dùng: Người dùng muốn xem profile, cài đặt hoặc truy cập các tính năng account
+ */
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -6,11 +12,6 @@ import '../../providers/auth_model.dart';
 import '../../providers/theme_provider.dart';
 import '../../widgets/glass_container.dart';
 import '../../widgets/glass_button.dart';
-import 'profile_page.dart';
-import 'notifications_page.dart';
-import 'security_page.dart';
-import 'language_page.dart';
-import 'help_page.dart';
 
 class AccountPage extends StatelessWidget {
   const AccountPage({super.key});
@@ -76,44 +77,13 @@ class AccountPage extends StatelessWidget {
                                   radius: isDesktop ? 40 : (isTablet ? 35 : 30),
                                   backgroundColor: Theme.of(
                                     context,
-                                  ).colorScheme.primary.withOpacity(0.1),
-                                  child:
-                                      false // authModel không có photoURL
-                                      ? ClipOval(
-                                          child: Image.network(
-                                            '', // Placeholder
-                                            width: isDesktop
-                                                ? 80
-                                                : (isTablet ? 70 : 60),
-                                            height: isDesktop
-                                                ? 80
-                                                : (isTablet ? 70 : 60),
-                                            fit: BoxFit.cover,
-                                            errorBuilder:
-                                                (context, error, stackTrace) {
-                                                  return Icon(
-                                                    Icons.person,
-                                                    size: isDesktop
-                                                        ? 40
-                                                        : (isTablet ? 35 : 30),
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .primary
-                                                        .withOpacity(0.8),
-                                                  );
-                                                },
-                                          ),
-                                        )
-                                      : Icon(
-                                          Icons.person,
-                                          size: isDesktop
-                                              ? 40
-                                              : (isTablet ? 35 : 30),
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary
-                                              .withOpacity(0.8),
-                                        ),
+                                  ).colorScheme.primary.withValues(alpha: 0.1),
+                                  child: Icon(
+                                    Icons.person,
+                                    size: isDesktop ? 40 : (isTablet ? 35 : 30),
+                                    color: Theme.of(context).colorScheme.primary
+                                        .withValues(alpha: 0.8),
+                                  ),
                                 ),
                               ),
                               SizedBox(width: isDesktop ? 20 : 16),
@@ -152,7 +122,7 @@ class AccountPage extends StatelessWidget {
                                               color: Theme.of(context)
                                                   .colorScheme
                                                   .onSurface
-                                                  .withOpacity(0.8),
+                                                  .withValues(alpha: 0.8),
                                             ),
                                       ),
                                     ),
@@ -231,21 +201,6 @@ class AccountPage extends StatelessWidget {
         ),
         SizedBox(height: isDesktop ? 16 : 12),
 
-        // Notifications
-        Semantics(
-          label: 'Cài đặt thông báo',
-          hint: 'Nhấn để cài đặt thông báo',
-          child: _buildMenuItem(
-            context: context,
-            icon: Icons.notifications_outlined,
-            title: 'Thông báo',
-            onTap: () => context.pushNamed('notifications'),
-            isTablet: isTablet,
-            isDesktop: isDesktop,
-          ),
-        ),
-        SizedBox(height: isDesktop ? 16 : 12),
-
         // Category Management
         Semantics(
           label: 'Quản lý danh mục',
@@ -275,36 +230,6 @@ class AccountPage extends StatelessWidget {
             onChanged: (value) {
               themeProvider.setDarkMode(value);
             },
-            isTablet: isTablet,
-            isDesktop: isDesktop,
-          ),
-        ),
-        SizedBox(height: isDesktop ? 16 : 12),
-
-        // Security
-        Semantics(
-          label: 'Bảo mật',
-          hint: 'Nhấn để cài đặt bảo mật',
-          child: _buildMenuItem(
-            context: context,
-            icon: Icons.security_outlined,
-            title: 'Bảo mật',
-            onTap: () => context.pushNamed('security'),
-            isTablet: isTablet,
-            isDesktop: isDesktop,
-          ),
-        ),
-        SizedBox(height: isDesktop ? 16 : 12),
-
-        // Language
-        Semantics(
-          label: 'Ngôn ngữ',
-          hint: 'Nhấn để thay đổi ngôn ngữ',
-          child: _buildMenuItem(
-            context: context,
-            icon: Icons.language_outlined,
-            title: 'Ngôn ngữ',
-            onTap: () => context.pushNamed('language'),
             isTablet: isTablet,
             isDesktop: isDesktop,
           ),
@@ -393,7 +318,7 @@ class AccountPage extends StatelessWidget {
               Icons.arrow_forward_ios,
               color: Theme.of(
                 context,
-              ).colorScheme.onSurface.withOpacity(0.7),
+              ).colorScheme.onSurface.withValues(alpha: 0.7),
               size: isDesktop ? 20 : 16,
             ),
           ],
@@ -436,7 +361,7 @@ class AccountPage extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: Theme.of(context).colorScheme.primary,
+            activeThumbColor: Theme.of(context).colorScheme.primary,
           ),
         ],
       ),
@@ -458,6 +383,7 @@ class AccountPage extends StatelessWidget {
             blur: 20,
             opacity: 0.15,
             padding: const EdgeInsets.all(32),
+            width: MediaQuery.of(context).size.width * 0.88,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -465,7 +391,7 @@ class AccountPage extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: colorScheme.primary.withOpacity(0.1),
+                    color: colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Icon(
@@ -554,13 +480,13 @@ class AccountPage extends StatelessWidget {
 
                 // Close Button
                 GlassTextButton(
-                  child: const Text('Đóng'),
                   onPressed: () => Navigator.of(context).pop(),
-                  textColor: colorScheme.onSurface.withOpacity(0.85),
+                  textColor: colorScheme.onSurface.withValues(alpha: 0.85),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
                     vertical: 12,
                   ),
+                  child: const Text('Đóng'),
                 ),
               ],
             ),
@@ -587,7 +513,7 @@ class AccountPage extends StatelessWidget {
           child: Text(
             label,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: colorScheme.onSurface.withOpacity(0.8),
+              color: colorScheme.onSurface.withValues(alpha: 0.8),
             ),
           ),
         ),
@@ -613,7 +539,6 @@ class AccountPage extends StatelessWidget {
     required bool isDesktop,
   }) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     return GlassContainer(
       borderRadius: 16,
@@ -625,8 +550,8 @@ class AccountPage extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             colors: [
-              Colors.red.withOpacity(0.1),
-              Colors.red.withOpacity(0.05),
+              Colors.red.withValues(alpha: 0.1),
+              Colors.red.withValues(alpha: 0.05),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -642,7 +567,7 @@ class AccountPage extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.15),
+                    color: Colors.red.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -663,7 +588,7 @@ class AccountPage extends StatelessWidget {
                 ),
                 Icon(
                   Icons.arrow_forward_ios,
-                  color: Colors.red.shade400.withOpacity(0.7),
+                  color: Colors.red.shade400.withValues(alpha: 0.7),
                   size: isDesktop ? 20 : 16,
                 ),
               ],
@@ -696,7 +621,7 @@ class AccountPage extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
+                    color: Colors.red.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Icon(
@@ -721,60 +646,94 @@ class AccountPage extends StatelessWidget {
                 Text(
                   'Bạn có chắc chắn muốn đăng xuất khỏi tài khoản không?',
                   style: theme.textTheme.bodyLarge?.copyWith(
-                    color: colorScheme.onSurface.withOpacity(0.8),
+                    color: colorScheme.onSurface.withValues(alpha: 0.8),
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
 
                 // Buttons
-                Row(
-                  children: [
-                    // Cancel Button
-                    Expanded(
-                      child: GlassOutlinedButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        borderColor: colorScheme.onSurface,
-                        textColor: colorScheme.onSurface.withValues(
-                          alpha: 0.85,
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        child: const Text(
-                          'Hủy',
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-
-                    // Logout Button
-                    Expanded(
-                      child: GlassElevatedButton(
-                        onPressed: () async {
-                          Navigator.of(context).pop();
-                          try {
-                            await authModel.signOut();
-                            context.go('/login');
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Đăng xuất thất bại. Vui lòng thử lại.',
+                SizedBox(
+                  width: double.infinity,
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: IntrinsicHeight(
+                      child: Row(
+                        children: [
+                          // Cancel Button
+                          Flexible(
+                            flex: 1,
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(
+                                minHeight: 44,
+                                minWidth: double.infinity,
+                              ),
+                              child: GlassOutlinedButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                borderColor: colorScheme.onSurface,
+                                textColor: colorScheme.onSurface.withValues(
+                                  alpha: 0.85,
+                                ),
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                child: const Text(
+                                  'Hủy',
+                                  style: TextStyle(fontWeight: FontWeight.w600),
                                 ),
                               ),
-                            );
-                          }
-                        },
-                        backgroundColor: Colors.red.shade400,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        child: const Text(
-                          'Đăng xuất',
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+
+                          // Logout Button
+                          Flexible(
+                            flex: 1,
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(
+                                minHeight: 44,
+                                minWidth: double.infinity,
+                              ),
+                              child: GlassElevatedButton(
+                                onPressed: () async {
+                                  final navigator = Navigator.of(context);
+                                  final scaffoldMessenger =
+                                      ScaffoldMessenger.of(context);
+                                  final goRouter = GoRouter.of(context);
+                                  navigator.pop();
+                                  try {
+                                    await authModel.signOut();
+                                    goRouter.go('/login');
+                                  } catch (e) {
+                                    scaffoldMessenger.showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Đăng xuất thất bại. Vui lòng thử lại.',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                                backgroundColor: Colors.red.shade400,
+                                foregroundColor: Colors.white,
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                child: const Text(
+                                  'Đăng xuất',
+                                  style: TextStyle(fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),
@@ -792,4 +751,3 @@ class AccountPage extends StatelessWidget {
     }
   }
 }
-

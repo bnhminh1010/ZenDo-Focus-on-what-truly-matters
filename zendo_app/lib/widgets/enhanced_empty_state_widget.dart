@@ -1,3 +1,8 @@
+/*
+ * Tên: widgets/enhanced_empty_state_widget.dart
+ * Tác dụng: Widget trạng thái trống với illustration/animation và hành động gợi ý.
+ * Khi nào dùng: Hiển thị khi danh sách rỗng (task, focus sessions, v.v.).
+ */
 import 'package:flutter/material.dart';
 import 'haptic_feedback_widget.dart';
 import 'glass_container.dart';
@@ -149,9 +154,7 @@ class TaskListEmptyState extends StatelessWidget {
       width: 120,
       height: 120,
       decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.primaryContainer.withOpacity(0.3),
+        color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
         borderRadius: BorderRadius.circular(60),
       ),
       child: Stack(
@@ -165,9 +168,7 @@ class TaskListEmptyState extends StatelessWidget {
               width: 20,
               height: 20,
               decoration: BoxDecoration(
-                color: Theme.of(
-                  context,
-                ).colorScheme.primary.withOpacity(0.3),
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
                 shape: BoxShape.circle,
               ),
             ),
@@ -179,9 +180,7 @@ class TaskListEmptyState extends StatelessWidget {
               width: 15,
               height: 15,
               decoration: BoxDecoration(
-                color: Theme.of(
-                  context,
-                ).colorScheme.secondary.withOpacity(0.4),
+                color: Theme.of(context).colorScheme.secondary.withOpacity(0.4),
                 shape: BoxShape.circle,
               ),
             ),
@@ -341,8 +340,9 @@ class CategoryEmptyState extends StatelessWidget {
                             'Một số danh mục phổ biến để bạn tham khảo',
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurface
-                                      .withOpacity(0.7),
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface.withOpacity(0.7),
                                 ),
                           ),
                         ],
@@ -542,8 +542,9 @@ class SearchEmptyState extends StatelessWidget {
                             'Cách tìm kiếm hiệu quả hơn',
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurface
-                                      .withOpacity(0.7),
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface.withOpacity(0.7),
                                 ),
                           ),
                         ],
@@ -656,4 +657,3 @@ class SearchEmptyState extends StatelessWidget {
     );
   }
 }
-

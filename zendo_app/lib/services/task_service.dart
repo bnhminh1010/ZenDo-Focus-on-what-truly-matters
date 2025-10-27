@@ -1,3 +1,9 @@
+/*
+ * Tên: services/task_service.dart
+ * Tác dụng: Service xử lý các operations liên quan đến tasks (CRUD, filtering, sorting, realtime)
+ * Khi nào dùng: Cần thao tác với dữ liệu tasks từ database và đồng bộ realtime
+ */
+
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/task.dart';

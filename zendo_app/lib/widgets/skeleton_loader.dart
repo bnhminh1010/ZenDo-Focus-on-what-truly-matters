@@ -1,3 +1,8 @@
+/*
+ * Tên: widgets/skeleton_loader.dart
+ * Tác dụng: Cung cấp các skeleton shimmer cho placeholder trạng thái tải: item task, danh sách, focus session, profile card.
+ * Khi nào dùng: Khi cần hiển thị UI chờ dữ liệu tải từ Supabase/API để tránh layout shift và cải thiện UX.
+ */
 import 'package:flutter/material.dart';
 
 /// Widget skeleton loading với shimmer effect
@@ -325,4 +330,3 @@ class ProfileCardSkeleton extends StatelessWidget {
     );
   }
 }
-

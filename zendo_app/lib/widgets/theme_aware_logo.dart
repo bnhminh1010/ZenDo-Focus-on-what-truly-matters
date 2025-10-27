@@ -1,6 +1,11 @@
+/*
+ * Tên: widgets/theme_aware_logo.dart
+ * Tác dụng: Hiển thị logo ứng dụng (PNG) thích ứng mọi theme, kèm biến thể animated.
+ * Khi nào dùng: AppBar, Splash/Onboarding, màn đăng nhập.
+ */
 import 'package:flutter/material.dart';
 
-/// Widget logo tự động thay đổi theo dark/light theme
+/// Widget logo sử dụng logo duy nhất cho mọi theme
 class ThemeAwareLogo extends StatelessWidget {
   final double? width;
   final double? height;
@@ -15,14 +20,8 @@ class ThemeAwareLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Kiểm tra theme hiện tại
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
     return Image.asset(
-      // Chọn logo phù hợp với theme
-      isDarkMode 
-        ? 'assets/icons/LogoLightMode.png'  // Logo sáng cho dark mode
-        : 'assets/icons/LogoDarkMode.png',   // Logo tối cho light mode
+      'assets/icons/logo.png',
       width: width,
       height: height,
       fit: fit,
@@ -30,7 +29,7 @@ class ThemeAwareLogo extends StatelessWidget {
   }
 }
 
-/// Widget logo với animation khi chuyển theme
+/// Widget logo với animation - sử dụng logo duy nhất
 class AnimatedThemeAwareLogo extends StatelessWidget {
   final double? width;
   final double? height;
@@ -47,15 +46,11 @@ class AnimatedThemeAwareLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
     return AnimatedSwitcher(
       duration: duration,
       child: Image.asset(
-        isDarkMode 
-          ? 'assets/icons/LogoLightMode.png'
-          : 'assets/icons/LogoDarkMode.png',
-        key: ValueKey(isDarkMode), // Key để trigger animation
+        'assets/icons/logo.png',
+        key: const ValueKey('logo'),
         width: width,
         height: height,
         fit: fit,

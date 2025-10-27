@@ -1,3 +1,8 @@
+/*
+ * Tên: widgets/pomodoro_timer_widget.dart
+ * Tác dụng: Quản lý và hiển thị Pomodoro timer, tích hợp focus session, animation và điều khiển.
+ * Khi nào dùng: Sử dụng trong trang Focus để vận hành chu kỳ Pomodoro (work/short break/long break).
+ */
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
@@ -8,9 +13,11 @@ import 'glass_dialog.dart';
 import 'glass_button.dart';
 import 'glass_container.dart';
 
-/// PomodoroTimerWidget Class
-/// Tác dụng: Widget Pomodoro Timer có thể tái sử dụng với đầy đủ tính năng
-/// Sử dụng khi: Cần tích hợp Pomodoro technique vào focus sessions
+/*
+ * Widget: PomodoroTimerWidget
+ * Tác dụng: Timer Pomodoro có thể tái sử dụng với đầy đủ tính năng (work/break), tích hợp FocusSession.
+ * Khi nào dùng: Khi cần áp dụng kỹ thuật Pomodoro vào các phiên tập trung trong ứng dụng.
+ */
 class PomodoroTimerWidget extends StatefulWidget {
   final String? taskId;
   final String? taskTitle;
@@ -41,9 +48,11 @@ class PomodoroTimerWidget extends StatefulWidget {
   State<PomodoroTimerWidget> createState() => _PomodoroTimerWidgetState();
 }
 
-/// _PomodoroTimerWidgetState Class
-/// Tác dụng: State class quản lý logic và UI của Pomodoro Timer
-/// Sử dụng khi: Cần xử lý timer, animations và state management
+/*
+ * State: _PomodoroTimerWidgetState
+ * Tác dụng: Quản lý logic timer, animations, chu kỳ Pomodoro và tương tác UI.
+ * Khi nào dùng: Khi khởi tạo PomodoroTimerWidget để điều phối trạng thái và cập nhật màn hình.
+ */
 class _PomodoroTimerWidgetState extends State<PomodoroTimerWidget>
     with TickerProviderStateMixin {
   Timer? _timer;
@@ -501,7 +510,8 @@ class _PomodoroTimerWidgetState extends State<PomodoroTimerWidget>
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 // Start/Pause button
-                Flexible(
+                SizedBox(
+                  width: 130,
                   child: GlassElevatedButton.icon(
                     onPressed: _isRunning
                         ? _pauseTimer
@@ -511,20 +521,30 @@ class _PomodoroTimerWidgetState extends State<PomodoroTimerWidget>
                       _isRunning
                           ? 'Tạm dừng'
                           : (_isPaused ? 'Tiếp tục' : 'Bắt đầu'),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ),
                 ),
 
                 // Stop button
-                Flexible(
+                SizedBox(
+                  width: 100,
                   child: GlassOutlinedButton(
                     onPressed: (_isRunning || _isPaused) ? _stopTimer : null,
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.stop),
-                        SizedBox(width: 8),
-                        Text('Dừng'),
+                        SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            'Dừng',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -625,9 +645,12 @@ class _PomodoroTimerWidgetState extends State<PomodoroTimerWidget>
             ],
           ),
           actions: [
-            GlassTextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Hủy'),
+            SizedBox(
+              width: 80,
+              child: GlassTextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Hủy'),
+              ),
             ),
           ],
         );

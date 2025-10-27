@@ -1,3 +1,8 @@
+/*
+ * Tên: widgets/password_strength_indicator.dart
+ * Tác dụng: Hiển thị độ mạnh mật khẩu và các yêu cầu cần đạt, gồm thanh tiến độ và nhãn.
+ * Khi nào dùng: Đặt dưới TextField mật khẩu để hướng dẫn người dùng tạo mật khẩu mạnh.
+ */
 import 'package:flutter/material.dart';
 
 /// Enum cho mức độ mạnh của mật khẩu
@@ -286,4 +291,3 @@ class _PasswordFieldWithStrengthState extends State<PasswordFieldWithStrength> {
     );
   }
 }
-

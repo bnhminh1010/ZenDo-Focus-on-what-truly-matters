@@ -1,3 +1,9 @@
+/*
+ * Tên: services/subtask_service.dart
+ * Tác dụng: Service quản lý các thao tác CRUD với Subtasks trong Supabase
+ * Khi nào dùng: Cần xử lý subtasks của một task (tạo, sửa, xóa, reorder)
+ */
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/subtask.dart';
 

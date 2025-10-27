@@ -1,3 +1,9 @@
+/*
+ * Tên: services/category_service.dart
+ * Tác dụng: Service quản lý Categories với Supabase database
+ * Khi nào dùng: Cần thao tác CRUD với categories và phân loại tasks
+ */
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/category.dart';
 
@@ -265,4 +271,3 @@ class CategoryService {
     }
   }
 }
-

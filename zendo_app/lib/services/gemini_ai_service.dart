@@ -1,3 +1,9 @@
+/*
+ * Tên: services/gemini_ai_service.dart
+ * Tác dụng: Service quản lý tương tác với Gemini AI cho chat và task suggestions
+ * Khi nào dùng: Cần tích hợp AI để hỗ trợ người dùng quản lý tasks và productivity
+ */
+
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';

@@ -1,3 +1,9 @@
+/*
+ * Tên: services/supabase_database_service.dart
+ * Tác dụng: Service quản lý database operations với Supabase cho tasks, categories và CRUD operations
+ * Khi nào dùng: Cần thao tác với database backend và xử lý dữ liệu realtime
+ */
+
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -561,4 +567,3 @@ class SupabaseDatabaseService {
     }
   }
 }
-

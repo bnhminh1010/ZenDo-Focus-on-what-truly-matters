@@ -198,4 +198,3 @@ class TaskModel extends ChangeNotifier {
     );
   }
 }
-

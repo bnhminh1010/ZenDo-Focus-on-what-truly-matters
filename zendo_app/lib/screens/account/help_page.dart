@@ -1,3 +1,9 @@
+/*
+ * Tên: screens/account/help_page.dart
+ * Tác dụng: Màn hình trợ giúp với FAQ, hướng dẫn sử dụng và thông tin liên hệ support
+ * Khi nào dùng: Người dùng cần hỗ trợ, hướng dẫn hoặc thông tin về ứng dụng
+ */
+
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';

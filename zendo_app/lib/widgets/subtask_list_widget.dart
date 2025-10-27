@@ -1,3 +1,8 @@
+/*
+ * Tên: widgets/subtask_list_widget.dart
+ * Tác dụng: Quản lý và hiển thị danh sách Subtask cho một Task, hỗ trợ CRUD, loading và lỗi.
+ * Khi nào dùng: Nhúng vào màn chi tiết Task hoặc form tạo/chỉnh sửa Task.
+ */
 import 'package:flutter/material.dart';
 import '../models/subtask.dart';
 import '../services/subtask_service.dart';
@@ -422,4 +427,3 @@ class _SubtaskListWidgetState extends State<SubtaskListWidget> {
     );
   }
 }
-

@@ -245,4 +245,3 @@ class CategoryModel extends ChangeNotifier {
     super.dispose();
   }
 }
-

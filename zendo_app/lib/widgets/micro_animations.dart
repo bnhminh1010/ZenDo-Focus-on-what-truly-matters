@@ -1,3 +1,8 @@
+/*
+ * Tên: widgets/micro_animations.dart
+ * Tác dụng: Tập hợp các micro-animations (fade/slide/scale/bounce) và container animated cho UI mượt.
+ * Khi nào dùng: Áp dụng hiệu ứng chuyển cảnh nhẹ nhàng, animated card, list staggered trong các màn hình.
+ */
 import 'package:flutter/material.dart';
 
 /// Widget cung cấp các micro-animations cho smooth transitions
@@ -412,4 +417,3 @@ class _PulseAnimationState extends State<PulseAnimation>
     );
   }
 }
-

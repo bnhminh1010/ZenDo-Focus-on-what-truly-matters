@@ -1,3 +1,8 @@
+/*
+ * Tên: widgets/task_list_view.dart
+ * Tác dụng: Hiển thị danh sách Task với lọc, tìm kiếm, sắp xếp và skeleton loading.
+ * Khi nào dùng: Trong trang Tasks hoặc nơi cần danh sách nhiệm vụ có điều khiển sắp xếp/lọc.
+ */
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -216,22 +221,27 @@ class _TaskListViewState extends State<TaskListView> {
             feedbackType: HapticFeedbackType.selection,
           ),
 
-          const Spacer(),
+          const SizedBox(width: 8),
 
           // Task count
-          Consumer<TaskModel>(
-            builder: (context, taskModel, child) {
-              final filteredCount = _getFilteredTasks(taskModel).length;
-              final totalCount = taskModel.tasks.length;
-              return Text(
-                '$filteredCount trong tổng số $totalCount task',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withOpacity(0.6),
-                ),
-              );
-            },
+          Expanded(
+            child: Consumer<TaskModel>(
+              builder: (context, taskModel, child) {
+                final filteredCount = _getFilteredTasks(taskModel).length;
+                final totalCount = taskModel.tasks.length;
+                return Text(
+                  '$filteredCount trong tổng số $totalCount task',
+                  textAlign: TextAlign.end,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.6),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -284,4 +294,3 @@ class _TaskListViewState extends State<TaskListView> {
 }
 
 enum TaskSortBy { title, dueDate, priority, category, createdAt }
-

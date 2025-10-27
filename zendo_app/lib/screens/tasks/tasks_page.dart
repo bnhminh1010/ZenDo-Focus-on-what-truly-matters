@@ -1,3 +1,9 @@
+/*
+ * Tên: screens/tasks/tasks_page.dart
+ * Tác dụng: Màn hình hiển thị danh sách tất cả tasks với search và filter theo trạng thái
+ * Khi nào dùng: Người dùng muốn xem và quản lý toàn bộ danh sách tasks
+ */
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/task_model.dart';

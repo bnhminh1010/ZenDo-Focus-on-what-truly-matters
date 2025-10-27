@@ -1,3 +1,9 @@
+/*
+ * Tên: screens/calendar/calendar_page.dart
+ * Tác dụng: Màn hình lịch hiển thị tasks theo ngày với table calendar và event tracking
+ * Khi nào dùng: Người dùng muốn xem tasks theo lịch và quản lý deadline theo thời gian
+ */
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';

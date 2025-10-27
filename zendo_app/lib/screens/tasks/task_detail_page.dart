@@ -1,3 +1,9 @@
+/*
+ * Tên: screens/tasks/task_detail_page.dart
+ * Tác dụng: Màn hình chi tiết task với đầy đủ thông tin, subtasks, images và actions CRUD
+ * Khi nào dùng: Người dùng muốn xem/chỉnh sửa chi tiết một task cụ thể
+ */
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';

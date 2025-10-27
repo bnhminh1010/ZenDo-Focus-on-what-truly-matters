@@ -1,3 +1,8 @@
+/*
+ * Tên: models/ai_message.dart
+ * Tác dụng: Định nghĩa model tin nhắn AI (user/ai/system) với trạng thái gửi/nhận/lỗi, metadata và hỗ trợ chuyển đổi Map/Supabase.
+ * Khi nào dùng: Khi lưu trữ/hiển thị lịch sử chat với AI, đồng bộ dữ liệu với Supabase hoặc API.
+ */
 import 'package:equatable/equatable.dart';
 
 /// Enum cho loại tin nhắn AI

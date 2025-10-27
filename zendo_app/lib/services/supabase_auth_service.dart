@@ -1,3 +1,9 @@
+/*
+ * Tên: services/supabase_auth_service.dart
+ * Tác dụng: Service quản lý authentication với Supabase backend
+ * Khi nào dùng: Cần xử lý đăng nhập, đăng ký, đăng xuất và quản lý session người dùng
+ */
+
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -207,4 +213,3 @@ class SupabaseAuthService extends ChangeNotifier {
     }
   }
 }
-

@@ -1,3 +1,8 @@
+/*
+ * Tên: models/task.dart
+ * Tác dụng: Định nghĩa Task chính với danh mục, mức ưu tiên, trạng thái hoàn thành, hạn, thời gian ước tính và các phương thức chuyển đổi Map/Supabase.
+ * Khi nào dùng: Khi tạo/hiển thị/chỉnh sửa/lưu trữ Task và đồng bộ với Supabase; hỗ trợ sắp xếp/lọc theo category/priority/trạng thái.
+ */
 import 'package:flutter/material.dart';
 
 /// TaskCategory Enum

@@ -1,3 +1,8 @@
+/*
+ * Tên: widgets/glass_button.dart
+ * Tác dụng: Bộ nút Glass (button/icon/elevated) với hiệu ứng scale/opacity và GlassContainer.
+ * Khi nào dùng: Khi cần nút nổi bật phong cách glassmorphism với tuỳ chọn viền, shadow, kích thước.
+ */
 import 'package:flutter/material.dart';
 import 'glass_container.dart';
 
@@ -200,6 +205,7 @@ class GlassElevatedButton extends StatelessWidget {
   final double blur;
   final double opacity;
   final EdgeInsetsGeometry padding;
+  final double? width; // allow forcing full-width when needed
 
   const GlassElevatedButton({
     super.key,
@@ -211,6 +217,7 @@ class GlassElevatedButton extends StatelessWidget {
     this.blur = 16,
     this.opacity = 0.14,
     this.padding = const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+    this.width,
   });
 
   /// Named constructor for icon button
@@ -225,6 +232,7 @@ class GlassElevatedButton extends StatelessWidget {
     this.blur = 16,
     this.opacity = 0.14,
     this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    this.width,
   }) : child = Row(
          mainAxisSize: MainAxisSize.min,
          children: [icon, const SizedBox(width: 8), label],
@@ -244,6 +252,7 @@ class GlassElevatedButton extends StatelessWidget {
       blur: blur,
       opacity: opacity,
       padding: padding,
+      width: width,
       gradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -316,6 +325,7 @@ class GlassOutlinedButton extends StatelessWidget {
   final double blur;
   final double opacity;
   final EdgeInsetsGeometry padding;
+  final double? width; // allow forcing full-width when needed
 
   const GlassOutlinedButton({
     super.key,
@@ -327,6 +337,7 @@ class GlassOutlinedButton extends StatelessWidget {
     this.blur = 16,
     this.opacity = 0.08,
     this.padding = const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+    this.width,
   });
 
   @override
@@ -341,6 +352,7 @@ class GlassOutlinedButton extends StatelessWidget {
       blur: blur,
       opacity: opacity,
       padding: padding,
+      width: width,
       border: Border.all(
         color: effectiveBorderColor.withOpacity(0.6),
         width: 1.5,
@@ -415,4 +427,3 @@ class GlassFloatingActionButton extends StatelessWidget {
     );
   }
 }
-

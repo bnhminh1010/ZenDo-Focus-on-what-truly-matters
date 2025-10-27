@@ -1,3 +1,9 @@
+/*
+ * Tên: screens/ai/ai_chat_page.dart
+ * Tác dụng: Màn hình chat với AI Gemini để hỗ trợ quản lý task và tư vấn productivity
+ * Khi nào dùng: Người dùng cần hỗ trợ AI để tạo task, lên kế hoạch hoặc tư vấn làm việc hiệu quả
+ */
+
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

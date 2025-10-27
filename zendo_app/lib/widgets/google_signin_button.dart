@@ -1,3 +1,8 @@
+/*
+ * Tên: widgets/google_signin_button.dart
+ * Tác dụng: Nút đăng nhập Google theo Material 3, tự xử lý loading/error.
+ * Khi nào dùng: Màn đăng nhập/đăng ký hoặc trong phần cài đặt tài khoản.
+ */
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/google_signin_provider.dart';
@@ -244,4 +249,3 @@ class GoogleSignInIconButton extends StatelessWidget {
     }
   }
 }
-

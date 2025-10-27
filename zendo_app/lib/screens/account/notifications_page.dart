@@ -1,3 +1,9 @@
+/*
+ * Tên: screens/account/notifications_page.dart
+ * Tác dụng: Màn hình cài đặt thông báo với các toggle cho push, email và reminder notifications
+ * Khi nào dùng: Người dùng muốn tùy chỉnh loại thông báo nhận được từ ứng dụng
+ */
+
 import 'package:flutter/material.dart';
 
 class NotificationsPage extends StatefulWidget {

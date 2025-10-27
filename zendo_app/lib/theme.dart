@@ -1,3 +1,8 @@
+/*
+ * Tên: theme.dart
+ * Tác dụng: Định nghĩa ThemeData (light/dark), color scheme, typography và component themes cho ZenDo.
+ * Khi nào dùng: Được import bởi app.dart để cấu hình giao diện nhất quán toàn ứng dụng.
+ */
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 

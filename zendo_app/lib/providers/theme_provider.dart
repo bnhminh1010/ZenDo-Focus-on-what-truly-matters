@@ -67,4 +67,3 @@ class ThemeProvider extends ChangeNotifier {
     await setThemeMode(newMode);
   }
 }
-

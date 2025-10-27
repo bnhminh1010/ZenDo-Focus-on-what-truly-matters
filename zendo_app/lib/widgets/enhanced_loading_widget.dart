@@ -1,3 +1,8 @@
+/*
+ * Tên: widgets/enhanced_loading_widget.dart
+ * Tác dụng: Loading nâng cao với animation xoay/nhịp, tuỳ chọn progress và overlay toàn màn hình.
+ * Khi nào dùng: Khi cần hiển thị tiến trình hoặc loading hào nhoáng có thông điệp, icon và phần trăm.
+ */
 import 'package:flutter/material.dart';
 import '../widgets/glass_container.dart';
 
@@ -249,4 +254,3 @@ class LoadingButton extends StatelessWidget {
     );
   }
 }
-

@@ -1,3 +1,9 @@
+/*
+ * Tên: screens/home/home_page.dart
+ * Tác dụng: Màn hình chính của ứng dụng hiển thị dashboard với tasks, thống kê và navigation
+ * Khi nào dùng: Người dùng mở ứng dụng và cần xem tổng quan về tasks và hoạt động
+ */
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -71,7 +77,7 @@ class _HomePageState extends State<HomePage> {
         title: Semantics(
           label: 'Tiêu đề trang chủ ZenDo',
           child: Text(
-            'ZenDo - Trang chủ',
+            'Trang chủ',
             style: Theme.of(context).textTheme.headlineLarge?.copyWith(
               color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.w600,
@@ -237,24 +243,6 @@ class _HomePageState extends State<HomePage> {
             'category': TaskCategory.personal,
             'taskCount': taskModel
                 .getTasksByCategory(TaskCategory.personal)
-                .length,
-          },
-          {
-            'name': 'Finance',
-            'icon': Icons.account_balance_wallet_outlined,
-            'color': context.warningColor,
-            'category': TaskCategory.finance,
-            'taskCount': taskModel
-                .getTasksByCategory(TaskCategory.finance)
-                .length,
-          },
-          {
-            'name': 'Social',
-            'icon': Icons.people_outline,
-            'color': Theme.of(context).colorScheme.tertiary,
-            'category': TaskCategory.social,
-            'taskCount': taskModel
-                .getTasksByCategory(TaskCategory.social)
                 .length,
           },
         ];
@@ -569,9 +557,7 @@ class _HomePageState extends State<HomePage> {
             Text(
               task.description!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(
-                  context,
-                ).colorScheme.onSurface.withOpacity(0.7),
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -611,4 +597,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-

@@ -1,3 +1,9 @@
+/*
+ * Tên: services/github_auth_service.dart
+ * Tác dụng: Service xử lý GitHub authentication tích hợp với Supabase Auth
+ * Khi nào dùng: Cần đăng nhập bằng GitHub và đồng bộ user data với backend
+ */
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
 import '../config/app_config.dart';
@@ -63,4 +69,3 @@ class GitHubAuthService {
     await signOut();
   }
 }
-

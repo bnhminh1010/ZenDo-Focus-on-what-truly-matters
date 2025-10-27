@@ -1,3 +1,9 @@
+/*
+ * Tên: screens/tasks/category_detail_page.dart
+ * Tác dụng: Màn hình chi tiết category hiển thị các task thuộc category đó với filter và sort
+ * Khi nào dùng: Người dùng muốn xem tất cả tasks trong một category cụ thể
+ */
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';

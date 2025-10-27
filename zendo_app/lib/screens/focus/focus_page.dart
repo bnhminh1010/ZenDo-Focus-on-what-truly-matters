@@ -1,3 +1,9 @@
+/*
+ * Tên: screens/focus/focus_page.dart
+ * Tác dụng: Màn hình focus với Pomodoro timer để tập trung làm việc và theo dõi phiên làm việc
+ * Khi nào dùng: Người dùng muốn bắt đầu phiên làm việc tập trung với timer và thống kê
+ */
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../widgets/pomodoro_timer_widget.dart';
@@ -227,16 +233,14 @@ class _FocusPageState extends State<FocusPage> {
                               margin: const EdgeInsets.only(bottom: 8),
                               child: ListTile(
                                 leading: CircleAvatar(
-                                  backgroundColor: Theme.of(context)
-                                      .colorScheme
-                                      .onSurface
-                                      .withOpacity(0.08),
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface.withOpacity(0.08),
                                   child: Icon(
                                     Icons.timer,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withOpacity(0.7),
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface.withOpacity(0.7),
                                   ),
                                 ),
                                 title: const Text('Tập trung tự do'),
@@ -674,4 +678,3 @@ class PyramidPainter extends CustomPainter {
         oldDelegate.fallAnimationValue != fallAnimationValue;
   }
 }
-

@@ -1,3 +1,9 @@
+/*
+ * Tên: screens/account/security_page.dart
+ * Tác dụng: Màn hình bảo mật với đổi mật khẩu, 2FA và các cài đặt security
+ * Khi nào dùng: Người dùng muốn tăng cường bảo mật tài khoản hoặc đổi mật khẩu
+ */
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_model.dart';

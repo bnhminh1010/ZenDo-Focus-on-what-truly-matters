@@ -1,3 +1,8 @@
+/*
+ * Tên: models/focus_session.dart
+ * Tác dụng: Model phiên tập trung/Pomodoro, theo dõi thời lượng dự kiến/thực tế, nghỉ, tạm dừng, trạng thái, mức năng suất, số lần xao nhãng và ghi chú.
+ * Khi nào dùng: Khi ghi nhận và đồng bộ các phiên tập trung với Supabase, hiển thị thống kê và lịch sử focus trong ứng dụng.
+ */
 /// FocusSession Class
 /// Tác dụng: Model quản lý phiên tập trung/pomodoro của người dùng
 /// Sử dụng khi: Theo dõi và lưu trữ thông tin các phiên làm việc tập trung
@@ -212,4 +217,3 @@ extension FocusSessionStatusExtension on FocusSessionStatus {
     }
   }
 }
-
