@@ -1,21 +1,35 @@
 import 'package:flutter/foundation.dart';
 import '../services/supabase_auth_service.dart';
+import '../services/profile_service.dart';
 
 /// AuthModel Class
 /// Tác dụng: Provider quản lý trạng thái xác thực người dùng và tương tác với Supabase Auth
 /// Sử dụng khi: Cần xử lý đăng nhập, đăng xuất, đăng ký và quản lý session người dùng
 class AuthModel extends ChangeNotifier {
   final SupabaseAuthService _authService = SupabaseAuthService();
+  final ProfileService _profileService = ProfileService();
 
+  /// Cờ đánh dấu người dùng đã đăng nhập hợp lệ chưa.
   bool _isAuthenticated = false;
+  /// Email hiện tại của user (nullable trước khi đăng nhập).
   String? _userEmail;
+  /// Tên hiển thị rút từ metadata hoặc email.
   String? _userName;
+  /// URL avatar lấy từ bảng profiles.
+  String? _userAvatarUrl;
+  /// Trạng thái loading chung cho các thao tác auth.
   bool _isLoading = false;
 
   // Getters
+  /// Trạng thái đăng nhập hiện tại.
   bool get isAuthenticated => _isAuthenticated;
+  /// Email người dùng (nullable nếu chưa đăng nhập).
   String? get userEmail => _userEmail;
+  /// Tên hiển thị.
   String? get userName => _userName;
+  /// URL avatar.
+  String? get userAvatarUrl => _userAvatarUrl;
+  /// Cờ loading để disable UI khi đang xử lý auth.
   bool get isLoading => _isLoading;
 
   /// initialize method
@@ -35,16 +49,21 @@ class AuthModel extends ChangeNotifier {
             user.userMetadata?['full_name'] ??
             user.email?.split('@')[0] ??
             'User';
+        
+        // Load avatar URL từ database
+        _userAvatarUrl = await _profileService.getCurrentUserAvatarUrl();
       } else {
         _isAuthenticated = false;
         _userEmail = null;
         _userName = null;
+        _userAvatarUrl = null;
       }
     } catch (e) {
       debugPrint('Error initializing auth: $e');
       _isAuthenticated = false;
       _userEmail = null;
       _userName = null;
+      _userAvatarUrl = null;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -66,6 +85,9 @@ class AuthModel extends ChangeNotifier {
             user?.userMetadata?['full_name'] ??
             user?.email?.split('@')[0] ??
             'User';
+
+        // Load avatar URL từ database sau khi đăng nhập thành công
+        _userAvatarUrl = await _profileService.getCurrentUserAvatarUrl();
 
         _isLoading = false;
         notifyListeners();
@@ -153,6 +175,34 @@ class AuthModel extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error updating profile: $e');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Cập nhật thông tin profile với avatar
+  Future<bool> updateProfileWithAvatar(String name, String email, String? avatarUrl) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final success = await _authService.updateProfileWithAvatar(name, email, avatarUrl);
+      if (success) {
+        _userName = name;
+        _userEmail = email;
+        _userAvatarUrl = avatarUrl;
+
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } else {
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      debugPrint('Error updating profile with avatar: $e');
       _isLoading = false;
       notifyListeners();
       return false;

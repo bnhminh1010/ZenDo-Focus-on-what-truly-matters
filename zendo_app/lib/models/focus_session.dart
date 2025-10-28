@@ -7,24 +7,61 @@
 /// Tác dụng: Model quản lý phiên tập trung/pomodoro của người dùng
 /// Sử dụng khi: Theo dõi và lưu trữ thông tin các phiên làm việc tập trung
 class FocusSession {
+  /// UUID của session (có thể null trước khi insert Supabase).
   final String? id;
+
+  /// ID người dùng sở hữu session để áp dụng RLS.
   final String userId;
+
+  /// ID task được gắn với session (có thể null nếu focus chung).
   final String? taskId;
+
+  /// Tiêu đề gợi nhớ (VD: "Pomodoro sáng").
   final String? title;
+
+  /// Thời gian dự kiến (phút) mà người dùng đặt lúc bắt đầu.
   final int plannedDurationMinutes;
+
+  /// Thời gian thực tế (phút) đã hoàn thành.
   final int actualDurationMinutes;
+
+  /// Thời lượng nghỉ mặc định giữa các vòng.
   final int breakDurationMinutes;
+
+  /// Thời điểm bắt đầu phiên tập trung.
   final DateTime startedAt;
+
+  /// Thời điểm kết thúc (nếu đã hoàn thành hoặc hủy).
   final DateTime? endedAt;
+
+  /// Thời điểm tạm dừng gần nhất (nếu có pause).
   final DateTime? pausedAt;
+
+  /// Tổng thời gian tạm dừng (phút) để phân tích hiệu suất.
   final int totalPauseDurationMinutes;
+
+  /// Trạng thái hiện tại của session (active/paused/...).
   final FocusSessionStatus status;
+
+  /// Kiểu session (pomodoro/pyramid/...).
   final String sessionType;
+
+  /// Điểm đánh giá năng suất người dùng tự chấm.
   final int? productivityRating;
+
+  /// Số lần xao nhãng ghi nhận được trong phiên.
   final int distractionCount;
+
+  /// Ghi chú ngắn (cảm nhận, mục tiêu...).
   final String? notes;
+
+  /// Âm thanh nền được chọn khi focus (nếu có).
   final String? backgroundSound;
+
+  /// Dấu thời gian tạo bản ghi trong database.
   final DateTime createdAt;
+
+  /// Dấu thời gian cập nhật cuối cùng.
   final DateTime updatedAt;
 
   const FocusSession({

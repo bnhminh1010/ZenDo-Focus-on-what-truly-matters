@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ThemeProvider extends ChangeNotifier {
   static const String _themeKey = 'theme_mode';
 
+  /// Theme mode hiện tại (light/dark/system).
   ThemeMode _themeMode = ThemeMode.light;
 
   /// Getter cho theme mode hiện tại

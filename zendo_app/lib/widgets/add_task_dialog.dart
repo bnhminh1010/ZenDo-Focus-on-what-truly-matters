@@ -37,21 +37,36 @@ class AddTaskDialog extends StatefulWidget {
  * Khi nào dùng: Khi hiển thị AddTaskDialog để điều phối trạng thái nhập liệu và sự kiện người dùng.
  */
 class _AddTaskDialogState extends State<AddTaskDialog> {
+  /// Key dùng để validate form.
   final _formKey = GlobalKey<FormState>();
+  /// Controller cho tiêu đề nhiệm vụ.
   final _titleController = TextEditingController();
+  /// Controller cho mô tả nhiệm vụ.
   final _descriptionController = TextEditingController();
+  /// Controller cho ghi chú chi tiết.
   final _notesController = TextEditingController();
+  /// Controller cho trường thời gian ước tính.
   final _estimatedMinutesController = TextEditingController();
+  /// Controller cho input tag tạm.
   final _tagController = TextEditingController();
+  /// ImagePicker để chọn ảnh đính kèm.
   final ImagePicker _imagePicker = ImagePicker(); // Thêm ImagePicker
 
+  /// Danh mục được chọn hiện tại.
   TaskCategory _selectedCategory = TaskCategory.personal;
+  /// Mức ưu tiên được chọn hiện tại.
   TaskPriority _selectedPriority = TaskPriority.medium;
+  /// Deadline được chọn.
   DateTime? _selectedDueDate;
+  /// Danh sách tag đã nhập.
   List<String> _tags = [];
+  /// Cờ loading khi đang submit.
   bool _isLoading = false;
+  /// Ảnh đã chọn (nếu có).
   File? _selectedImage; // Thêm biến lưu ảnh đã chọn
+  /// Cờ loading khi đang chọn ảnh.
   bool _isPickingImage = false; // Thêm biến loading state cho image picker
+  /// Thời gian focus mặc định cho task (phút).
   int _focusTimeMinutes = 25; // Thêm biến lưu thời gian focus mặc định
 
   @override

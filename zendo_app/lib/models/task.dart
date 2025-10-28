@@ -78,22 +78,55 @@ enum TaskPriority {
 /// Tác dụng: Model chính định nghĩa cấu trúc dữ liệu của một công việc/nhiệm vụ
 /// Sử dụng khi: Tạo, lưu trữ, và quản lý thông tin của các task trong ứng dụng
 class Task {
+  /// UUID của task (khóa chính đồng bộ Supabase/local DB).
   final String id;
+
+  /// Tiêu đề ngắn gọn hiển thị chính trên UI.
   final String title;
+
+  /// Mô tả chi tiết nội dung công việc (nullable).
   final String? description;
+
+  /// Danh mục logic giúp phân loại và lọc task.
   final TaskCategory category;
+
+  /// Mức độ ưu tiên để sắp xếp, cảnh báo.
   final TaskPriority priority;
+
+  /// Thời điểm tạo task, phục vụ sorting/audit.
   final DateTime createdAt;
+
+  /// Deadline dự kiến hoàn thành (nullable nếu không đặt hạn).
   final DateTime? dueDate;
+
+  /// Trạng thái hoàn thành hiện tại.
   final bool isCompleted;
+
+  /// Thời điểm đánh dấu hoàn thành (nullable).
   final DateTime? completedAt;
+
+  /// Danh sách tag text tự do để tìm kiếm/nhóm nhanh.
   final List<String> tags;
+
+  /// Ghi chú phụ (link, checklist...) hiển thị trong chi tiết.
   final String? notes;
+
+  /// Thời gian ước lượng thực hiện (phút) do người dùng nhập.
   final int estimatedMinutes;
+
+  /// Thời gian thực tế đã log (phút) từ focus sessions.
   final int actualMinutes;
+
+  /// Đường dẫn ảnh minh hoạ lưu trên Supabase Storage.
   final String? imageUrl;
+
+  /// ID task cha nếu là subtask (hierarchy).
   final String? parentTaskId;
+
+  /// Danh sách ID subtasks con (dùng để load nhanh trạng thái).
   final List<String> subtaskIds;
+
+  /// Thời gian focus mặc định mỗi phiên (phút) cho Pomodoro.
   final int focusTimeMinutes;
 
   const Task({

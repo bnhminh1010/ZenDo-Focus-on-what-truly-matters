@@ -6,14 +6,31 @@
 
 /// Model định nghĩa cấu trúc dữ liệu của một Subtask
 class Subtask {
+  /// UUID của subtask.
   final String id;
+
+  /// ID của task cha, đảm bảo mỗi subtask thuộc về một task cụ thể.
   final String taskId; // ID của task cha
+
+  /// Tiêu đề ngắn gọn của subtask.
   final String title;
+
+  /// Mô tả chi tiết (nullable) nếu cần giải thích thêm.
   final String? description;
+
+  /// Trạng thái hoàn thành của subtask.
   final bool isCompleted;
+
+  /// Thời điểm đánh dấu hoàn thành (nullable).
   final DateTime? completedAt;
+
+  /// Thứ tự hiển thị trong danh sách subtasks của task.
   final int sortOrder;
+
+  /// Dấu thời gian tạo bản ghi.
   final DateTime createdAt;
+
+  /// Dấu thời gian cập nhật lần cuối.
   final DateTime updatedAt;
 
   const Subtask({

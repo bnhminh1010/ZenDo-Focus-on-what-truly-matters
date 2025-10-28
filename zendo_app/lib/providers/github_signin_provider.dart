@@ -7,15 +7,23 @@ class GitHubSignInProvider with ChangeNotifier {
   final GitHubAuthService _authService = GitHubAuthService();
 
   // State variables
+  /// Cờ loading cho các thao tác đăng nhập/đăng xuất.
   bool _isLoading = false;
+  /// Trạng thái đã đăng nhập bằng GitHub chưa.
   bool _isSignedIn = false;
+  /// Thông điệp lỗi gần nhất.
   String? _errorMessage;
+  /// Cache thông tin user GitHub hiện tại.
   Map<String, dynamic>? _userInfo;
 
   // Getters
+  /// Cờ loading cho UI.
   bool get isLoading => _isLoading;
+  /// Trạng thái đăng nhập hiện tại.
   bool get isSignedIn => _isSignedIn;
+  /// Thông điệp lỗi để hiển thị.
   String? get errorMessage => _errorMessage;
+  /// Thông tin user GitHub (login, email, avatar...).
   Map<String, dynamic>? get userInfo => _userInfo;
 
   // User info getters

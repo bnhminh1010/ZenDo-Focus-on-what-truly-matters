@@ -19,15 +19,25 @@ import 'glass_container.dart';
  * Khi nào dùng: Khi cần áp dụng kỹ thuật Pomodoro vào các phiên tập trung trong ứng dụng.
  */
 class PomodoroTimerWidget extends StatefulWidget {
+  /// ID task liên kết với phiên focus (nullable).
   final String? taskId;
+  /// Tiêu đề task hiển thị trong session (nullable).
   final String? taskTitle;
+  /// Thời lượng phiên làm việc ban đầu (phút).
   final int initialWorkDuration; // phút
+  /// Thời lượng nghỉ ngắn (phút).
   final int initialShortBreakDuration; // phút
+  /// Thời lượng nghỉ dài (phút).
   final int initialLongBreakDuration; // phút
+  /// Số phiên làm việc trước khi đến nghỉ dài.
   final int sessionsBeforeLongBreak;
+  /// Callback khi hoàn thành một session focus.
   final VoidCallback? onSessionComplete;
+  /// Callback khi hoàn thành một phiên nghỉ.
   final VoidCallback? onBreakComplete;
+  /// Tự động bắt đầu nghỉ sau khi kết thúc work session.
   final bool autoStartBreaks;
+  /// Tự động bắt đầu work session sau khi kết thúc nghỉ.
   final bool autoStartWork;
 
   const PomodoroTimerWidget({
@@ -55,31 +65,47 @@ class PomodoroTimerWidget extends StatefulWidget {
  */
 class _PomodoroTimerWidgetState extends State<PomodoroTimerWidget>
     with TickerProviderStateMixin {
+  /// Timer cho việc đếm lùi.
   Timer? _timer;
 
   // Pomodoro settings
+  /// Thời lượng work (giây).
   late int _workDuration;
+  /// Thời lượng nghỉ ngắn (giây).
   late int _shortBreakDuration;
+  /// Thời lượng nghỉ dài (giây).
   late int _longBreakDuration;
 
   // Current session state
+  /// Phase hiện tại (work/shortBreak/longBreak).
   PomodoroPhase _currentPhase = PomodoroPhase.work;
+  /// Số giây còn lại trong phase.
   int _currentSeconds = 0;
+  /// Tổng số giây của phase hiện tại.
   int _totalSeconds = 0;
+  /// Cờ timer đang chạy.
   bool _isRunning = false;
+  /// Cờ đang tạm dừng.
   bool _isPaused = false;
 
   // Pomodoro cycle tracking
+  /// Số pomodoro đã hoàn thành trong chu kỳ.
   int _completedPomodoros = 0;
+  /// Số lần xao nhãng ghi nhận.
   int _distractionCount = 0;
 
   // Session tracking
+  /// Thời điểm bắt đầu session hiện tại.
   DateTime? _sessionStartTime;
+  /// ID session hiện tại trong database (nullable).
   String? _currentSessionId;
 
   // Animations
+  /// Controller cho hiệu ứng pulse.
   late AnimationController _pulseController;
+  /// Controller cho progress animation.
   late AnimationController _progressController;
+  /// Animation cho progress.
   late Animation<double> _progressAnimation;
 
   @override

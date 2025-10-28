@@ -7,16 +7,37 @@
 /// Tác dụng: Model quản lý danh mục task tùy chỉnh của người dùng
 /// Sử dụng khi: Tạo, lưu trữ và quản lý các danh mục task do người dùng tự định nghĩa
 class Category {
+  /// UUID của category (trùng với khóa chính Supabase).
   final String id;
+
+  /// ID người dùng sở hữu category (dùng cho RLS).
   final String userId;
+
+  /// Tên hiển thị của danh mục.
   final String name;
+
+  /// Mô tả chi tiết, hiển thị trong UI quản lý danh mục.
   final String? description;
+
+  /// Emoji/icon đại diện (dùng cho tiêu đề card).
   final String icon;
+
+  /// Màu sắc chủ đạo ở dạng hex string (ví dụ #3B82F6).
   final String color;
+
+  /// Đánh dấu danh mục mặc định được tạo kèm tài khoản mới.
   final bool isDefault;
+
+  /// Thứ tự sắp xếp trên UI (số nhỏ đứng trước).
   final int sortOrder;
+
+  /// Đánh dấu danh mục đã lưu trữ/ẩn khỏi UI chính.
   final bool isArchived;
+
+  /// Thời gian tạo để audit/versioning.
   final DateTime createdAt;
+
+  /// Thời gian cập nhật gần nhất (phục vụ đồng bộ).
   final DateTime updatedAt;
 
   const Category({

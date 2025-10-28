@@ -13,13 +13,28 @@ enum MessageStatus { sending, sent, delivered, error }
 
 /// Model cho tin nhắn chat với AI
 class AIMessage extends Equatable {
+  /// Mã định danh duy nhất của tin nhắn.
   final String id;
+
+  /// Nội dung tin nhắn thô (markdown/plain text).
   final String content;
+
+  /// Phân loại tin nhắn (user/ai/system) phục vụ UI & logic.
   final MessageType type;
+
+  /// Trạng thái gửi/nhận hiện tại của tin nhắn.
   final MessageStatus status;
+
+  /// Dấu thời gian tạo tin nhắn, dùng để sắp xếp và hiển thị.
   final DateTime timestamp;
+
+  /// ID người dùng gửi tin (nếu có) để liên kết với hồ sơ Supabase.
   final String? userId;
+
+  /// Metadata đi kèm (VD: taskId, gợi ý AI) cho các tính năng mở rộng.
   final Map<String, dynamic>? metadata;
+
+  /// Nội dung lỗi (nếu tin nhắn thất bại) để hiển thị feedback.
   final String? errorMessage;
 
   const AIMessage({

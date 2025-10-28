@@ -8,11 +8,17 @@ import 'package:flutter/material.dart';
 
 /// Glass-styled dialog using BackdropFilter and translucent background
 class GlassDialog extends StatelessWidget {
+  /// Tiêu đề của dialog (thường là Text hoặc Row).
   final Widget title;
+  /// Nội dung chi tiết của dialog (optional).
   final Widget? content;
+  /// Danh sách actions (buttons) ở chân dialog.
   final List<Widget>? actions;
+  /// Bán kính bo tròn dialog.
   final double borderRadius;
+  /// Độ blur của nền phía sau.
   final double blur;
+  /// Độ trong suốt của lớp kính.
   final double opacity;
 
   const GlassDialog({

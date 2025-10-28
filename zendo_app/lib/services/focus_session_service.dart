@@ -11,6 +11,7 @@ import '../models/focus_session.dart';
 /// Tác dụng: Service quản lý Focus Sessions với Supabase database
 /// Sử dụng khi: Cần thao tác CRUD với focus sessions và tracking thời gian làm việc
 class FocusSessionService {
+  /// Supabase client dùng để thao tác bảng focus_sessions.
   final SupabaseClient _supabase = Supabase.instance.client;
 
   /// createFocusSession Method

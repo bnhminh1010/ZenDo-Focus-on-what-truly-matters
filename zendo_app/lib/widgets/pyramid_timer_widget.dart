@@ -11,12 +11,19 @@ import 'package:flutter/material.dart';
  * Khi nào dùng: Kết hợp trong PomodoroTimerWidget hoặc nơi cần visual hóa tiến trình theo tầng.
  */
 class PyramidTimerWidget extends StatefulWidget {
+  /// Tiến độ hiện tại (0.0 – 1.0).
   final double progress; // 0.0 - 1.0
+  /// Màu sắc của phần đã hoàn thành.
   final Color activeColor;
+  /// Màu sắc nền chưa hoàn thành.
   final Color inactiveColor;
+  /// Kích thước tổng thể của widget (chiều rộng/chiều cao).
   final double size;
+  /// Chuỗi thời gian hiển thị ở trung tâm.
   final String timeText;
+  /// Dòng mô tả phụ hiển thị dưới thời gian.
   final String subText;
+  /// Callback khi người dùng chạm vào vùng thời gian.
   final VoidCallback? onTimeTap;
 
   const PyramidTimerWidget({
@@ -36,7 +43,9 @@ class PyramidTimerWidget extends StatefulWidget {
 
 class _PyramidTimerWidgetState extends State<PyramidTimerWidget>
     with SingleTickerProviderStateMixin {
+  /// Controller điều khiển animation tiến độ.
   late AnimationController _animationController;
+  /// Animation nội suy giá trị progress mềm mại.
   late Animation<double> _animation;
 
   @override

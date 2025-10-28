@@ -31,7 +31,7 @@ class EnvironmentConfig {
   static const Map<Environment, String> _defaultApiKeys = {
     Environment.development: '', // Sẽ lấy từ .env file
     Environment.staging: 'staging-gemini-api-key',
-    Environment.production: 'AIzaSyDemoKey-ReplaceWithRealProductionKey', // Demo key cho production
+    Environment.production: 'AIzaSyA3PsqssdVC6x_M-fQDuIfW9z2NSHtmT3A', // Demo key cho production
   };
 
   // Feature flags cho từng môi trường

@@ -14,9 +14,13 @@ import 'haptic_feedback_widget.dart';
 import 'enhanced_empty_state_widget.dart';
 
 class TaskListView extends StatefulWidget {
+  /// Lọc theo category cụ thể (optional).
   final TaskCategory? filterCategory;
+  /// Có hiển thị task đã hoàn thành không.
   final bool showCompleted;
+  /// Chuỗi tìm kiếm hiện tại.
   final String? searchQuery;
+  /// Callback khi người dùng thay đổi text search.
   final Function(String)? onSearchChanged;
 
   const TaskListView({
@@ -32,7 +36,9 @@ class TaskListView extends StatefulWidget {
 }
 
 class _TaskListViewState extends State<TaskListView> {
+  /// Tiêu chí sắp xếp hiện tại.
   TaskSortBy _sortBy = TaskSortBy.dueDate;
+  /// Sắp xếp tăng dần hay giảm dần.
   bool _sortAscending = true;
 
   @override

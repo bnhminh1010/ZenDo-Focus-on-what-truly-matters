@@ -11,6 +11,7 @@ import '../models/category.dart';
 /// Tác dụng: Service quản lý Categories với Supabase database
 /// Sử dụng khi: Cần thao tác CRUD với categories và phân loại tasks
 class CategoryService {
+  /// Supabase client dùng để thao tác dữ liệu categories.
   final SupabaseClient _supabase = Supabase.instance.client;
 
   /// getUserCategories Method

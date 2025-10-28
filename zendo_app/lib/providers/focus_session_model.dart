@@ -2,26 +2,38 @@ import 'package:flutter/foundation.dart';
 import '../models/focus_session.dart';
 import '../services/focus_session_service.dart';
 import '../services/supabase_auth_service.dart';
-
 /// FocusSessionModel Class
 /// Tác dụng: Provider quản lý trạng thái và logic nghiệp vụ của focus sessions trong ứng dụng
 /// Sử dụng khi: Cần quản lý phiên tập trung, theo dõi thời gian focus và thống kê hiệu suất
 class FocusSessionModel extends ChangeNotifier {
+  /// Service quản lý thao tác domain (tạo/cập nhật) focus session.
+  /// Tác dụng: Thực hiện các thao tác CRUD với focus sessions trên database.
   final FocusSessionService _focusSessionService = FocusSessionService();
+  /// Service lấy thông tin user Supabase để xác thực.
   final SupabaseAuthService _authService = SupabaseAuthService();
 
-  // State variables
+  /// Bộ nhớ tạm các phiên focus đã load.
   List<FocusSession> _focusSessions = [];
+  /// Phiên focus đang active (nếu có).
   FocusSession? _currentSession;
+  /// Cờ loading để disable UI khi đang xử lý.
   bool _isLoading = false;
+  /// Thông điệp lỗi mới nhất.
   String? _error;
+
+  /// Cache thống kê tổng quan (total/minutes...).
   Map<String, dynamic>? _stats;
 
   // Getters
+  /// Danh sách sessions read-only.
   List<FocusSession> get focusSessions => _focusSessions;
+  /// Phiên hiện tại.
   FocusSession? get currentSession => _currentSession;
+  /// Loading state tổng.
   bool get isLoading => _isLoading;
+  /// Lỗi chung (nếu có).
   String? get error => _error;
+  /// Cache thống kê read-only.
   Map<String, dynamic>? get stats => _stats;
 
   /// _currentUserId getter

@@ -9,17 +9,27 @@ class GoogleSignInProvider extends ChangeNotifier {
   final GoogleAuthService _googleAuthService = GoogleAuthService();
 
   // State variables
+  /// Cờ loading cho các thao tác đăng nhập/đăng xuất.
   bool _isLoading = false;
+  /// Trạng thái đã đăng nhập bằng Google hay chưa.
   bool _isSignedIn = false;
+  /// Tài khoản Google hiện tại (API cũ - có thể null).
   GoogleSignInAccount? _googleUser;
+  /// Supabase user sau khi liên kết Google thành công.
   User? _supabaseUser;
+  /// Thông điệp lỗi gần nhất.
   String? _errorMessage;
 
   // Getters
+  /// Cờ loading để UI phản hồi.
   bool get isLoading => _isLoading;
+  /// Trạng thái đăng nhập hiện có.
   bool get isSignedIn => _isSignedIn;
+  /// Tài khoản Google kèm thông tin profile (có thể null).
   GoogleSignInAccount? get googleUser => _googleUser;
+  /// Supabase user tương ứng.
   User? get supabaseUser => _supabaseUser;
+  /// Thông điệp lỗi để hiển thị.
   String? get errorMessage => _errorMessage;
 
   /// Khởi tạo provider và kiểm tra trạng thái đăng nhập

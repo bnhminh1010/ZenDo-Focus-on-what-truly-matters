@@ -13,6 +13,7 @@ import 'glass_button.dart';
 
 /// Dialog form để tạo mới hoặc chỉnh sửa Category
 class CategoryFormDialog extends StatefulWidget {
+  /// Category cần chỉnh sửa (null nếu tạo mới).
   final Category? category;
 
   const CategoryFormDialog({super.key, this.category});
@@ -22,15 +23,22 @@ class CategoryFormDialog extends StatefulWidget {
 }
 
 class _CategoryFormDialogState extends State<CategoryFormDialog> {
+  /// Key validate form.
   final _formKey = GlobalKey<FormState>();
+  /// Controller tên danh mục.
   final _nameController = TextEditingController();
+  /// Controller mô tả danh mục.
   final _descriptionController = TextEditingController();
 
+  /// Icon được chọn hiện tại.
   String _selectedIcon = '📝';
+  /// Màu được chọn hiện tại.
   late Color _selectedColor;
+  /// Cờ loading khi đang lưu danh mục.
   bool _isLoading = false;
 
   // Danh sách icons phổ biến cho categories
+  /// Danh sách icon phổ biến để người dùng lựa chọn.
   final List<String> _availableIcons = [
     '📝',
     '💼',
@@ -67,6 +75,7 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
   ];
 
   // Danh sách màu sắc phổ biến
+  /// Danh sách màu phổ biến cho category (dynamic theo theme).
   List<Color> get _availableColors => [
     Theme.of(context).colorScheme.primary,
     context.errorColor,

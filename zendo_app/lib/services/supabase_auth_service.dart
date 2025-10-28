@@ -11,17 +11,25 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// Tác dụng: Service quản lý authentication với Supabase backend
 /// Sử dụng khi: Cần xử lý đăng nhập, đăng ký, đăng xuất và quản lý session người dùng
 class SupabaseAuthService extends ChangeNotifier {
+  /// Supabase client dùng để thao tác auth.
   final SupabaseClient _supabase = Supabase.instance.client;
+  /// Cờ loading cho các thao tác auth bất đồng bộ.
   bool _isLoading = false;
 
   // Getters
+  /// Trạng thái loading hiện tại.
   bool get isLoading => _isLoading;
+  /// Cờ kiểm tra user đã đăng nhập chưa.
   bool get isAuthenticated => _supabase.auth.currentUser != null;
+  /// User hiện tại từ Supabase Auth.
   User? get currentUser => _supabase.auth.currentUser;
+  /// Email của user hiện tại.
   String? get userEmail => currentUser?.email;
+  /// Tên hiển thị của user (ưu tiên metadata full_name).
   String? get userName =>
       currentUser?.userMetadata?['full_name'] ??
       currentUser?.email?.split('@')[0];
+  /// ID của user hiện tại.
   String? get userId => currentUser?.id;
 
   /// initialize Method
@@ -169,6 +177,50 @@ class SupabaseAuthService extends ChangeNotifier {
         // Profile sẽ được tự động cập nhật bởi trigger hoặc RLS policy
         // Chỉ cần cập nhật auth metadata
         debugPrint('Profile updated successfully');
+        return true;
+      } else {
+        debugPrint('Profile update failed');
+        return false;
+      }
+    } on AuthException catch (e) {
+      debugPrint('Auth error: ${e.message}');
+      return false;
+    } catch (e) {
+      debugPrint('Unexpected error during profile update: $e');
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Cập nhật thông tin profile với avatar
+  Future<bool> updateProfileWithAvatar(String name, String email, String? avatarUrl) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      // Cập nhật auth metadata với avatar_url
+      final Map<String, dynamic> userData = {'full_name': name};
+      if (avatarUrl != null) {
+        userData['avatar_url'] = avatarUrl;
+      }
+
+      final UserResponse response = await _supabase.auth.updateUser(
+        UserAttributes(email: email, data: userData),
+      );
+
+      if (response.user != null) {
+        // Cập nhật trực tiếp vào bảng profiles
+        await _supabase.from('profiles').upsert({
+          'id': response.user!.id,
+          'full_name': name,
+          'email': email,
+          'avatar_url': avatarUrl,
+          'updated_at': DateTime.now().toIso8601String(),
+        });
+
+        debugPrint('Profile with avatar updated successfully');
         return true;
       } else {
         debugPrint('Profile update failed');

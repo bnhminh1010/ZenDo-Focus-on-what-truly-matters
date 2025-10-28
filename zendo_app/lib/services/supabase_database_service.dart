@@ -13,9 +13,11 @@ import '../models/focus_session.dart';
 /// Service quản lý database operations với Supabase
 /// Xử lý CRUD cho tasks, categories và các operations khác
 class SupabaseDatabaseService {
+  /// Supabase client dùng chung cho mọi thao tác database.
   final SupabaseClient _supabase = Supabase.instance.client;
 
   // Getter để lấy user ID hiện tại
+  /// Lấy ID user hiện thời từ Supabase Auth (null nếu chưa đăng nhập).
   String? get _currentUserId => _supabase.auth.currentUser?.id;
 
   /// Kiểm tra user đã đăng nhập chưa

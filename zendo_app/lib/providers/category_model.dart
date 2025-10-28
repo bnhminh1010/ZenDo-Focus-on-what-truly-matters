@@ -1,20 +1,24 @@
 import 'package:flutter/foundation.dart';
 import '../models/category.dart' as app_category;
-import '../services/category_service.dart';
-
 /// CategoryModel Class
 /// Tác dụng: Provider quản lý trạng thái và logic nghiệp vụ của categories trong ứng dụng
 /// Sử dụng khi: Cần quản lý danh sách categories, thực hiện CRUD operations với categories
 class CategoryModel extends ChangeNotifier {
+  /// Service để thao tác bảng categories.
   final CategoryService _categoryService = CategoryService();
 
+  /// Bộ nhớ tạm danh sách category.
   List<app_category.Category> _categories = [];
-  List<app_category.Category> get categories => _categories;
-
+  /// Cờ loading khi đang fetch/đồng bộ.
   bool _isLoading = false;
-  bool get isLoading => _isLoading;
-
+  /// Lỗi xảy ra trong quá trình thực hiện nghiệp vụ.
   String? _error;
+
+  /// Danh sách category hiện tại.
+  List<app_category.Category> get categories => _categories;
+  /// Trạng thái loading hiện tại.
+  bool get isLoading => _isLoading;
+  /// Lỗi xảy ra trong quá trình thực hiện nghiệp vụ.
   String? get error => _error;
 
   /// initialize method

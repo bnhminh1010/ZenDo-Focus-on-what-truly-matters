@@ -15,8 +15,10 @@ class GitHubAuthService {
   factory GitHubAuthService() => _instance;
   GitHubAuthService._internal();
 
+  /// Supabase client dùng để thực hiện OAuth GitHub.
   final SupabaseClient _supabase = Supabase.instance.client;
 
+  /// Cache thông tin user GitHub sau khi đăng nhập.
   Map<String, dynamic>? _userInfo;
 
   /// Đăng nhập GitHub sử dụng Supabase OAuth

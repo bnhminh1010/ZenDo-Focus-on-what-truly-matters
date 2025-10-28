@@ -7,8 +7,11 @@ import 'package:flutter/material.dart';
 
 /// Widget logo sử dụng logo duy nhất cho mọi theme
 class ThemeAwareLogo extends StatelessWidget {
+  /// Chiều rộng logo (optional).
   final double? width;
+  /// Chiều cao logo (optional).
   final double? height;
+  /// BoxFit khi vẽ logo.
   final BoxFit fit;
 
   const ThemeAwareLogo({
@@ -31,9 +34,13 @@ class ThemeAwareLogo extends StatelessWidget {
 
 /// Widget logo với animation - sử dụng logo duy nhất
 class AnimatedThemeAwareLogo extends StatelessWidget {
+  /// Chiều rộng logo (optional).
   final double? width;
+  /// Chiều cao logo (optional).
   final double? height;
+  /// BoxFit khi vẽ logo.
   final BoxFit fit;
+  /// Thời gian animation cross-fade.
   final Duration duration;
 
   const AnimatedThemeAwareLogo({

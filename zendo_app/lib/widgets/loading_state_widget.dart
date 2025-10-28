@@ -8,9 +8,13 @@ import 'glass_container.dart';
 
 /// Widget chuẩn cho loading states trong app
 class LoadingStateWidget extends StatelessWidget {
+  /// Thông điệp hiển thị dưới spinner (optional).
   final String? message;
+  /// Kích thước spinner.
   final double? size;
+  /// Màu spinner.
   final Color? color;
+  /// Có sử dụng hiệu ứng glass hay không.
   final bool useGlassEffect;
 
   const LoadingStateWidget({
@@ -71,7 +75,9 @@ class LoadingStateWidget extends StatelessWidget {
 
 /// Widget loading cho danh sách
 class ListLoadingWidget extends StatelessWidget {
+  /// Số lượng item skeleton.
   final int itemCount;
+  /// Chiều cao mỗi skeleton item.
   final double itemHeight;
 
   const ListLoadingWidget({
@@ -90,6 +96,7 @@ class ListLoadingWidget extends StatelessWidget {
 }
 
 class _LoadingListItem extends StatefulWidget {
+  /// Chiều cao item skeleton.
   final double height;
 
   const _LoadingListItem({required this.height});

@@ -12,14 +12,18 @@ import '../models/task.dart';
 /// Tác dụng: Service xử lý các operations liên quan đến tasks (CRUD, filtering, sorting, realtime)
 /// Sử dụng khi: Cần thao tác với dữ liệu tasks từ database và đồng bộ realtime
 class TaskService extends ChangeNotifier {
+  /// Supabase client để thao tác bảng tasks/subtasks.
   final SupabaseClient _supabase = Supabase.instance.client;
 
+  /// Bộ nhớ tạm danh sách task sau khi load.
   List<Task> _tasks = [];
   List<Task> get tasks => _tasks;
 
+  /// Cờ loading cho UI.
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  /// Thông điệp lỗi gần nhất.
   String? _error;
   String? get error => _error;
 

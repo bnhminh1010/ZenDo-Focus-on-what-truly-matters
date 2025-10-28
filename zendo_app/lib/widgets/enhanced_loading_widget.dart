@@ -8,12 +8,19 @@ import '../widgets/glass_container.dart';
 
 /// Enhanced loading widget với progress indicators và animations
 class EnhancedLoadingWidget extends StatefulWidget {
+  /// Thông điệp hiển thị dưới loading icon.
   final String? message;
+  /// Giá trị progress (0.0 - 1.0) nếu hiển thị thanh tiến trình.
   final double? progress; // 0.0 - 1.0 cho progress bar
+  /// Có hiển thị progress bar hay không.
   final bool showProgress;
+  /// Có áp dụng hiệu ứng glass container không.
   final bool useGlassEffect;
+  /// Icon hiển thị khi loading.
   final IconData? icon;
+  /// Màu sắc chính cho loading.
   final Color? color;
+  /// Thời gian animation quay/pulse.
   final Duration animationDuration;
 
   const EnhancedLoadingWidget({
@@ -33,9 +40,13 @@ class EnhancedLoadingWidget extends StatefulWidget {
 
 class _EnhancedLoadingWidgetState extends State<EnhancedLoadingWidget>
     with TickerProviderStateMixin {
+  /// Controller cho animation quay vòng.
   late AnimationController _rotationController;
+  /// Controller cho animation pulse.
   late AnimationController _pulseController;
+  /// Animation quay vòng (0 -> 1).
   late Animation<double> _rotationAnimation;
+  /// Animation co giãn icon.
   late Animation<double> _pulseAnimation;
 
   @override
@@ -171,10 +182,15 @@ class _EnhancedLoadingWidgetState extends State<EnhancedLoadingWidget>
 
 /// Loading overlay để hiển thị trên toàn màn hình
 class LoadingOverlay extends StatelessWidget {
+  /// Nội dung chính phía sau overlay.
   final Widget child;
+  /// Cờ hiển thị overlay loading.
   final bool isLoading;
+  /// Thông điệp hiển thị trên overlay.
   final String? message;
+  /// Giá trị progress (0.0 - 1.0).
   final double? progress;
+  /// Có hiển thị progress bar hay không.
   final bool showProgress;
 
   const LoadingOverlay({

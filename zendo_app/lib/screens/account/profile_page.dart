@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../providers/auth_model.dart';
+import '../../services/avatar_storage_service.dart';
 import '../../widgets/glass_container.dart';
 import '../../widgets/glass_button.dart';
 import '../../widgets/loading_state_widget.dart';
@@ -39,7 +40,8 @@ class _ProfilePageState extends State<ProfilePage> {
     final authModel = Provider.of<AuthModel>(context, listen: false);
     _nameController.text = authModel.userName ?? '';
     _emailController.text = authModel.userEmail ?? '';
-    // TODO: Load phone, bio, avatar from user profile when available
+    _currentAvatarUrl = authModel.userAvatarUrl;
+    // TODO: Load phone, bio from user profile when available
   }
 
   @override
@@ -57,133 +59,141 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
-        child: GlassContainer(
-          borderRadius: 24,
-          blur: 20,
-          opacity: 0.15,
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Header
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          constraints: const BoxConstraints(
+            maxWidth: 400,
+            maxHeight: 500,
+          ),
+          child: GlassContainer(
+            borderRadius: 24,
+            blur: 20,
+            opacity: 0.15,
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.photo_camera_outlined,
+                        size: 24,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
-                    child: Icon(
-                      Icons.photo_camera_outlined,
-                      size: 32,
-                      color: Theme.of(context).colorScheme.primary,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Chọn ảnh đại diện',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Chọn nguồn ảnh để cập nhật',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface.withOpacity(0.7),
+                                ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Chọn ảnh đại diện',
-                          style: Theme.of(context).textTheme.titleLarge
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          'Chọn nguồn ảnh để cập nhật',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withOpacity(0.7),
-                              ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
+                  ],
+                ),
+                const SizedBox(height: 20),
 
-              // Options
-              Row(
-                children: [
-                  Expanded(
+                // Options
+                Row(
+                  children: [
+                    Expanded(
+                      child: Semantics(
+                        label: 'Chụp ảnh từ camera',
+                        hint: 'Nhấn để mở camera và chụp ảnh mới',
+                        child: GlassElevatedButton.icon(
+                          onPressed: () {
+                            context.pop();
+                            _pickImage(ImageSource.camera);
+                          },
+                          icon: const Icon(Icons.camera_alt_outlined, size: 20),
+                          label: const Text('Camera'),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Semantics(
+                        label: 'Chọn ảnh từ thư viện',
+                        hint: 'Nhấn để mở thư viện ảnh và chọn ảnh có sẵn',
+                        child: GlassElevatedButton.icon(
+                          onPressed: () {
+                            context.pop();
+                            _pickImage(ImageSource.gallery);
+                          },
+                          icon: const Icon(Icons.photo_library_outlined, size: 20),
+                          label: const Text('Thư viện'),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                if (_selectedImage != null || _currentAvatarUrl != null) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
                     child: Semantics(
-                      label: 'Chụp ảnh từ camera',
-                      hint: 'Nhấn để mở camera và chụp ảnh mới',
-                      child: GlassElevatedButton.icon(
+                      label: 'Xóa ảnh đại diện',
+                      hint: 'Nhấn để xóa ảnh đại diện hiện tại',
+                      child: GlassOutlinedButton(
                         onPressed: () {
                           context.pop();
-                          _pickImage(ImageSource.camera);
+                          _removeAvatar();
                         },
-                        icon: const Icon(Icons.camera_alt_outlined),
-                        label: const Text('Camera'),
+                        borderColor: Theme.of(context).colorScheme.error,
+                        textColor: Theme.of(context).colorScheme.error,
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.delete_outline, size: 18),
+                            SizedBox(width: 6),
+                            Text('Xóa ảnh'),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Semantics(
-                      label: 'Chọn ảnh từ thư viện',
-                      hint: 'Nhấn để mở thư viện ảnh và chọn ảnh có sẵn',
-                      child: GlassElevatedButton.icon(
-                        onPressed: () {
-                          context.pop();
-                          _pickImage(ImageSource.gallery);
-                        },
-                        icon: const Icon(Icons.photo_library_outlined),
-                        label: const Text('Thư viện'),
-                      ),
-                    ),
-                  ),
                 ],
-              ),
+                const SizedBox(height: 12),
 
-              if (_selectedImage != null || _currentAvatarUrl != null) ...[
-                const SizedBox(height: 16),
+                // Cancel button
                 SizedBox(
                   width: double.infinity,
                   child: Semantics(
-                    label: 'Xóa ảnh đại diện',
-                    hint: 'Nhấn để xóa ảnh đại diện hiện tại',
-                    child: GlassOutlinedButton(
-                      onPressed: () {
-                        context.pop();
-                        _removeAvatar();
-                      },
-                      borderColor: Theme.of(context).colorScheme.error,
-                      textColor: Theme.of(context).colorScheme.error,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(Icons.delete_outline),
-                          SizedBox(width: 8),
-                          Text('Xóa ảnh'),
-                        ],
-                      ),
+                    label: 'Hủy chọn ảnh',
+                    hint: 'Nhấn để đóng dialog và hủy thao tác',
+                    child: GlassTextButton(
+                      onPressed: () => context.pop(),
+                      child: const Text('Hủy'),
                     ),
                   ),
                 ),
               ],
-              const SizedBox(height: 16),
-
-              // Cancel button
-              SizedBox(
-                width: double.infinity,
-                child: Semantics(
-                  label: 'Hủy chọn ảnh',
-                  hint: 'Nhấn để đóng dialog và hủy thao tác',
-                  child: GlassTextButton(
-                    onPressed: () => context.pop(),
-                    child: const Text('Hủy'),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -540,37 +550,97 @@ class _ProfilePageState extends State<ProfilePage> {
     if (!_formKey.currentState!.validate()) return;
 
     final authModel = Provider.of<AuthModel>(context, listen: false);
+    final avatarService = AvatarStorageService();
 
-    // TODO: Implement avatar upload to Supabase Storage
-    // For now, just update name and email
-    final success = await authModel.updateProfile(
-      _nameController.text.trim(),
-      _emailController.text.trim(),
-    );
+    setState(() {
+      _isEditing = false;
+    });
 
-    if (success) {
-      setState(() {
-        _isEditing = false;
-        // TODO: Save avatar URL after upload
-        if (_selectedImage != null) {
-          // Convert selected image to avatar URL after upload
-          // _currentAvatarUrl = uploadedUrl;
-          _selectedImage = null;
-        }
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Cập nhật thông tin thành công'),
-            backgroundColor: Theme.of(context).colorScheme.primary,
+    // Hiển thị loading
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Row(
+            children: [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              SizedBox(width: 16),
+              Text('Đang cập nhật thông tin...'),
+            ],
           ),
-        );
+          duration: Duration(seconds: 30),
+        ),
+      );
+    }
+
+    try {
+      String? uploadedAvatarUrl;
+
+      // Upload avatar nếu có ảnh được chọn
+      if (_selectedImage != null) {
+        uploadedAvatarUrl = await avatarService.uploadAvatar(_selectedImage!);
+        if (uploadedAvatarUrl == null) {
+          throw Exception('Không thể upload avatar');
+        }
+
+        // Xóa avatar cũ nếu có
+        if (_currentAvatarUrl != null && _currentAvatarUrl!.isNotEmpty) {
+          await avatarService.deleteOldAvatar(_currentAvatarUrl!);
+        }
       }
-    } else {
+
+      // Cập nhật profile với avatar URL mới hoặc giữ nguyên avatar cũ
+      final avatarUrlToSave = uploadedAvatarUrl ?? _currentAvatarUrl;
+      final success = await authModel.updateProfileWithAvatar(
+        _nameController.text.trim(),
+        _emailController.text.trim(),
+        avatarUrlToSave,
+      );
+
+      // Ẩn loading snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      }
+
+      if (success) {
+        setState(() {
+          if (uploadedAvatarUrl != null) {
+            _currentAvatarUrl = uploadedAvatarUrl;
+          }
+          _selectedImage = null;
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Cập nhật thông tin thành công'),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Cập nhật thông tin thất bại'),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Ẩn loading snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Cập nhật thông tin thất bại'),
+            content: Text('Lỗi: ${e.toString()}'),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );

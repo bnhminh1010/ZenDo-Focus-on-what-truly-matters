@@ -13,7 +13,9 @@ import 'package:uuid/uuid.dart';
 /// Service quản lý lưu trữ hình ảnh cho tasks
 /// Xử lý việc copy, lưu trữ và quản lý hình ảnh trong app
 class ImageStorageService {
+  /// Tên thư mục lưu hình ảnh nhiệm vụ trong bộ nhớ ứng dụng.
   static const String _imagesFolderName = 'task_images';
+  /// UUID generator dùng để đặt tên file ảnh duy nhất.
   static const Uuid _uuid = Uuid();
 
   /// Lấy thư mục lưu trữ hình ảnh của app

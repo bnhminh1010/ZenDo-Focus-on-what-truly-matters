@@ -13,8 +13,11 @@ import 'glass_button.dart';
 
 /// Widget hiển thị danh sách subtasks của một task
 class SubtaskListWidget extends StatefulWidget {
+  /// Task cha mà subtasks thuộc về.
   final String taskId;
+  /// Cờ chỉnh sửa subtasks.
   final bool isEditable;
+  /// Callback khi subtasks thay đổi.
   final Function(List<Subtask>)? onSubtasksChanged;
 
   const SubtaskListWidget({
@@ -29,9 +32,13 @@ class SubtaskListWidget extends StatefulWidget {
 }
 
 class _SubtaskListWidgetState extends State<SubtaskListWidget> {
+  /// Dịch vụ subtask.
   final SubtaskService _subtaskService = SubtaskService();
+  /// Danh sách subtasks đang hiển thị (mutable).
   List<Subtask> _subtasks = [];
+  /// Cờ loading khi đang tải subtasks.
   bool _isLoading = true;
+  /// Controller cho input tiêu đề subtask.
   final TextEditingController _newSubtaskController = TextEditingController();
 
   @override

@@ -8,12 +8,19 @@ import 'dart:math' as math;
 import '../theme.dart';
 
 class CircularTimePicker extends StatefulWidget {
+  /// Thời lượng khởi tạo.
   final Duration initialDuration;
+  /// Callback nhận thời lượng mới khi người dùng điều chỉnh.
   final ValueChanged<Duration> onDurationChanged;
+  /// Thời lượng tối thiểu cho phép.
   final Duration minDuration;
+  /// Thời lượng tối đa cho phép.
   final Duration maxDuration;
+  /// Màu chủ đạo của progress.
   final Color? primaryColor;
+  /// Màu nền vòng tròn.
   final Color? backgroundColor;
+  /// Kích thước tổng thể của widget.
   final double size;
 
   const CircularTimePicker({
@@ -32,7 +39,9 @@ class CircularTimePicker extends StatefulWidget {
 }
 
 class _CircularTimePickerState extends State<CircularTimePicker> {
+  /// Thời lượng hiện tại tương ứng với góc kéo.
   late Duration _currentDuration;
+  /// Góc hiện tại (radians) của handle.
   double _angle = 0.0;
 
   @override

@@ -16,6 +16,7 @@ class GoogleAuthService {
   factory GoogleAuthService() => _instance;
   GoogleAuthService._internal();
 
+  /// Supabase client dùng cho các thao tác OAuth Google.
   final SupabaseClient _supabase = Supabase.instance.client;
 
   /// Đăng nhập bằng Google sử dụng Supabase OAuth

@@ -4,21 +4,35 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Model quản lý cài đặt ứng dụng
 /// Sử dụng SharedPreferences để lưu trữ cài đặt
 class SettingsModel extends ChangeNotifier {
+  /// Cờ bật/tắt dark mode.
   bool _isDarkMode = false;
+  /// Cờ bật/tắt thông báo hệ thống.
   bool _notificationsEnabled = true;
+  /// Thời lượng một phiên focus mặc định (phút).
   int _focusSessionDuration = 25; // minutes
+  /// Thời lượng nghỉ ngắn (phút).
   int _shortBreakDuration = 5; // minutes
+  /// Thời lượng nghỉ dài (phút).
   int _longBreakDuration = 15; // minutes
+  /// Mã ngôn ngữ UI.
   String _language = 'vi'; // vi, en
+  /// Cờ bật/tắt âm thanh.
   bool _soundEnabled = true;
 
   // Getters
+  /// Dark mode hiện tại.
   bool get isDarkMode => _isDarkMode;
+  /// Trạng thái thông báo.
   bool get notificationsEnabled => _notificationsEnabled;
+  /// Thời lượng focus.
   int get focusSessionDuration => _focusSessionDuration;
+  /// Thời lượng nghỉ ngắn.
   int get shortBreakDuration => _shortBreakDuration;
+  /// Thời lượng nghỉ dài.
   int get longBreakDuration => _longBreakDuration;
+  /// Ngôn ngữ UI.
   String get language => _language;
+  /// Trạng thái âm thanh.
   bool get soundEnabled => _soundEnabled;
 
   /// Khởi tạo và load cài đặt từ SharedPreferences

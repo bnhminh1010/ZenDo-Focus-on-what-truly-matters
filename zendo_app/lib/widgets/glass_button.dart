@@ -9,22 +9,39 @@ import 'glass_container.dart';
 /// Liquid Glass Button Widget
 /// Tạo nút với hiệu ứng liquid glass đẹp mắt
 class GlassButton extends StatefulWidget {
+  /// Nội dung hiển thị bên trong nút.
   final Widget child;
+  /// Callback khi người dùng nhấn.
   final VoidCallback? onPressed;
+  /// Callback khi nhấn giữ.
   final VoidCallback? onLongPress;
+  /// Bán kính bo tròn.
   final double borderRadius;
+  /// Độ blur nền glass.
   final double blur;
+  /// Độ trong suốt của lớp glass.
   final double opacity;
+  /// Padding nội bộ nút.
   final EdgeInsetsGeometry padding;
+  /// Margin bên ngoài nút.
   final EdgeInsetsGeometry? margin;
+  /// Màu nền tùy chỉnh.
   final Color? color;
+  /// Gradient tùy chỉnh.
   final Gradient? gradient;
+  /// Viền của nút.
   final Border? border;
+  /// Chiều rộng cố định (tuỳ chọn).
   final double? width;
+  /// Chiều cao cố định (tuỳ chọn).
   final double? height;
+  /// Hiển thị ở dạng pill (stadium) hay không.
   final bool pill;
+  /// Có hiển thị highlight ở viền trên hay không.
   final bool highlightEdge;
+  /// Có hiển thị inner shadow hay không.
   final bool innerShadow;
+  /// Danh sách box shadow tuỳ chỉnh.
   final List<BoxShadow>? boxShadow;
 
   const GlassButton({
@@ -149,14 +166,23 @@ class _GlassButtonState extends State<GlassButton>
 
 /// Glass Icon Button - Nút icon với hiệu ứng liquid glass
 class GlassIconButton extends StatelessWidget {
+  /// Icon hiển thị trong nút.
   final IconData icon;
+  /// Callback khi người dùng nhấn.
   final VoidCallback? onPressed;
+  /// Kích thước icon.
   final double size;
+  /// Màu icon.
   final Color? iconColor;
+  /// Bán kính bo tròn.
   final double borderRadius;
+  /// Độ blur của nền glass.
   final double blur;
+  /// Độ trong suốt nền glass.
   final double opacity;
+  /// Padding nội bộ.
   final EdgeInsetsGeometry padding;
+  /// Tooltip hiển thị khi hover (desktop/web).
   final String? tooltip;
 
   const GlassIconButton({

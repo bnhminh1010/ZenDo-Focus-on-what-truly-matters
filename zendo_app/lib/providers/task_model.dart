@@ -8,14 +8,21 @@ import '../services/supabase_database_service.dart';
 /// Tác dụng: Provider quản lý trạng thái và logic nghiệp vụ của tasks trong ứng dụng
 /// Sử dụng khi: Cần quản lý danh sách tasks, thực hiện CRUD operations và đồng bộ với Supabase
 class TaskModel extends ChangeNotifier {
+  /// Bộ nhớ tạm danh sách task hiện có (đã sync).
   final List<Task> _tasks = [];
+  /// Trình tạo UUID để khởi tạo task mới on-device.
   final Uuid _uuid = const Uuid();
+  /// Service thao tác với Supabase.
   final SupabaseDatabaseService _databaseService = SupabaseDatabaseService();
+  /// Cờ loading dùng cho UI khi đang fetch/cập nhật.
   bool _isLoading = false;
+  /// Subscription realtime để auto cập nhật danh sách task.
   RealtimeChannel? _tasksSubscription;
 
   // Getters
+  /// Danh sách task dạng read-only cho UI.
   List<Task> get tasks => List.unmodifiable(_tasks);
+  /// Trạng thái loading hiện tại.
   bool get isLoading => _isLoading;
 
   /// initialize method

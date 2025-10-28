@@ -10,14 +10,23 @@ import 'glass_button.dart';
 
 /// Enhanced empty state widget với illustrations và actions
 class EnhancedEmptyStateWidget extends StatelessWidget {
+  /// Tiêu đề trạng thái trống.
   final String title;
+  /// Mô tả chi tiết.
   final String subtitle;
+  /// Icon minh hoạ.
   final IconData icon;
+  /// Text của action chính (optional).
   final String? actionText;
+  /// Callback khi action chính được nhấn.
   final VoidCallback? onActionPressed;
+  /// Màu icon.
   final Color? iconColor;
+  /// Kích thước icon.
   final double iconSize;
+  /// Illustration tuỳ chỉnh thay cho icon.
   final Widget? illustration;
+  /// Danh sách action bổ sung (optional).
   final List<Widget>? additionalActions;
 
   const EnhancedEmptyStateWidget({

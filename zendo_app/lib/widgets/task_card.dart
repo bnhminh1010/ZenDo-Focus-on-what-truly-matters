@@ -17,7 +17,9 @@ import '../theme.dart';
  */
 
 class TaskCard extends StatelessWidget {
+  /// Task sẽ được hiển thị trong card.
   final Task task;
+  /// Callback khi người dùng chạm vào card.
   final VoidCallback? onTap;
 
   const TaskCard({super.key, required this.task, this.onTap});

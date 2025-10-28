@@ -10,21 +10,36 @@ import 'package:flutter/material.dart';
 /// Tác dụng: Container với hiệu ứng kính mờ (glass morphism) có thể tái sử dụng
 /// Sử dụng khi: Cần tạo UI element với hiệu ứng glass morphism hiện đại
 class GlassContainer extends StatelessWidget {
+  /// Nội dung con được hiển thị bên trong container.
   final Widget child;
+  /// Bán kính bo tròn.
   final double borderRadius;
+  /// Mức độ blur nền phía sau.
   final double blur;
+  /// Độ trong suốt của lớp kính.
   final double opacity;
+  /// Padding nội bộ.
   final EdgeInsetsGeometry padding;
+  /// Margin bên ngoài.
   final EdgeInsetsGeometry? margin;
+  /// Danh sách shadow tuỳ chỉnh.
   final List<BoxShadow>? boxShadow;
+  /// Gradient tuỳ chỉnh cho nền.
   final Gradient? gradient;
+  /// Màu cơ bản (trước khi áp dụng opacity).
   final Color color;
+  /// Viền bao quanh container.
   final Border? border;
+  /// Chiều rộng cố định (optional).
   final double? width;
+  /// Chiều cao cố định (optional).
   final double? height;
   // iOS-style Liquid Glass refinements
+  /// Có sử dụng hình dạng pill (stadium) hay không.
   final bool pill; // stadium shape
+  /// Có hiển thị highlight ở cạnh trên hay không.
   final bool highlightEdge; // subtle top highlight edge
+  /// Có vẽ inner shadow hay không.
   final bool innerShadow; // gentle inner shadow for depth
 
   const GlassContainer({
