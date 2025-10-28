@@ -88,11 +88,6 @@ class _CategoryFormDialogState extends State<CategoryFormDialog> {
     context.personalColor,
     context.healthColor,
     Theme.of(context).colorScheme.surfaceContainer,
-    Theme.of(context).colorScheme.outline,
-    context.grey600,
-    context.grey400,
-    Theme.of(context).colorScheme.error,
-    context.grey500,
   ];
 
   @override

@@ -34,14 +34,21 @@ class FocusPage extends StatefulWidget {
 /// Tác dụng: State class quản lý trạng thái timer, task selection và focus session
 /// Sử dụng khi: Cần quản lý logic timer, tracking focus sessions và task selection
 class _FocusPageState extends State<FocusPage> {
+  /// ID task được chọn để focus.
   String? _selectedTaskId;
+  /// Tiêu đề task được chọn.
   String? _selectedTaskTitle;
-  int? _selectedTaskFocusTime; // Thời gian focus từ task được chọn
+  /// Thời gian focus từ task được chọn (phút).
+  int? _selectedTaskFocusTime;
 
   // Thêm các biến cần thiết cho focus session
+  /// Task ID hiện tại đang focus.
   String? _currentTaskId;
+  /// Thời lượng work (giây).
   int _workDuration = 25 * 60; // 25 phút tính bằng giây
+  /// Thời điểm bắt đầu session.
   DateTime? _sessionStartTime;
+  /// Số lần xao nhãng trong session.
   int _distractionCount = 0;
 
   @override

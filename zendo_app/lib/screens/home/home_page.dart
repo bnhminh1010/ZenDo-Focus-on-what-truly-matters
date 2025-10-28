@@ -34,7 +34,9 @@ class HomePage extends StatefulWidget {
 /// Tác dụng: State class quản lý trạng thái và logic của HomePage
 /// Sử dụng khi: Cần quản lý search functionality và lifecycle của HomePage
 class _HomePageState extends State<HomePage> {
+  /// Controller cho search input.
   final TextEditingController _searchController = TextEditingController();
+  /// Chuỗi tìm kiếm hiện tại.
   String _searchQuery = '';
 
   @override

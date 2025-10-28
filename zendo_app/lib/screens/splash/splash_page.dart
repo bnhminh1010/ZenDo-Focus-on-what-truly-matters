@@ -10,6 +10,7 @@ import 'dart:ui' as ui;
 import '../../widgets/glass_container.dart';
 import '../../widgets/theme_aware_logo.dart';
 
+/// Màn hình splash hiển thị khi khởi động ứng dụng.
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
 
@@ -17,8 +18,11 @@ class SplashPage extends StatefulWidget {
   State<SplashPage> createState() => _SplashPageState();
 }
 
+/// State cho SplashPage quản lý animation progress bar.
 class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
+  /// Controller cho animation thanh progress.
   late AnimationController _progressController;
+  /// Animation nội suy giá trị progress (0 -> 1).
   late Animation<double> _progressAnimation;
 
   @override

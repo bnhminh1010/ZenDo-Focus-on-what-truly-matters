@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/category.dart' as app_category;
+import '../services/category_service.dart';
+
 /// CategoryModel Class
 /// Tác dụng: Provider quản lý trạng thái và logic nghiệp vụ của categories trong ứng dụng
 /// Sử dụng khi: Cần quản lý danh sách categories, thực hiện CRUD operations với categories

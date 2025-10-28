@@ -6,13 +6,16 @@ enum Environment { development, staging, production }
 /// Cấu hình cho từng môi trường
 class EnvironmentConfig {
   // Môi trường hiện tại
+  /// Môi trường hiện tại (development/staging/production).
   static const Environment _currentEnvironment = kDebugMode
       ? Environment.development
       : Environment.production;
 
+  /// Getter lấy môi trường hiện tại.
   static Environment get currentEnvironment => _currentEnvironment;
 
   // Base URLs cho từng môi trường
+  /// Map base URL cho mỗi môi trường.
   static const Map<Environment, String> _baseUrls = {
     // Desktop không cần base URL cố định, web sẽ dùng Uri.base.origin
     Environment.development: '',
@@ -21,6 +24,7 @@ class EnvironmentConfig {
   };
 
   // Supabase URLs cho từng môi trường
+  /// Map Supabase URL cho mỗi môi trường.
   static const Map<Environment, String> _supabaseUrls = {
     Environment.development: 'https://ewfjqvatkzeyccilxzne.supabase.co',
     Environment.staging: 'https://staging-supabase-url.supabase.co',
@@ -28,6 +32,7 @@ class EnvironmentConfig {
   };
 
   // API Keys mặc định cho từng môi trường
+  /// Map API key mặc định cho mỗi môi trường.
   static const Map<Environment, String> _defaultApiKeys = {
     Environment.development: '', // Sẽ lấy từ .env file
     Environment.staging: 'staging-gemini-api-key',
@@ -35,6 +40,7 @@ class EnvironmentConfig {
   };
 
   // Feature flags cho từng môi trường
+  /// Map feature flags cho mỗi môi trường.
   static const Map<Environment, Map<String, bool>> _featureFlags = {
     Environment.development: {
       'enableLogging': true,
