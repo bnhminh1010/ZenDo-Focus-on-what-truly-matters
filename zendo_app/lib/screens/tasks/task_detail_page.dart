@@ -620,19 +620,49 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   }
 
   Future<void> _deleteTask() async {
+    // Hiển thị dialog xác nhận
+    final confirmDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Xác nhận xóa'),
+        content: const Text('Bạn có chắc chắn muốn xóa task này? Hành động này không thể hoàn tác.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Xóa'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmDelete != true) return;
+
     try {
       await TaskModel().deleteTask(widget.task.id);
       if (mounted) {
-        Navigator.of(context).pop();
+        // Hiển thị thông báo thành công
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Task đã được xóa thành công')),
+          const SnackBar(
+            content: Text('Đã xóa task thành công'),
+            backgroundColor: Colors.green,
+          ),
         );
+        // Quay lại màn hình trước đó với kết quả thành công
+        Navigator.of(context).pop(true);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error deleting task: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi xóa task: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }

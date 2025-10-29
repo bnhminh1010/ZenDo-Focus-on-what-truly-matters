@@ -135,20 +135,28 @@ class SupabaseDatabaseService {
     }
   }
 
-  /// Xóa task
+  /// Xóa task và các dữ liệu liên quan
   Future<bool> deleteTask(String taskId) async {
     try {
       if (!isUserAuthenticated) {
         throw Exception('User not authenticated');
       }
 
+      // Xóa tất cả focus sessions liên quan đến task
       await _supabase
+          .from('focus_sessions')
+          .delete()
+          .eq('task_id', taskId)
+          .eq('user_id', _currentUserId!);
+
+      // Xóa task
+      final response = await _supabase
           .from('tasks')
           .delete()
           .eq('id', taskId)
           .eq('user_id', _currentUserId!);
 
-      debugPrint('Task deleted successfully: $taskId');
+      debugPrint('Task and related data deleted successfully: $taskId');
       return true;
     } catch (e) {
       debugPrint('Error deleting task: $e');
@@ -508,9 +516,18 @@ class SupabaseDatabaseService {
           ),
           callback: (payload) async {
             debugPrint('Tasks changed: ${payload.eventType}');
-            // Reload tasks và notify
-            final tasks = await getTasks();
-            onTasksChanged(tasks);
+            
+            // Nếu là sự kiện DELETE, cần gọi lại getTasks để cập nhật danh sách
+            if (payload.eventType == 'DELETE') {
+              debugPrint('Task deleted, reloading tasks...');
+              final tasks = await getTasks();
+              onTasksChanged(tasks);
+            } else {
+              // Với các sự kiện khác (INSERT, UPDATE), có thể chỉ cần cập nhật task cụ thể
+              // Nhưng để đơn giản, ta cũng sẽ reload toàn bộ
+              final tasks = await getTasks();
+              onTasksChanged(tasks);
+            }
           },
         )
         .subscribe();

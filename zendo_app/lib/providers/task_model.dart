@@ -57,13 +57,21 @@ class TaskModel extends ChangeNotifier {
   /// Sử dụng khi: Cần cập nhật UI ngay khi có thay đổi từ database
   void _setupRealtimeSubscription() {
     try {
+      // Hủy subscription cũ nếu có
+      _tasksSubscription?.unsubscribe();
+      
       _tasksSubscription = _databaseService.subscribeToTasks((updatedTasks) {
         _tasks.clear();
         _tasks.addAll(updatedTasks);
+        debugPrint('Realtime update: ${updatedTasks.length} tasks');
         notifyListeners();
       });
+      
+      debugPrint('Realtime subscription established');
     } catch (e) {
       debugPrint('Error setting up realtime subscription: $e');
+      // Thử lại sau 5 giây nếu có lỗi
+      Future.delayed(const Duration(seconds: 5), _setupRealtimeSubscription);
     }
   }
 
@@ -151,7 +159,7 @@ class TaskModel extends ChangeNotifier {
     }
   }
 
-  /// Xóa task
+  /// Xóa task và cập nhật UI
   Future<void> deleteTask(String taskId) async {
     _isLoading = true;
     notifyListeners();
@@ -159,11 +167,17 @@ class TaskModel extends ChangeNotifier {
     try {
       final success = await _databaseService.deleteTask(taskId);
       if (success) {
+        // Xóa task khỏi danh sách
         _tasks.removeWhere((task) => task.id == taskId);
+        // Thông báo cho các widget lắng nghe
         notifyListeners();
+        debugPrint('Task $taskId đã được xóa khỏi danh sách nội bộ');
+      } else {
+        throw Exception('Không thể xóa task từ server');
       }
     } catch (e) {
-      debugPrint('Error deleting task: $e');
+      debugPrint('Lỗi khi xóa task: $e');
+      rethrow; // Ném lỗi để UI có thể xử lý
     } finally {
       _isLoading = false;
       notifyListeners();

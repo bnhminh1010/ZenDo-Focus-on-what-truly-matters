@@ -71,8 +71,10 @@ class _AccountPageState extends State<AccountPage> {
     final isDesktop = screenSize.width > 1200;
 
     // Responsive padding
-    final horizontalPadding = isDesktop ? 40.0 : (isTablet ? 30.0 : 20.0);
-    final bottomPadding = isDesktop ? 80.0 : (isTablet ? 100.0 : 140.0);
+    final horizontalPadding = isDesktop ? 60.0 : (isTablet ? 32.0 : 24.0);
+    final bottomPadding = isDesktop ? 60.0 : (isTablet ? 80.0 : 100.0);
+    final sectionSpacing = isDesktop ? 32.0 : (isTablet ? 28.0 : 24.0);
+    final itemSpacing = isDesktop ? 20.0 : (isTablet ? 16.0 : 12.0);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -83,11 +85,11 @@ class _AccountPageState extends State<AccountPage> {
               builder: (context, constraints) {
                 return SingleChildScrollView(
                   // Responsive padding
-                  padding: EdgeInsets.fromLTRB(
-                    horizontalPadding,
-                    20,
-                    horizontalPadding,
-                    bottomPadding,
+                  padding: EdgeInsets.only(
+                    left: horizontalPadding,
+                    right: horizontalPadding,
+                    top: sectionSpacing,
+                    bottom: bottomPadding, // Thêm padding bottom để tránh floating nav bar
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,7 +106,7 @@ class _AccountPageState extends State<AccountPage> {
                         ),
                       ),
 
-                      SizedBox(height: isDesktop ? 40 : 32),
+                      SizedBox(height: sectionSpacing * 1.5),
 
                       // Profile Section
                       Semantics(
@@ -113,9 +115,7 @@ class _AccountPageState extends State<AccountPage> {
                           borderRadius: 20,
                           blur: 16,
                           opacity: 0.14,
-                          padding: EdgeInsets.all(
-                            isDesktop ? 32 : (isTablet ? 28 : 24),
-                          ),
+                          padding: EdgeInsets.all(sectionSpacing),
                           child: Row(
                             children: [
                               // Avatar with loading state
@@ -156,7 +156,7 @@ class _AccountPageState extends State<AccountPage> {
                                             : null,
                                       ),
                               ),
-                              SizedBox(width: isDesktop ? 20 : 16),
+                              SizedBox(width: itemSpacing),
 
                               // User Info
                               Expanded(
@@ -179,7 +179,7 @@ class _AccountPageState extends State<AccountPage> {
                                             ),
                                       ),
                                     ),
-                                    SizedBox(height: isDesktop ? 8 : 4),
+                                    SizedBox(height: itemSpacing * 0.5),
                                     Semantics(
                                       label:
                                           'Email: ${authModel.userEmail ?? 'Chưa có email'}',
@@ -212,6 +212,8 @@ class _AccountPageState extends State<AccountPage> {
                         isTablet,
                         isDesktop,
                         themeProvider,
+                        itemSpacing,
+                        sectionSpacing,
                       ),
                     ],
                   ),
@@ -229,6 +231,8 @@ class _AccountPageState extends State<AccountPage> {
     bool isTablet,
     bool isDesktop,
     ThemeProvider themeProvider,
+    double itemSpacing,
+    double sectionSpacing,
   ) {
     return Column(
       children: [
@@ -247,6 +251,7 @@ class _AccountPageState extends State<AccountPage> {
             },
             isTablet: isTablet,
             isDesktop: isDesktop,
+            itemSpacing: itemSpacing,
           ),
         ),
         _buildMenuItem(
@@ -256,6 +261,7 @@ class _AccountPageState extends State<AccountPage> {
           onTap: () => context.pushNamed('notifications'),
           isTablet: isTablet,
           isDesktop: isDesktop,
+          itemSpacing: itemSpacing,
         ),
         _buildMenuItem(
           context: context,
@@ -264,6 +270,7 @@ class _AccountPageState extends State<AccountPage> {
           onTap: () => context.pushNamed('security'),
           isTablet: isTablet,
           isDesktop: isDesktop,
+          itemSpacing: itemSpacing,
         ),
         _buildMenuItem(
           context: context,
@@ -272,8 +279,9 @@ class _AccountPageState extends State<AccountPage> {
           onTap: () => context.pushNamed('language'),
           isTablet: isTablet,
           isDesktop: isDesktop,
+          itemSpacing: itemSpacing,
         ),
-        SizedBox(height: isDesktop ? 16 : 12),
+        SizedBox(height: itemSpacing),
 
         // Category Management
         Semantics(
@@ -288,9 +296,10 @@ class _AccountPageState extends State<AccountPage> {
             },
             isTablet: isTablet,
             isDesktop: isDesktop,
+            itemSpacing: itemSpacing,
           ),
         ),
-        SizedBox(height: isDesktop ? 16 : 12),
+        SizedBox(height: itemSpacing),
 
         // Dark Mode Toggle
         Semantics(
@@ -306,9 +315,10 @@ class _AccountPageState extends State<AccountPage> {
             },
             isTablet: isTablet,
             isDesktop: isDesktop,
+            itemSpacing: itemSpacing,
           ),
         ),
-        SizedBox(height: isDesktop ? 16 : 12),
+        SizedBox(height: itemSpacing),
 
         // Help
         Semantics(
@@ -321,9 +331,10 @@ class _AccountPageState extends State<AccountPage> {
             onTap: () => context.pushNamed('help'),
             isTablet: isTablet,
             isDesktop: isDesktop,
+            itemSpacing: itemSpacing,
           ),
         ),
-        SizedBox(height: isDesktop ? 16 : 12),
+        SizedBox(height: itemSpacing),
 
         // About
         Semantics(
@@ -336,9 +347,10 @@ class _AccountPageState extends State<AccountPage> {
             onTap: () => _showAboutDialog(context),
             isTablet: isTablet,
             isDesktop: isDesktop,
+            itemSpacing: itemSpacing,
           ),
         ),
-        SizedBox(height: isDesktop ? 24 : 20),
+        SizedBox(height: sectionSpacing),
 
         // Logout Button
         Semantics(
@@ -349,6 +361,7 @@ class _AccountPageState extends State<AccountPage> {
             authModel: Provider.of<AuthModel>(context, listen: false),
             isTablet: isTablet,
             isDesktop: isDesktop,
+            itemSpacing: itemSpacing,
           ),
         ),
       ],
@@ -362,12 +375,14 @@ class _AccountPageState extends State<AccountPage> {
     required VoidCallback onTap,
     required bool isTablet,
     required bool isDesktop,
+    required double itemSpacing,
   }) {
     return GlassContainer(
       borderRadius: 16,
       blur: 12,
       opacity: 0.14,
-      padding: EdgeInsets.all(isDesktop ? 20 : (isTablet ? 18 : 16)),
+      margin: EdgeInsets.only(bottom: itemSpacing * 0.8),
+      padding: EdgeInsets.all(itemSpacing * 1.2),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
@@ -378,7 +393,7 @@ class _AccountPageState extends State<AccountPage> {
               color: Theme.of(context).colorScheme.primary,
               size: isDesktop ? 28 : (isTablet ? 26 : 24),
             ),
-            SizedBox(width: isDesktop ? 20 : 16),
+            SizedBox(width: itemSpacing),
             Expanded(
               child: Text(
                 title,
@@ -409,6 +424,7 @@ class _AccountPageState extends State<AccountPage> {
     required ValueChanged<bool> onChanged,
     required bool isTablet,
     required bool isDesktop,
+    required double itemSpacing,
   }) {
     return GlassContainer(
       borderRadius: 16,
@@ -422,7 +438,7 @@ class _AccountPageState extends State<AccountPage> {
             color: Theme.of(context).colorScheme.primary,
             size: isDesktop ? 28 : (isTablet ? 26 : 24),
           ),
-          SizedBox(width: isDesktop ? 20 : 16),
+          SizedBox(width: itemSpacing),
           Expanded(
             child: Text(
               title,
@@ -611,6 +627,7 @@ class _AccountPageState extends State<AccountPage> {
     required AuthModel authModel,
     required bool isTablet,
     required bool isDesktop,
+    required double itemSpacing,
   }) {
     final theme = Theme.of(context);
 
@@ -650,7 +667,7 @@ class _AccountPageState extends State<AccountPage> {
                     size: isDesktop ? 28 : (isTablet ? 26 : 24),
                   ),
                 ),
-                SizedBox(width: isDesktop ? 20 : 16),
+                SizedBox(width: itemSpacing),
                 Expanded(
                   child: Text(
                     'Đăng xuất',
