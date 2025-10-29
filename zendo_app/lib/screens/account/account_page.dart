@@ -8,13 +8,61 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/auth_model.dart';
 import '../../providers/theme_provider.dart';
 import '../../widgets/glass_container.dart';
 import '../../widgets/glass_button.dart';
 
-class AccountPage extends StatelessWidget {
+class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
+
+  @override
+  State<AccountPage> createState() => _AccountPageState();
+}
+
+class _AccountPageState extends State<AccountPage> {
+  String? avatarUrl;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      debugPrint('🔍 Current User ID: ${user?.id}');
+      
+      if (user != null) {
+        final response = await Supabase.instance.client
+            .from('profiles')
+            .select('avatar_url')
+            .eq('id', user.id)
+            .single();
+        
+        debugPrint('🔍 Response from database: $response');
+        debugPrint('🔍 Avatar URL: ${response['avatar_url']}');
+        
+        if (mounted) {
+          setState(() {
+            avatarUrl = response['avatar_url'];
+            isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ Error loading profile: $e');
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,27 +112,49 @@ class AccountPage extends StatelessWidget {
                         child: GlassContainer(
                           borderRadius: 20,
                           blur: 16,
-                          opacity: 0.14, // Đồng nhất opacity
+                          opacity: 0.14,
                           padding: EdgeInsets.all(
                             isDesktop ? 32 : (isTablet ? 28 : 24),
                           ),
                           child: Row(
                             children: [
-                              // Avatar
+                              // Avatar with loading state
                               Semantics(
                                 label: 'Ảnh đại diện người dùng',
-                                child: CircleAvatar(
-                                  radius: isDesktop ? 40 : (isTablet ? 35 : 30),
-                                  backgroundColor: Theme.of(
-                                    context,
-                                  ).colorScheme.primary.withValues(alpha: 0.1),
-                                  child: Icon(
-                                    Icons.person,
-                                    size: isDesktop ? 40 : (isTablet ? 35 : 30),
-                                    color: Theme.of(context).colorScheme.primary
-                                        .withValues(alpha: 0.8),
-                                  ),
-                                ),
+                                child: isLoading
+                                    ? CircleAvatar(
+                                        radius: isDesktop ? 40 : (isTablet ? 35 : 30),
+                                        backgroundColor: Theme.of(context)
+                                            .colorScheme
+                                            .primary
+                                            .withValues(alpha: 0.1),
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<Color>(
+                                            Theme.of(context).colorScheme.primary,
+                                          ),
+                                        ),
+                                      )
+                                    : CircleAvatar(
+                                        radius: isDesktop ? 40 : (isTablet ? 35 : 30),
+                                        backgroundColor: Theme.of(context)
+                                            .colorScheme
+                                            .primary
+                                            .withValues(alpha: 0.1),
+                                        backgroundImage: avatarUrl != null && avatarUrl!.isNotEmpty
+                                            ? CachedNetworkImageProvider(avatarUrl!)
+                                            : null,
+                                        child: avatarUrl == null || avatarUrl!.isEmpty
+                                            ? Icon(
+                                                Icons.person,
+                                                size: isDesktop ? 40 : (isTablet ? 35 : 30),
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary
+                                                    .withValues(alpha: 0.8),
+                                              )
+                                            : null,
+                                      ),
                               ),
                               SizedBox(width: isDesktop ? 20 : 16),
 
@@ -170,7 +240,11 @@ class AccountPage extends StatelessWidget {
             context: context,
             icon: Icons.person_outline,
             title: 'Hồ sơ cá nhân',
-            onTap: () => context.pushNamed('profile'),
+            onTap: () async {
+              // Navigate và reload khi quay lại
+              await context.pushNamed('profile');
+              _loadUserProfile(); // Reload avatar sau khi quay lại
+            },
             isTablet: isTablet,
             isDesktop: isDesktop,
           ),
@@ -292,7 +366,7 @@ class AccountPage extends StatelessWidget {
     return GlassContainer(
       borderRadius: 16,
       blur: 12,
-      opacity: 0.14, // Đồng nhất opacity
+      opacity: 0.14,
       padding: EdgeInsets.all(isDesktop ? 20 : (isTablet ? 18 : 16)),
       child: InkWell(
         onTap: onTap,
@@ -339,7 +413,7 @@ class AccountPage extends StatelessWidget {
     return GlassContainer(
       borderRadius: 16,
       blur: 12,
-      opacity: 0.14, // Đồng nhất opacity
+      opacity: 0.14,
       padding: EdgeInsets.all(isDesktop ? 20 : (isTablet ? 18 : 16)),
       child: Row(
         children: [

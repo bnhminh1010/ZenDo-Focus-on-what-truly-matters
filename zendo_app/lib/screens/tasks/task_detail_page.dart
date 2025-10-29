@@ -6,13 +6,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/task.dart';
 import '../../providers/task_model.dart';
 import '../../widgets/add_task_dialog.dart';
 import '../../widgets/subtask_list_widget.dart';
 import '../ai/ai_chat_page.dart';
-import '../../services/image_storage_service.dart';
+import '../../services/task_image_storage_service.dart';
 import '../../widgets/glass_button.dart';
 import '../../widgets/loading_state_widget.dart';
 import '../../widgets/error_state_widget.dart';
@@ -221,6 +221,10 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
   }
 
   Widget _buildImageSection() {
+    if (_currentTask.imageUrl == null || _currentTask.imageUrl!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -229,40 +233,38 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
           children: [
             Text(
               'Hình ảnh',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            FutureBuilder<bool>(
-              future: _currentTask.imageUrl != null
-                  ? ImageStorageService.imageExists(_currentTask.imageUrl!)
-                  : Future.value(false),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: CachedNetworkImage(
+                imageUrl: _currentTask.imageUrl!,
+                width: double.infinity,
+                height: 200,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  height: 200,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+                errorWidget: (context, url, error) {
+                  debugPrint('Error loading image: $error');
+                  debugPrint('Image URL: $url');
                   return Container(
                     height: 200,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Center(child: CircularProgressIndicator()),
-                  );
-                }
-
-                final imageExists = snapshot.data ?? false;
-
-                if (!imageExists || _currentTask.imageUrl == null) {
-                  return Container(
-                    height: 200,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainerHighest,
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Column(
@@ -276,18 +278,14 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                         const SizedBox(height: 8),
                         Text(
                           'Không thể tải hình ảnh',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                               ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'File không tồn tại hoặc đã bị xóa',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: Theme.of(context)
                                     .colorScheme
                                     .onSurfaceVariant
@@ -297,109 +295,8 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                       ],
                     ),
                   );
-                }
-
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: _currentTask.imageUrl!.startsWith('http')
-                      ? Image.network(
-                          _currentTask.imageUrl!,
-                          width: double.infinity,
-                          height: 200,
-                          fit: BoxFit.cover,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Container(
-                              height: 200,
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.surfaceContainerHighest,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const LoadingStateWidget(
-                                message: 'Đang tải hình ảnh...',
-                                size: 32,
-                              ),
-                            );
-                          },
-                          errorBuilder: (context, error, stackTrace) {
-                            debugPrint('Error loading network image: $error');
-                            return Container(
-                              height: 200,
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.surfaceContainerHighest,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: ErrorStateWidget.empty(
-                                title: 'Không thể tải hình ảnh',
-                                message:
-                                    'Hình ảnh không tồn tại hoặc đã bị lỗi',
-                                icon: Icons.broken_image_outlined,
-                              ),
-                            );
-                          },
-                        )
-                      : Image.file(
-                          File(_currentTask.imageUrl!),
-                          width: double.infinity,
-                          height: 200,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            debugPrint('Error loading local image: $error');
-                            return Container(
-                              height: 200,
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.surfaceContainerHighest,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.broken_image,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurfaceVariant,
-                                    size: 48,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Không thể tải hình ảnh',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.copyWith(
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.onSurfaceVariant,
-                                        ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Kiểm tra kết nối mạng',
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurfaceVariant
-                                              .withOpacity(0.7),
-                                        ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                );
-              },
+                },
+              ),
             ),
           ],
         ),
@@ -785,4 +682,3 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
     );
   }
 }
-

@@ -11,7 +11,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../models/task.dart';
 import '../providers/task_model.dart';
-import '../services/image_storage_service.dart';
+import '../services/task_image_storage_service.dart';
 import '../theme.dart';
 import 'glass_button.dart';
 import 'glass_container.dart';
@@ -652,15 +652,16 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
 
     try {
       final taskModel = context.read<TaskModel>();
+      final imageService = TaskImageStorageService();
 
-      // Lưu hình ảnh nếu có
-      String? savedImagePath;
+      // Upload hình ảnh lên Supabase nếu có
+      String? uploadedImageUrl;
       if (_selectedImage != null) {
-        savedImagePath = await ImageStorageService.saveTaskImage(
+        uploadedImageUrl = await imageService.uploadTaskImage(
           _selectedImage!,
         );
-        if (savedImagePath == null) {
-          throw Exception('Không thể lưu hình ảnh');
+        if (uploadedImageUrl == null) {
+          throw Exception('Không thể upload hình ảnh');
         }
       }
 
@@ -680,7 +681,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
               : _notesController.text.trim(),
           estimatedMinutes: int.tryParse(_estimatedMinutesController.text) ?? 0,
           focusTimeMinutes: _focusTimeMinutes, // Thêm focus time
-          imageUrl: savedImagePath ?? widget.editingTask!.imageUrl,
+          imageUrl: uploadedImageUrl ?? widget.editingTask!.imageUrl,
         );
 
         await taskModel.updateTask(updatedTask);
@@ -714,7 +715,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
               : _notesController.text.trim(),
           estimatedMinutes: int.tryParse(_estimatedMinutesController.text) ?? 0,
           focusTimeMinutes: _focusTimeMinutes, // Thêm focus time
-          imageUrl: savedImagePath,
+          imageUrl: uploadedImageUrl,
         );
 
         await taskModel.addTask(task);
